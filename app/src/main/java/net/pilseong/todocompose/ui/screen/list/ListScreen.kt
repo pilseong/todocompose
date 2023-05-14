@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +43,6 @@ import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
-import net.pilseong.todocompose.ui.theme.NonePriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
@@ -95,8 +93,9 @@ fun ListScreen(
             } else {
                 sharedViewModel.updateAction(Action.NO_ACTION)
             }
-
-        }
+        },
+        orderEnabled = sharedViewModel.snackBarOrderEnabled,
+        dateEnabled = sharedViewModel.snackBarDateEnabled
     )
 
     // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
@@ -206,7 +205,7 @@ private fun StatusLine(
                 contentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 Text(
-                    text = "PRIORITY: $prioritySortState" ,
+                    text = "${stringResource(id = R.string.badge_priority_label)}: $prioritySortState",
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -217,7 +216,10 @@ private fun StatusLine(
                 contentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 Text(
-                    text = if (orderEnabled) "ORDER: ASC" else "ORDER: DESC",
+                    text = if (orderEnabled) "${stringResource(id = R.string.badge_order_label)}: " +
+                            stringResource(id = R.string.badge_order_asc_label)
+                    else "${stringResource(id = R.string.badge_order_label)}: " +
+                            stringResource(id = R.string.badge_order_desc_label),
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -228,7 +230,10 @@ private fun StatusLine(
                 contentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 Text(
-                    text = if (dateEnabled) "DATE: CREATED AT" else "DATE: UPDATED AT",
+                    text = if (dateEnabled) "${stringResource(id = R.string.badge_date_label)}: " +
+                            stringResource(id = R.string.badge_date_created_at_label)
+                    else "${stringResource(id = R.string.badge_date_label)}: " +
+                            stringResource(id = R.string.badge_date_updated_at_label),
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -245,7 +250,9 @@ private fun DisplaySnackBar(
     enabled: ByteArray,
     title: String,
     duration: SnackbarDuration = SnackbarDuration.Short,
-    buttonClicked: (Action, SnackbarResult) -> Unit
+    buttonClicked: (Action, SnackbarResult) -> Unit,
+    orderEnabled: Boolean,
+    dateEnabled: Boolean
 ) {
 
     val message = when (action) {
@@ -266,6 +273,18 @@ private fun DisplaySnackBar(
 
         Action.PRIORITY_CHANGE ->
             stringResource(id = R.string.snackbar_message_priority_change)
+
+        Action.SORT_ORDER_CHANGE ->
+            if (orderEnabled)
+                stringResource(id = R.string.snackbar_message_order_asc_change)
+            else
+                stringResource(id = R.string.snackbar_message_order_desc_change)
+
+        Action.SORT_DATE_CHANGE ->
+            if (dateEnabled)
+                stringResource(id = R.string.snackbar_message_date_created_at_change)
+            else
+                stringResource(id = R.string.snackbar_message_date_updated_at_change)
 
         else -> {
             ""

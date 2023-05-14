@@ -37,4 +37,17 @@
     <string name="viewer_appbar_delete_icon">선택 메모 삭제 아이콘</string>
     <string name="viewer_appbar_clipboard_copied_popup">클립보드로 복사되었습니다.</string>
     <string name="snackbar_message_priority_change">선택한 우선순위가 목록에 반영되었습니다.</string>
+    <string name="sort_ascending_label">오름차순</string>
+    <string name="sort_date_label">생성일자</string>
+    <string name="badge_priority_label">우선순위</string>
+    <string name="badge_order_label">정렬기준</string>
+    <string name="badge_date_label">일자기준</string>
+    <string name="badge_order_asc_label">오름차순</string>
+    <string name="badge_order_desc_label">내림차순</string>
+    <string name="badge_date_created_at_label">생성일자</string>
+    <string name="badge_date_updated_at_label">수정일자</string>
+    <string name="snackbar_message_order_asc_change">오름차순으로 정렬합니다.</string>
+    <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>
+    <string name="snackbar_message_date_created_at_change">생성일을 정렬기준으로 반영합니다.</string>
+    <string name="snackbar_message_date_updated_at_change">수정일을 정렬기준으로 반영합니다.</string>
 </resources>

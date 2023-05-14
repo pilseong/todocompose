@@ -254,10 +254,9 @@ fun SortAction(
         Log.i("PHILIP", "orderEnabled $orderEnabled")
         Log.i("PHILIP", "dateEnabled $dateEnabled")
         DropdownMenuItem(
-            enabled = false,
             text = {
                 SortItem(
-                    text = "오름차순",
+                    text = stringResource(id = R.string.sort_ascending_label),
                     enabled = orderEnabled,
                     onclick = onOrderEnabledClick
                 )
@@ -268,7 +267,7 @@ fun SortAction(
         DropdownMenuItem(
             text = {
                 SortItem(
-                    text = "생성기준",
+                    text = stringResource(id = R.string.sort_date_label),
                     enabled = dateEnabled,
                     onclick = onDateEnabledClick
                 )
