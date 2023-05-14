@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -317,6 +318,7 @@ fun TaskItem(
                     onLongClick()
                 }
             ),
+        tonalElevation = 1.dp,
         color = Color.Transparent,
         shape = RectangleShape,
 
@@ -398,8 +400,6 @@ fun TaskItem(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
-//                        verticalArrangement = Arrangement.Center,
-//                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
                             modifier = Modifier,
@@ -417,15 +417,6 @@ fun TaskItem(
                             contentDescription = "star favorite",
                             tint = if (todoTask.favorite) FavoriteYellow else Color.White
                         )
-//                        Canvas(
-//                            modifier = Modifier
-//                                .width(PRIORITY_INDICATOR_SIZE)
-//                                .height(PRIORITY_INDICATOR_SIZE)
-//                        ) {
-//                            drawCircle(
-//                                color = todoTask.priority.color
-//                            )
-//                        }
                     }
                 }
             }
@@ -533,39 +524,7 @@ fun LoadingContent() {
             fontFamily = FontFamily.SansSerif,
             color = MaterialTheme.colorScheme.onSurface
         )
-//        val infiniteTransition = rememberInfiniteTransition()
-//
-//        val angle by infiniteTransition.animateFloat(
-//            initialValue = 0f,
-//            targetValue = 360f,
-//            animationSpec = infiniteRepeatable(
-//                animation = keyframes {
-//                    durationMillis = 600
-//                }
-//            )
-//        )
-
-//        CircularProgressIndicator(
-//            progress = 1f,
-//            modifier = Modifier
-//                .size(80.dp)
-//                .rotate(angle)
-//                .border(
-//                    12.dp,
-//                    brush = Brush.sweepGradient(
-//                        listOf(
-//                            Color.White, // add background color first
-//                            Color(0xFF35898f).copy(alpha = 0.1f),
-//                            Color(0xFF35898f)
-//                        )
-//                    ),
-//                    shape = CircleShape
-//                ),
-//            strokeWidth = 1.dp,
-//            color = Color.White // Set background color
-//        )
     }
-
 }
 
 

@@ -51,7 +51,12 @@ import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
@@ -130,12 +135,13 @@ fun ListScreen(
                     .fillMaxSize(),
             ) {
 
-                if (searchAppBarState == SearchAppBarState.CLOSE)
-                    StatusLine(
-                        prioritySortState = prioritySortState,
-                        orderEnabled = sharedViewModel.orderEnabled,
-                        dateEnabled = sharedViewModel.dateEnabled
-                    )
+                StatusLine(
+                    prioritySortState = prioritySortState,
+                    orderEnabled = sharedViewModel.orderEnabled,
+                    dateEnabled = sharedViewModel.dateEnabled,
+                    startDate = sharedViewModel.startDate,
+                    endDate = sharedViewModel.endDate
+                )
 
                 ListContent(
                     tasks = tasks,
@@ -182,7 +188,9 @@ fun ListScreen(
 private fun StatusLine(
     prioritySortState: Priority,
     orderEnabled: Boolean,
-    dateEnabled: Boolean
+    dateEnabled: Boolean,
+    startDate: Long?,
+    endDate: Long?
 ) {
     val containerColor = when (prioritySortState) {
         Priority.HIGH -> HighPriorityColor
@@ -193,52 +201,76 @@ private fun StatusLine(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(20.dp),
+            .height(if (startDate != null || endDate != null) 40.dp else 20.dp),
         color = MaterialTheme.colorScheme.topBarContainerColor
     ) {
-        Row(
-            modifier = Modifier.padding(PaddingValues(start = LARGE_PADDING))
-        ) {
-            Badge(
-                modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                containerColor = containerColor,
-                contentColor = MaterialTheme.colorScheme.onSurface
+        Column {
+            Row(
+                modifier = Modifier.padding(PaddingValues(start = LARGE_PADDING))
             ) {
-                Text(
-                    text = "${stringResource(id = R.string.badge_priority_label)}: $prioritySortState",
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    fontWeight = FontWeight.ExtraBold
-                )
+                Badge(
+                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
+                    containerColor = containerColor,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = "${stringResource(id = R.string.badge_priority_label)}: $prioritySortState",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                Badge(
+                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
+                    containerColor = if (orderEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = if (orderEnabled) "${stringResource(id = R.string.badge_order_label)}: " +
+                                stringResource(id = R.string.badge_order_asc_label)
+                        else "${stringResource(id = R.string.badge_order_label)}: " +
+                                stringResource(id = R.string.badge_order_desc_label),
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+                Badge(
+                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
+                    containerColor = if (dateEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = if (dateEnabled) "${stringResource(id = R.string.badge_date_label)}: " +
+                                stringResource(id = R.string.badge_date_created_at_label)
+                        else "${stringResource(id = R.string.badge_date_label)}: " +
+                                stringResource(id = R.string.badge_date_updated_at_label),
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
-            Badge(
-                modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                containerColor = if (orderEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
-                Text(
-                    text = if (orderEnabled) "${stringResource(id = R.string.badge_order_label)}: " +
-                            stringResource(id = R.string.badge_order_asc_label)
-                    else "${stringResource(id = R.string.badge_order_label)}: " +
-                            stringResource(id = R.string.badge_order_desc_label),
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Badge(
-                modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                containerColor = if (dateEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
-                Text(
-                    text = if (dateEnabled) "${stringResource(id = R.string.badge_date_label)}: " +
-                            stringResource(id = R.string.badge_date_created_at_label)
-                    else "${stringResource(id = R.string.badge_date_label)}: " +
-                            stringResource(id = R.string.badge_date_updated_at_label),
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    fontWeight = FontWeight.ExtraBold
-                )
+
+            if (startDate != null || endDate != null) {
+                Row(
+                    modifier = Modifier.padding(PaddingValues(start = LARGE_PADDING, top = SMALL_PADDING))
+                ) {
+                    val startDateStr = if (startDate != null)
+                        ZonedDateTime.ofInstant(Instant.ofEpochMilli(startDate),  ZoneId.systemDefault()).format(
+                            DateTimeFormatter.ofPattern("yy/MM/dd"))
+                    else "first meno"
+
+                    val endDateStr = if (endDate != null)
+                        ZonedDateTime.ofInstant(Instant.ofEpochMilli(endDate),  ZoneId.systemDefault()).format(
+                            DateTimeFormatter.ofPattern("yy/MM/dd"))
+
+                    else "up to date"
+                    Text(
+                        text = "Date from $startDateStr to $endDateStr",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize
+                    )
+                }
             }
         }
+
     }
 }
 

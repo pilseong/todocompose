@@ -72,7 +72,6 @@ fun MainScreen(
     }
 
     // 뒤로 가기 버튼에 대한 가로 채기 및 처리
-    // BackHandler(onBackPressed = { toListScreen(Action.NO_ACTION) })
     BackHandler {
         toListScreen(Action.NO_ACTION)
     }
@@ -117,7 +116,7 @@ fun MainScreen(
                             context = context,
                             label = "content", text = sharedViewModel.description
                         )
-                        Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onUpdateClicked = {
@@ -158,29 +157,3 @@ fun MainScreen(
         }
     )
 }
-
-
-//@Composable
-//fun BackHandler(
-//    backDispatcher: OnBackPressedDispatcher? =
-//        LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
-//    onBackPressed: () -> Unit
-//) {
-//    val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
-//
-//    val backCallback = remember {
-//        object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                currentOnBackPressed()
-//            }
-//        }
-//    }
-//    DisposableEffect(key1 = backDispatcher) {
-//        backDispatcher?.addCallback(backCallback)
-//
-//        onDispose {
-//            backCallback.remove()
-//        }
-//    }
-//
-//}

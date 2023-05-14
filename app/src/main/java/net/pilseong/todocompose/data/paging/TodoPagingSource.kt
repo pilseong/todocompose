@@ -7,12 +7,15 @@ import net.pilseong.todocompose.data.TodoDAO
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.util.Constants
+import java.time.Instant
 
 class TodoPagingSource(
     private val todoDAO: TodoDAO,
     private val query: String,
     private val sortCondition: Int,
-    private val priority: Priority
+    private val priority: Priority,
+    private val startDate: Long? = Instant.now().toEpochMilli(),
+    private val endDate: Long? = Instant.now().toEpochMilli()
 ) : PagingSource<Int, TodoTask>() {
 
     override fun getRefreshKey(state: PagingState<Int, TodoTask>): Int? {
@@ -23,6 +26,8 @@ class TodoPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TodoTask> {
         Log.i("PHILIP", "[TodoPagingSource]load params ${params.key}")
         val currentPage = params.key ?: 1
+
+        Log.i("PHILIP", "[TodoPagingSource]start: $startDate, end: $endDate")
         return try {
             val todoList =
                 todoDAO.getTasks(
@@ -30,7 +35,9 @@ class TodoPagingSource(
                     pageSize = Constants.PAGE_SIZE,
                     query = "%$query%",
                     sortCondition = sortCondition,
-                    priority = priority.name
+                    priority = priority.name,
+                    startDate = if (startDate != null) startDate / 1000 else  0 ,
+                    endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE
                 )
             Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 

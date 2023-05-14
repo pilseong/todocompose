@@ -12,11 +12,11 @@ class ZonedDateTypeConverter {
         @JvmStatic
         fun toZonedDateTime(value: Long): ZonedDateTime {
             val instant = Instant.ofEpochSecond(value)
-            return ZonedDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"))
+            return ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
         }
 
         @TypeConverter
         @JvmStatic
-        fun fromZonedDateTime(date: ZonedDateTime) = date.toEpochSecond()
+        fun fromZonedDateTime(date: ZonedDateTime): Long = date.toEpochSecond()
     }
 }

@@ -21,7 +21,9 @@ class TodoRepository @Inject constructor(
     fun getAllTasks(
         query: String,
         sortCondition: Int,
-        priority: Priority = Priority.NONE
+        priority: Priority = Priority.NONE,
+        startDate: Long? = null,
+        endDate: Long? = null
     ): Flow<PagingData<TodoTask>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed")
         return Pager(
@@ -31,7 +33,9 @@ class TodoRepository @Inject constructor(
                     todoDAO = todoDAO,
                     query = query,
                     sortCondition = sortCondition,
-                    priority = priority
+                    priority = priority,
+                    startDate = startDate,
+                    endDate = endDate
                 )
             }
         ).flow

@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
@@ -38,7 +39,9 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.PriorityItem
+import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.components.SortItem
+import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
@@ -86,6 +89,13 @@ fun ListAppBar(
                         action = Action.SORT_DATE_CHANGE,
                         sortDateEnabled = !sharedViewModel.dateEnabled
                     )
+                },
+                onDatePickConfirmed = { start, end ->
+                    sharedViewModel.handleActions(
+                        action = Action.SEARCH_WITH_DATE_RANGE,
+                        startDate = start,
+                        endDate = end
+                    )
                 }
             )
         }
@@ -119,7 +129,8 @@ fun DefaultListAppBar(
     orderEnabled: Boolean = false,
     dateEnabled: Boolean = false,
     onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit
+    onDateEnabledClick: () -> Unit,
+    onDatePickConfirmed: (Long?, Long?) -> Unit
 ) {
     TopAppBar(
         title = {
@@ -139,7 +150,8 @@ fun DefaultListAppBar(
                 orderEnabled = orderEnabled,
                 dateEnabled = dateEnabled,
                 onOrderEnabledClick = onOrderEnabledClick,
-                onDateEnabledClick = onDateEnabledClick
+                onDateEnabledClick = onDateEnabledClick,
+                onDatePickConfirmed = onDatePickConfirmed
             )
         }
     )
@@ -153,20 +165,35 @@ fun ListAppBarActions(
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit
+    onDateEnabledClick: () -> Unit,
+    onDatePickConfirmed: (Long?, Long?) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var alertExpanded by remember { mutableStateOf(false) }
 
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
         title = stringResource(id = R.string.delete_all_task_dialog_title),
         message = stringResource(id = R.string.delete_all_tasks_dialog_confirmation),
-        openDialog = expanded,
+        openDialog = alertExpanded,
         onYesClicked = onDeleteAllClicked,
-        onCloseDialog = { expanded = false }
+        onCloseDialog = { alertExpanded = false }
+    )
+
+    var datePickerExpanded by remember { mutableStateOf(false) }
+    SimpleDatePickerDialog(
+        enabled = datePickerExpanded,
+        onDismiss = {
+            datePickerExpanded = false
+        },
+        onConfirmClick = onDatePickConfirmed
     )
 
     SearchAction(onSearchClicked)
+    CommonAction(
+        icon = Icons.Default.DateRange,
+        onClicked = { datePickerExpanded = true },
+        description = "date picker icon"
+    )
     PriorityAction(onSortClicked)
     SortAction(
         orderEnabled = orderEnabled,
@@ -174,7 +201,7 @@ fun ListAppBarActions(
         onOrderEnabledClick = onOrderEnabledClick,
         onDateEnabledClick = onDateEnabledClick
     )
-    DeleteAction(onDeleteAllClicked = { expanded = true })
+    DeleteAction(onDeleteAllClicked = { alertExpanded = true })
 }
 
 
@@ -282,7 +309,6 @@ fun SortAction(
 fun DeleteAction(
     onDeleteAllClicked: () -> Unit
 ) {
-
     var expanded by remember { mutableStateOf(false) }
 
     IconButton(onClick = { expanded = true }) {
@@ -292,9 +318,11 @@ fun DeleteAction(
             tint = MaterialTheme.colorScheme.topBarContentColor
         )
     }
+    // offset 은 메뉴와 아이템 의 위치를 보정 하기 위함. 기본적 으로 우측의 경계를 넘어 가면
+    // 위치가 완전히 틀어 진다. 여기 서는 최대로 82 dp 만큼 우측 으로 옮김
     DropdownMenu(
         expanded = expanded,
-        offset = DpOffset(x = 32.dp, y = 0.dp),
+        offset = DpOffset(x = 82.dp, y = 0.dp),
         onDismissRequest = { expanded = false }
     ) {
         DropdownMenuItem(

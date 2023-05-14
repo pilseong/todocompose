@@ -10,7 +10,6 @@ import net.pilseong.todocompose.ui.screen.list.ListScreen
 import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
 import net.pilseong.todocompose.util.Constants.LIST_ARGUMENT_ACTION_TYPE
 import net.pilseong.todocompose.util.Constants.LIST_SCREEN
-import net.pilseong.todocompose.util.toAction
 
 fun NavGraphBuilder.listComposable(
     toTaskScreen: (List<TodoTask>) -> Unit,
@@ -24,14 +23,6 @@ fun NavGraphBuilder.listComposable(
             }
         )
     ) { navBackStackEntry ->
-
-        val action = navBackStackEntry.arguments!!
-            .getString(LIST_ARGUMENT_ACTION_TYPE)
-            .toAction()
-
-        Log.i("PHILIP", "[ListComposable] action received $action")
-
-
         ListScreen(
             toTaskScreen = toTaskScreen,
             sharedViewModel = sharedViewModel,

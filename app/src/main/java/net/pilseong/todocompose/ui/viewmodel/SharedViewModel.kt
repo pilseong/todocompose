@@ -28,6 +28,8 @@ import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.StreamState
 import net.pilseong.todocompose.util.TaskAppBarState
+import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.random.Random
@@ -55,6 +57,9 @@ class SharedViewModel @Inject constructor(
     // 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
     var snackBarOrderEnabled = false
     var snackBarDateEnabled = false
+
+    var startDate: Long? = null
+    var endDate: Long? = null
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
     var index by mutableStateOf(0)
@@ -107,7 +112,9 @@ class SharedViewModel @Inject constructor(
             todoRepository.getAllTasks(
                 query = searchTextString,
                 sortCondition = condition.ordinal,
-                priority = prioritySortState
+                priority = prioritySortState,
+                startDate = startDate,
+                endDate = endDate
             )
                 .stateIn(
                     scope = viewModelScope,
@@ -315,7 +322,9 @@ class SharedViewModel @Inject constructor(
         todoId: Int = id,
         priority: Priority = Priority.NONE,
         sortOrderEnabled: Boolean = false,
-        sortDateEnabled: Boolean = false
+        sortDateEnabled: Boolean = false,
+        startDate: Long? = null,
+        endDate: Long? = null,
     ) {
         Log.i("PHILIP", "[SharedViewModel] handleActions performed with $action $priority")
         when (action) {
@@ -346,6 +355,15 @@ class SharedViewModel @Inject constructor(
             Action.UNDO -> {
                 undoTask()
                 refreshStream()
+                updateActionPerformed()
+            }
+
+            Action.SEARCH_WITH_DATE_RANGE -> {
+                updateAction(action)
+                this.startDate = startDate
+                this.endDate = endDate
+
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
