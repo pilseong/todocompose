@@ -359,9 +359,9 @@ class SharedViewModel @Inject constructor(
             }
 
             Action.SEARCH_WITH_DATE_RANGE -> {
-                updateAction(action)
                 this.startDate = startDate
                 this.endDate = endDate
+                updateAction(action)
 
                 refreshAllTasks()
                 updateActionPerformed()

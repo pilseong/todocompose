@@ -1,7 +1,5 @@
 package net.pilseong.todocompose.ui.components
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -31,15 +28,14 @@ fun SimpleDatePickerDialog(
     onDismiss: () -> Unit,
     onConfirmClick: (Long?, Long?) -> Unit
 ) {
+    val dateRangePickerState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
+            .toEpochMilli(),
+        initialSelectedEndDateMillis = Instant.now().toEpochMilli(),
+        yearRange = IntRange(2000, 2100), // available years
+        initialDisplayMode = DisplayMode.Input
+    )
     if (enabled) {
-        val dateRangePickerState = rememberDateRangePickerState(
-            initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
-                .toEpochMilli(),
-            initialSelectedEndDateMillis = Instant.now().toEpochMilli(),
-            yearRange = IntRange(2000, 2100), // available years
-            initialDisplayMode = DisplayMode.Input
-        )
-
         DatePickerDialog(
             onDismissRequest = {
                 onDismiss()
@@ -59,11 +55,11 @@ fun SimpleDatePickerDialog(
 //                        if (dateRangePickerState.selectedStartDateMillis != null &&
 //                            dateRangePickerState.selectedEndDateMillis != null
 //                        ) {
-                            onConfirmClick(
-                                dateRangePickerState.selectedStartDateMillis,
-                                dateRangePickerState.selectedEndDateMillis
-                            )
-                            onDismiss()
+                        onConfirmClick(
+                            dateRangePickerState.selectedStartDateMillis,
+                            dateRangePickerState.selectedEndDateMillis
+                        )
+                        onDismiss()
 //                        } else {
 //                            Toast.makeText(content, "Not Valid Date Range", Toast.LENGTH_SHORT)
 //                                .show()

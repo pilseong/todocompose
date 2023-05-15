@@ -50,4 +50,8 @@
     <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>
     <string name="snackbar_message_date_created_at_change">생성일을 정렬기준으로 반영합니다.</string>
     <string name="snackbar_message_date_updated_at_change">수정일을 정렬기준으로 반영합니다.</string>
+    <string name="snackbar_message_date_range_applied">범위 필터가 적용되었습니다.</string>
+    <string name="snackbar_message_date_range_cancelled">범위 필터가 해제되었습니다.</string>
+    <string name="status_line_date_range_text">검색일 %1$s 부터 %2$s 까지</string>
+    <string name="loading_text">로딩중...</string>
 </resources>

@@ -518,7 +518,7 @@ fun LoadingContent() {
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Loading...",
+            text = stringResource(id = R.string.loading_text),
             fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.SansSerif,

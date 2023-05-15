@@ -3,6 +3,9 @@ package net.pilseong.todocompose.ui.screen.list
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +52,7 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
+import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
@@ -56,7 +61,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
@@ -100,7 +104,9 @@ fun ListScreen(
             }
         },
         orderEnabled = sharedViewModel.snackBarOrderEnabled,
-        dateEnabled = sharedViewModel.snackBarDateEnabled
+        dateEnabled = sharedViewModel.snackBarDateEnabled,
+        startDate = sharedViewModel.startDate,
+        endDate = sharedViewModel.endDate
     )
 
     // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
@@ -140,7 +146,14 @@ fun ListScreen(
                     orderEnabled = sharedViewModel.orderEnabled,
                     dateEnabled = sharedViewModel.dateEnabled,
                     startDate = sharedViewModel.startDate,
-                    endDate = sharedViewModel.endDate
+                    endDate = sharedViewModel.endDate,
+                    onCloseClick = {
+                        sharedViewModel.handleActions(
+                            Action.SEARCH_WITH_DATE_RANGE,
+                            startDate = null,
+                            endDate = null
+                        )
+                    }
                 )
 
                 ListContent(
@@ -190,7 +203,8 @@ private fun StatusLine(
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     startDate: Long?,
-    endDate: Long?
+    endDate: Long?,
+    onCloseClick: () -> Unit
 ) {
     val containerColor = when (prioritySortState) {
         Priority.HIGH -> HighPriorityColor
@@ -201,7 +215,7 @@ private fun StatusLine(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (startDate != null || endDate != null) 40.dp else 20.dp),
+            .height(if (startDate != null || endDate != null) 45.dp else 20.dp),
         color = MaterialTheme.colorScheme.topBarContainerColor
     ) {
         Column {
@@ -251,21 +265,54 @@ private fun StatusLine(
 
             if (startDate != null || endDate != null) {
                 Row(
-                    modifier = Modifier.padding(PaddingValues(start = LARGE_PADDING, top = SMALL_PADDING))
+                    modifier = Modifier
+                        .padding(
+                            PaddingValues(
+                                start = LARGE_PADDING,
+                                end = LARGE_PADDING,
+                                top = SMALL_PADDING
+                            )
+                        )
+                        .fillMaxWidth()
                 ) {
                     val startDateStr = if (startDate != null)
-                        ZonedDateTime.ofInstant(Instant.ofEpochMilli(startDate),  ZoneId.systemDefault()).format(
-                            DateTimeFormatter.ofPattern("yy/MM/dd"))
+                        ZonedDateTime.ofInstant(
+                            Instant.ofEpochMilli(startDate),
+                            ZoneId.systemDefault()
+                        ).format(
+                            DateTimeFormatter.ofPattern("yy/MM/dd")
+                        )
                     else "first meno"
 
                     val endDateStr = if (endDate != null)
-                        ZonedDateTime.ofInstant(Instant.ofEpochMilli(endDate),  ZoneId.systemDefault()).format(
-                            DateTimeFormatter.ofPattern("yy/MM/dd"))
-
+                        ZonedDateTime.ofInstant(
+                            Instant.ofEpochMilli(endDate),
+                            ZoneId.systemDefault()
+                        ).format(
+                            DateTimeFormatter.ofPattern("yy/MM/dd")
+                        )
                     else "up to date"
                     Text(
-                        text = "Date from $startDateStr to $endDateStr",
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize
+                        modifier = Modifier.weight(1F),
+                        text = stringResource(id = R.string.status_line_date_range_text,
+                            startDateStr, endDateStr),
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize
+                    )
+
+                    Icon(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .border(
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.topBarContentColor
+                                )
+                            )
+                            .clickable {
+                                onCloseClick()
+                            },
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "close button",
                     )
                 }
             }
@@ -284,7 +331,9 @@ private fun DisplaySnackBar(
     duration: SnackbarDuration = SnackbarDuration.Short,
     buttonClicked: (Action, SnackbarResult) -> Unit,
     orderEnabled: Boolean,
-    dateEnabled: Boolean
+    dateEnabled: Boolean,
+    startDate: Long?,
+    endDate: Long?
 ) {
 
     val message = when (action) {
@@ -317,6 +366,12 @@ private fun DisplaySnackBar(
                 stringResource(id = R.string.snackbar_message_date_created_at_change)
             else
                 stringResource(id = R.string.snackbar_message_date_updated_at_change)
+
+        Action.SEARCH_WITH_DATE_RANGE ->
+            if (startDate == null && endDate == null)
+                stringResource(id = R.string.snackbar_message_date_range_cancelled)
+            else
+                stringResource(id = R.string.snackbar_message_date_range_applied)
 
         else -> {
             ""
