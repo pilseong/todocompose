@@ -282,7 +282,7 @@ private fun StatusLine(
                         ).format(
                             DateTimeFormatter.ofPattern("yy/MM/dd")
                         )
-                    else "first meno"
+                    else stringResource(id = R.string.status_line_date_range_from_the_first_memo_text)
 
                     val endDateStr = if (endDate != null)
                         ZonedDateTime.ofInstant(
@@ -291,7 +291,7 @@ private fun StatusLine(
                         ).format(
                             DateTimeFormatter.ofPattern("yy/MM/dd")
                         )
-                    else "up to date"
+                    else stringResource(id = R.string.status_line_date_range_up_to_date_text)
                     Text(
                         modifier = Modifier.weight(1F),
                         text = stringResource(id = R.string.status_line_date_range_text,

@@ -53,5 +53,7 @@
     <string name="snackbar_message_date_range_applied">범위 필터가 적용되었습니다.</string>
     <string name="snackbar_message_date_range_cancelled">범위 필터가 해제되었습니다.</string>
     <string name="status_line_date_range_text">검색일 %1$s 부터 %2$s 까지</string>
+    <string name="status_line_date_range_up_to_date_text">오늘</string>
+    <string name="status_line_date_range_from_the_first_memo_text">첫메시지</string>
     <string name="loading_text">로딩중...</string>
 </resources>
