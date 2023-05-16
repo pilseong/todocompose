@@ -15,6 +15,7 @@ object Constants {
     const val PRIORITY_PREFERENCE_KEY = "priority_sort_key"
     const val ORDER_ENABLED_PREFERENCE_KEY = "order_sort_key"
     const val DATE_ENABLED_PREFERENCE_KEY = "date_sort_key"
+    const val FAVORITE_ENABLED_PREFERENCE_KEY = "favorite_sort_key"
 
     const val PAGE_SIZE = 20
 }

@@ -15,12 +15,16 @@ class TodoPagingSource(
     private val sortCondition: Int,
     private val priority: Priority,
     private val startDate: Long? = Instant.now().toEpochMilli(),
-    private val endDate: Long? = Instant.now().toEpochMilli()
+    private val endDate: Long? = Instant.now().toEpochMilli(),
+    private val isFavoriteOn: Boolean = false
 ) : PagingSource<Int, TodoTask>() {
 
     override fun getRefreshKey(state: PagingState<Int, TodoTask>): Int? {
         Log.i("PHILIP", "[TodoPagingSource] state.anchorPosition params ${state.anchorPosition}")
-        return state.anchorPosition
+        return state.anchorPosition?.let { anchorPosition ->
+            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+        }
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TodoTask> {
@@ -37,7 +41,8 @@ class TodoPagingSource(
                     sortCondition = sortCondition,
                     priority = priority.name,
                     startDate = if (startDate != null) startDate / 1000 else  0 ,
-                    endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE
+                    endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE,
+                    favorite = isFavoriteOn
                 )
             Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 

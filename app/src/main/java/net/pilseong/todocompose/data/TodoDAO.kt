@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import net.pilseong.todocompose.data.model.TodoTask
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 
 @Dao
@@ -16,6 +15,13 @@ abstract class TodoDAO {
     @Query(
         "SELECT * FROM todo_table " +
                 "WHERE (title LIKE :query OR description LIKE :query) " +
+                "AND " +
+                "(CASE :favorite " +
+                "WHEN 0 THEN " +
+                "1=1 " +
+                "when 1 THEN " +
+                "favorite = 1 " +
+                "END) " +
                 "AND " +
                 "(CASE :sortCondition " +
                 "WHEN 0 THEN " +
@@ -57,7 +63,8 @@ abstract class TodoDAO {
         sortCondition: Int = 0,
         priority: String = "HIGH",
         startDate: Long = Long.MIN_VALUE,
-        endDate: Long = Long.MAX_VALUE
+        endDate: Long = Long.MAX_VALUE,
+        favorite: Boolean = false
     ): List<TodoTask>
 
     @Query("SELECT * FROM todo_table WHERE id = :taskId")
@@ -71,6 +78,9 @@ abstract class TodoDAO {
 
     @Update
     abstract suspend fun updateTask(todo: TodoTask)
+
+    @Update
+    abstract suspend fun updateFavorite(todo: TodoTask)
 
     @Query("DELETE FROM todo_table WHERE id = :todoId")
     abstract suspend fun deleteTask(todoId: Int)

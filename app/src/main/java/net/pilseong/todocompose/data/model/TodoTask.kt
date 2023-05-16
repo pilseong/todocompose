@@ -23,4 +23,17 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     val updatedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
 
+    companion object {
+        @JvmStatic fun instance(): TodoTask {
+            return TodoTask(
+                id = 0,
+                title = "",
+                description = "",
+                priority = Priority.NONE,
+                favorite = false,
+                createdAt = ZonedDateTime.now(),
+                updatedAt = ZonedDateTime.now()
+            )
+        }
+    }
 }

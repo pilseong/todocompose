@@ -52,8 +52,10 @@
     <string name="snackbar_message_date_updated_at_change">Updated time used for ordering</string>
     <string name="snackbar_message_date_range_applied">Date range filter applied</string>
     <string name="snackbar_message_date_range_cancelled">Date range filter removed</string>
+    <string name="snackbar_favorite_change_message">Favorite Memos filtered</string>
     <string name="status_line_date_range_text">Date from %1$s to %2$s</string>
     <string name="status_line_date_range_up_to_date_text">up to date</string>
     <string name="status_line_date_range_from_the_first_memo_text">the first meno</string>
     <string name="loading_text">Loading...</string>
+    <string name="task_item_star_description">Favorite icon</string>
 </resources>

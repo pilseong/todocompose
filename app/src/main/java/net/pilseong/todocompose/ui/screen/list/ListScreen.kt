@@ -175,7 +175,13 @@ fun ListScreen(
                     },
                     header = sharedViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
                     screenMode = sharedViewModel.screenMode,
-                    dateEnabled = sharedViewModel.dateEnabled
+                    dateEnabled = sharedViewModel.dateEnabled,
+                    onFavoriteClick = {todo ->
+                        sharedViewModel.handleActions(
+                            action = Action.FAVORITE_UPDATE,
+                            todoTask = todo
+                        )
+                    }
                 )
             }
         },
@@ -372,6 +378,9 @@ private fun DisplaySnackBar(
                 stringResource(id = R.string.snackbar_message_date_range_cancelled)
             else
                 stringResource(id = R.string.snackbar_message_date_range_applied)
+
+        Action.SORT_FAVORITE_CHANGE ->
+            stringResource(id = R.string.snackbar_favorite_change_message)
 
         else -> {
             ""

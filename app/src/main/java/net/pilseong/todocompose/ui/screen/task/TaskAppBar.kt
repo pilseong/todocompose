@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -111,20 +112,21 @@ fun CommonAction(
     onClicked: () -> Unit,
     icon: ImageVector? = null,
     painter: Painter? = null,
-    description: String
+    description: String,
+    tint: Color = MaterialTheme.colorScheme.topBarContentColor
 ) {
     IconButton(onClick = { onClicked() }) {
         if (icon == null && painter != null) {
             Icon(
                 painter = painter,
                 contentDescription = description,
-                tint = MaterialTheme.colorScheme.topBarContentColor
+                tint = tint
             )
         } else if (icon != null && painter == null) {
             Icon(
                 imageVector = icon,
                 contentDescription = description,
-                tint = MaterialTheme.colorScheme.topBarContentColor
+                tint = tint
             )
         }
     }

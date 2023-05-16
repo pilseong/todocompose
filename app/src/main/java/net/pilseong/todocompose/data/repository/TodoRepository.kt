@@ -23,7 +23,8 @@ class TodoRepository @Inject constructor(
         sortCondition: Int,
         priority: Priority = Priority.NONE,
         startDate: Long? = null,
-        endDate: Long? = null
+        endDate: Long? = null,
+        isFavoriteOn: Boolean = false
     ): Flow<PagingData<TodoTask>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed")
         return Pager(
@@ -35,7 +36,8 @@ class TodoRepository @Inject constructor(
                     sortCondition = sortCondition,
                     priority = priority,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
+                    isFavoriteOn = isFavoriteOn
                 )
             }
         ).flow
@@ -56,5 +58,9 @@ class TodoRepository @Inject constructor(
 
     suspend fun deleteAllTasks() {
         todoDAO.deleteAllTasks()
+    }
+
+    suspend fun updateFavorite(todoTask: TodoTask) {
+        todoDAO.updateFavorite(todoTask)
     }
 }

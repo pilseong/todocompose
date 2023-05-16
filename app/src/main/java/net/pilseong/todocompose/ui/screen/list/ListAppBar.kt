@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +45,7 @@ import net.pilseong.todocompose.ui.components.SortItem
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
+import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
@@ -96,6 +98,13 @@ fun ListAppBar(
                         startDate = start,
                         endDate = end
                     )
+                },
+                isFavoriteOn = sharedViewModel.sortFavorite,
+                onFavoriteClick = {
+                    sharedViewModel.handleActions(
+                        action = Action.SORT_FAVORITE_CHANGE,
+                        favorite = !sharedViewModel.sortFavorite
+                    )
                 }
             )
         }
@@ -130,7 +139,9 @@ fun DefaultListAppBar(
     dateEnabled: Boolean = false,
     onOrderEnabledClick: () -> Unit,
     onDateEnabledClick: () -> Unit,
-    onDatePickConfirmed: (Long?, Long?) -> Unit
+    onDatePickConfirmed: (Long?, Long?) -> Unit,
+    isFavoriteOn: Boolean  = false,
+    onFavoriteClick: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -151,7 +162,9 @@ fun DefaultListAppBar(
                 dateEnabled = dateEnabled,
                 onOrderEnabledClick = onOrderEnabledClick,
                 onDateEnabledClick = onDateEnabledClick,
-                onDatePickConfirmed = onDatePickConfirmed
+                onDatePickConfirmed = onDatePickConfirmed,
+                isFavoriteOn = isFavoriteOn,
+                onFavoriteClick = onFavoriteClick
             )
         }
     )
@@ -166,7 +179,9 @@ fun ListAppBarActions(
     dateEnabled: Boolean,
     onOrderEnabledClick: () -> Unit,
     onDateEnabledClick: () -> Unit,
-    onDatePickConfirmed: (Long?, Long?) -> Unit
+    onDatePickConfirmed: (Long?, Long?) -> Unit,
+    isFavoriteOn: Boolean = false,
+    onFavoriteClick: () -> Unit
 ) {
     var alertExpanded by remember { mutableStateOf(false) }
 
@@ -187,19 +202,24 @@ fun ListAppBarActions(
         },
         onConfirmClick = onDatePickConfirmed
     )
-
+    CommonAction(
+        icon = Icons.Outlined.Star,
+        onClicked = { onFavoriteClick() },
+        tint = if (isFavoriteOn) FavoriteYellow else MaterialTheme.colorScheme.topBarContentColor,
+        description = "favorite"
+    )
     SearchAction(onSearchClicked)
     CommonAction(
         icon = Icons.Default.DateRange,
         onClicked = { datePickerExpanded = true },
         description = "date picker icon"
     )
-    PriorityAction(onSortClicked)
     SortAction(
         orderEnabled = orderEnabled,
         dateEnabled = dateEnabled,
         onOrderEnabledClick = onOrderEnabledClick,
-        onDateEnabledClick = onDateEnabledClick
+        onDateEnabledClick = onDateEnabledClick,
+        onSortClicked = onSortClicked
     )
     DeleteAction(onDeleteAllClicked = { alertExpanded = true })
 }
@@ -219,50 +239,12 @@ fun SearchAction(
 }
 
 @Composable
-fun PriorityAction(
-    onSortClicked: (Priority) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    IconButton(onClick = { expanded = true }
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_baseline_filter_list_24),
-            contentDescription = stringResource(R.string.sort_action),
-            tint = MaterialTheme.colorScheme.topBarContentColor
-        )
-    }
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.HIGH) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.HIGH)
-            })
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.LOW) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.LOW)
-            })
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.NONE) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.NONE)
-            })
-    }
-}
-
-@Composable
 fun SortAction(
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit
+    onDateEnabledClick: () -> Unit,
+    onSortClicked: (Priority) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -301,6 +283,24 @@ fun SortAction(
             },
             onClick = {
                 onDateEnabledClick()
+            })
+        DropdownMenuItem(
+            text = { PriorityItem(priority = Priority.HIGH) },
+            onClick = {
+                expanded = false
+                onSortClicked(Priority.HIGH)
+            })
+        DropdownMenuItem(
+            text = { PriorityItem(priority = Priority.LOW) },
+            onClick = {
+                expanded = false
+                onSortClicked(Priority.LOW)
+            })
+        DropdownMenuItem(
+            text = { PriorityItem(priority = Priority.NONE) },
+            onClick = {
+                expanded = false
+                onSortClicked(Priority.NONE)
             })
     }
 }

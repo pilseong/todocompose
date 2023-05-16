@@ -28,8 +28,6 @@ import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.StreamState
 import net.pilseong.todocompose.util.TaskAppBarState
-import java.time.Instant
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.random.Random
@@ -60,6 +58,9 @@ class SharedViewModel @Inject constructor(
 
     var startDate: Long? = null
     var endDate: Long? = null
+
+    // 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
+    var sortFavorite by mutableStateOf(false)
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
     var index by mutableStateOf(0)
@@ -114,7 +115,8 @@ class SharedViewModel @Inject constructor(
                 sortCondition = condition.ordinal,
                 priority = prioritySortState,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                isFavoriteOn = sortFavorite
             )
                 .stateIn(
                     scope = viewModelScope,
@@ -211,6 +213,27 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    fun observeFavoriteState() {
+        Log.i("PHILIP", "[SharedViewModel] observeFavoriteState() executed")
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(100)
+            dataStoreRepository.readFavoriteState
+                .map { it.toBoolean() }
+                .collect { state ->
+                    if (state != sortFavorite || !firstFetch) {
+                        if (!firstFetch) firstFetch = true
+                        sortFavorite = state
+
+                        Log.i(
+                            "PHILIP",
+                            "[SharedViewModel] refreshAllTasks() executed with sortFavorite $sortFavorite"
+                        )
+                        refreshAllTasks()
+                    }
+                }
+        }
+    }
+
     // for saving priority sort state
     private fun persistPrioritySortState(priority: Priority) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -229,6 +252,12 @@ class SharedViewModel @Inject constructor(
     private fun persistDateEnabledState(dateEnabled: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistDateEnabledState(dateEnabled)
+        }
+    }
+
+    private fun persistFavoriteEnabledState(favorite: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistFavoriteEnabledState(favorite)
         }
     }
 
@@ -320,13 +349,15 @@ class SharedViewModel @Inject constructor(
     fun handleActions(
         action: Action,
         todoId: Int = id,
+        todoTask: TodoTask = TodoTask.instance(),
         priority: Priority = Priority.NONE,
         sortOrderEnabled: Boolean = false,
         sortDateEnabled: Boolean = false,
         startDate: Long? = null,
         endDate: Long? = null,
+        favorite: Boolean = false
     ) {
-        Log.i("PHILIP", "[SharedViewModel] handleActions performed with $action $priority")
+        Log.i("PHILIP", "[SharedViewModel] handleActions performed with $action priority: $priority favorite: $favorite")
         when (action) {
             Action.ADD -> {
                 addTask()
@@ -356,6 +387,11 @@ class SharedViewModel @Inject constructor(
                 undoTask()
                 refreshStream()
                 updateActionPerformed()
+            }
+
+            Action.FAVORITE_UPDATE -> {
+                updateFavorite(todoTask)
+                // favorite 모드가 활성화 되었을 때만 favorite 삭제시 리프레시
             }
 
             Action.SEARCH_WITH_DATE_RANGE -> {
@@ -397,11 +433,21 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
+            Action.SORT_FAVORITE_CHANGE -> {
+                updateAction(action)
+                persistFavoriteEnabledState(favorite)
+                if (favorite) {
+                    updateActionPerformed()
+                }
+            }
+
             Action.NO_ACTION -> {
                 this.action = Action.NO_ACTION
             }
         }
     }
+
+
 
     // 검색 app bar 가 닫힐 때 설정된 우선 순위에 따른 결과가 나와야 한다.
     fun onCloseSearchBar() {
@@ -435,6 +481,14 @@ class SharedViewModel @Inject constructor(
             todoRepository.addTask(TodoTask(0, title, description, priority, createdAt = createdAt))
         }
         this.action = Action.UNDO
+    }
+
+    private fun updateFavorite(todo: TodoTask) {
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.updateFavorite(todo.copy(favorite = !todo.favorite))
+            // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
+            if (sortFavorite) refreshStream()
+        }
     }
 
     private fun updateTask() {

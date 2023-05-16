@@ -26,6 +26,8 @@ class MainActivity : ComponentActivity() {
                 sharedViewModel.observePrioritySortState()
                 sharedViewModel.observeOrderEnabledState()
                 sharedViewModel.observeDateEnabledState()
+                sharedViewModel.observeFavoriteState()
+
                 // 시스템 navigation graph 를 가지고 있다.
                 SetupNavigation(
                     navHostController = navHostController,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -93,8 +93,10 @@ fun ListContent(
     onSwipeToUpdate: (Int) -> Unit,
     header: Boolean = false,
     screenMode: ScreenMode,
-    dateEnabled: Boolean = false
-) {
+    dateEnabled: Boolean = false,
+    onFavoriteClick: (TodoTask) -> Unit,
+
+    ) {
 
     if (tasks.loadState.refresh is LoadState.NotLoading) {
         DisplayTasks(
@@ -103,7 +105,8 @@ fun ListContent(
 //            onSwipeToDelete = onSwipeToDelete,
             onSwipeToUpdate = onSwipeToUpdate,
             header = header,
-            dateEnabled = dateEnabled
+            dateEnabled = dateEnabled,
+            onFavoriteClick = onFavoriteClick
         )
     } else {
         LoadingContent()
@@ -119,7 +122,8 @@ fun DisplayTasks(
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
     onSwipeToUpdate: (Int) -> Unit,
     header: Boolean = false,
-    dateEnabled: Boolean = false
+    dateEnabled: Boolean = false,
+    onFavoriteClick: (TodoTask) -> Unit
 ) {
     val context = LocalContext.current
     Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
@@ -183,7 +187,10 @@ fun DisplayTasks(
 
                             },
                             datetime = if (dateEnabled) currentItem!!.createdAt
-                            else currentItem!!.updatedAt
+                            else currentItem!!.updatedAt,
+                            onFavoriteClick = {
+                                onFavoriteClick(currentItem!!)
+                            }
                         )
                     },
                     directions = setOf(DismissDirection.StartToEnd)
@@ -301,9 +308,11 @@ fun TaskItem(
     toTaskScreen: (Int) -> Unit,
     onLongClick: () -> Unit,
     onDeselectedClick: () -> Unit,
-    datetime: ZonedDateTime
+    datetime: ZonedDateTime,
+    onFavoriteClick: () -> Unit
 ) {
     var selected by remember { mutableStateOf(false) }
+    var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
 
     Surface(
         modifier = Modifier
@@ -413,9 +422,16 @@ fun TaskItem(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
+                            modifier = Modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                onFavoriteClick()
+                                favoriteOn = !favoriteOn
+                            },
                             imageVector = Icons.Default.Star,
-                            contentDescription = "star favorite",
-                            tint = if (todoTask.favorite) FavoriteYellow else Color.White
+                            contentDescription = stringResource(id = R.string.task_item_star_description),
+                            tint = if (favoriteOn) FavoriteYellow else Color.White
                         )
                     }
                 }
@@ -438,7 +454,8 @@ fun TaskItemPreview() {
             toTaskScreen = {},
             onLongClick = {},
             onDeselectedClick = {},
-            datetime = ZonedDateTime.now()
+            datetime = ZonedDateTime.now(),
+            onFavoriteClick = {}
         )
     }
 }
@@ -462,7 +479,8 @@ fun ListContentPreview() {
             toTaskScreen = {},
 //            onSwipeToDelete = { a, b -> },
             onSwipeToUpdate = {},
-            screenMode = ScreenMode.NORMAL
+            screenMode = ScreenMode.NORMAL,
+            onFavoriteClick = {}
         )
     }
 }
