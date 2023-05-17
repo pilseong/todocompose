@@ -116,7 +116,7 @@ fun MainScreen(
                             context = context,
                             label = "content", text = sharedViewModel.description
                         )
-//                        Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onUpdateClicked = {

@@ -39,13 +39,15 @@
     <string name="snackbar_message_priority_change">Priority change applied</string>
     <string name="sort_ascending_label">Ascending</string>
     <string name="sort_date_label">Created At</string>
-    <string name="badge_priority_label">PRIORITY</string>
-    <string name="badge_order_label">ORDER</string>
-    <string name="badge_date_label">DATE</string>
+    <string name="task_content_updated_at_label">Updated At</string>
+    <string name="badge_priority_label">PRI</string>
+    <string name="badge_order_label">ORD</string>
+    <string name="badge_date_label">DAT</string>
     <string name="badge_order_asc_label">ASC</string>
     <string name="badge_order_desc_label">DESC</string>
-    <string name="badge_date_created_at_label">CREATED AT</string>
-    <string name="badge_date_updated_at_label">UPDATED AT</string>
+    <string name="badge_date_created_at_label">Created</string>
+    <string name="badge_date_updated_at_label">Updated</string>
+    <string name="badge_favorite_label">Favorite</string>
     <string name="snackbar_message_order_asc_change">Ascending Ordering applied</string>
     <string name="snackbar_message_order_desc_change">Descending Ordering applied</string>
     <string name="snackbar_message_date_created_at_change">Created time used for ordering</string>
@@ -58,4 +60,13 @@
     <string name="status_line_date_range_from_the_first_memo_text">the first meno</string>
     <string name="loading_text">Loading...</string>
     <string name="task_item_star_description">Favorite icon</string>
+    <string name="task_content_dateformat">HH:mm LLL MM, yyyy</string>
+    <string name="priority_high">HIGH</string>
+    <string name="priority_medium">MEDIUM</string>
+    <string name="priority_low">LOW</string>
+    <string name="priority_none">NONE</string>
+    <string name="import_menu_label">IMPORT</string>
+    <string name="export_menu_label">EXPORT</string>
+    <string name="settings_menu_label">SETTINGS</string>
+
 </resources>

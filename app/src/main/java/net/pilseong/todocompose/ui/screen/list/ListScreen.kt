@@ -6,18 +6,26 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material3.Badge
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.twotone.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,8 +40,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,12 +56,14 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.ui.components.PriorityItem
+import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
@@ -153,7 +168,33 @@ fun ListScreen(
                             startDate = null,
                             endDate = null
                         )
-                    }
+                    },
+                    favoriteOn = sharedViewModel.sortFavorite,
+                    onFavoriteClick = {
+                        sharedViewModel.handleActions(
+                            action = Action.SORT_FAVORITE_CHANGE,
+                            favorite = !sharedViewModel.sortFavorite
+                        )
+                    },
+                    onOrderEnabledClick = {
+                        sharedViewModel.handleActions(
+                            action = Action.SORT_ORDER_CHANGE,
+                            sortOrderEnabled = !sharedViewModel.orderEnabled
+                        )
+                    },
+                    onDateEnabledClick = {
+                        sharedViewModel.handleActions(
+                            action = Action.SORT_DATE_CHANGE,
+                            sortDateEnabled = !sharedViewModel.dateEnabled
+                        )
+                    },
+                    onPrioritySelected = { priority ->
+                        Log.i("PHILIP", "onSortClicked")
+                        sharedViewModel.handleActions(
+                            Action.PRIORITY_CHANGE,
+                            priority = priority
+                        )
+                    },
                 )
 
                 ListContent(
@@ -176,7 +217,7 @@ fun ListScreen(
                     header = sharedViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
                     screenMode = sharedViewModel.screenMode,
                     dateEnabled = sharedViewModel.dateEnabled,
-                    onFavoriteClick = {todo ->
+                    onFavoriteClick = { todo ->
                         sharedViewModel.handleActions(
                             action = Action.FAVORITE_UPDATE,
                             todoTask = todo
@@ -203,70 +244,256 @@ fun ListScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun StatusLine(
     prioritySortState: Priority,
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     startDate: Long?,
     endDate: Long?,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    favoriteOn: Boolean = false,
+    onOrderEnabledClick: () -> Unit,
+    onDateEnabledClick: () -> Unit,
+    onPrioritySelected: (Priority) -> Unit,
 ) {
-    val containerColor = when (prioritySortState) {
-        Priority.HIGH -> HighPriorityColor
-        Priority.MEDIUM -> MediumPriorityColor
-        Priority.LOW -> LowPriorityColor
-        Priority.NONE -> MaterialTheme.colorScheme.surface
+    var containerColor = Color.Transparent
+    var priorityText = stringResource(id = R.string.priority_none)
+    var priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
+    when (prioritySortState) {
+        Priority.HIGH -> {
+            containerColor = HighPriorityColor
+            priorityText = stringResource(id = R.string.priority_high)
+            priorityIcon = painterResource(id = R.drawable.baseline_priority_high_24)
+        }
+
+        Priority.MEDIUM -> {
+            containerColor = MediumPriorityColor
+            priorityText = stringResource(id = R.string.priority_medium)
+            priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
+        }
+
+        Priority.LOW -> {
+            containerColor = LowPriorityColor
+            priorityText = stringResource(id = R.string.priority_low)
+            priorityIcon = painterResource(id = R.drawable.ic_baseline_low_priority_24)
+        }
+
+        else -> {
+
+        }
     }
+
+    var expanded by remember { mutableStateOf(false) }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (startDate != null || endDate != null) 45.dp else 20.dp),
+            .height(if (startDate != null || endDate != null) 60.dp else 30.dp),
         color = MaterialTheme.colorScheme.topBarContainerColor
+
     ) {
-        Column {
+        Column(
+            modifier = Modifier.padding(horizontal = XLARGE_PADDING)
+        ) {
             Row(
-                modifier = Modifier.padding(PaddingValues(start = LARGE_PADDING))
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Badge(
-                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                    containerColor = containerColor,
-                    contentColor = MaterialTheme.colorScheme.onSurface
+                // 우선 순위 설정
+                Card(
+                    modifier = Modifier
+                        .clickable { expanded = true }
+                        .weight(1F),
+                    shape = RoundedCornerShape(4.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = containerColor,
+                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+                    ),
                 ) {
-                    Text(
-                        text = "${stringResource(id = R.string.badge_priority_label)}: $prioritySortState",
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        fontWeight = FontWeight.ExtraBold
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                PaddingValues(
+                                    start = 0.dp,
+                                    top = SMALL_PADDING,
+                                    end = SMALL_PADDING,
+                                    bottom = SMALL_PADDING
+                                )
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.width(12.dp),
+                            painter = priorityIcon,
+                            contentDescription = "arrow"
+                        )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+                        Text(
+                            text = priorityText,
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
                 }
-                Badge(
-                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                    containerColor = if (orderEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
+
+                // desc, asc
+                Card(
+                    modifier = Modifier
+                        .weight(1F)
+                        .clickable {
+                            onOrderEnabledClick()
+                        },
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (orderEnabled) HighPriorityColor
+                        else Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+                    ),
                 ) {
-                    Text(
-                        text = if (orderEnabled) "${stringResource(id = R.string.badge_order_label)}: " +
-                                stringResource(id = R.string.badge_order_asc_label)
-                        else "${stringResource(id = R.string.badge_order_label)}: " +
-                                stringResource(id = R.string.badge_order_desc_label),
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        fontWeight = FontWeight.ExtraBold
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                PaddingValues(
+                                    start = 0.dp,
+                                    top = SMALL_PADDING,
+                                    end = SMALL_PADDING,
+                                    bottom = SMALL_PADDING
+                                )
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.width(12.dp),
+                            painter = if (orderEnabled) painterResource(id = R.drawable.ic_baseline_north_24)
+                            else painterResource(id = R.drawable.ic_baseline_south_24),
+                            contentDescription = "arrow"
+                        )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+                        Text(
+                            text = if (orderEnabled) stringResource(id = R.string.badge_order_asc_label)
+                            else stringResource(id = R.string.badge_order_desc_label),
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
                 }
-                Badge(
-                    modifier = Modifier.padding(PaddingValues(end = SMALL_PADDING)),
-                    containerColor = if (dateEnabled) HighPriorityColor else MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
+
+                // updated, created
+                Card(
+                    modifier = Modifier
+                        .weight(1F)
+                        .clickable {
+                            onDateEnabledClick()
+                        },
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (dateEnabled) HighPriorityColor
+                        else Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+                    ),
                 ) {
-                    Text(
-                        text = if (dateEnabled) "${stringResource(id = R.string.badge_date_label)}: " +
-                                stringResource(id = R.string.badge_date_created_at_label)
-                        else "${stringResource(id = R.string.badge_date_label)}: " +
-                                stringResource(id = R.string.badge_date_updated_at_label),
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        fontWeight = FontWeight.ExtraBold
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                PaddingValues(
+                                    start = 0.dp,
+                                    top = SMALL_PADDING,
+                                    end = SMALL_PADDING,
+                                    bottom = SMALL_PADDING
+                                )
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.width(12.dp),
+                            imageVector = if (dateEnabled) Icons.TwoTone.Edit
+                            else Icons.TwoTone.Edit,
+                            contentDescription = "star"
+                        )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+                        Text(
+                            text = if (dateEnabled) stringResource(id = R.string.badge_date_created_at_label)
+                            else stringResource(id = R.string.badge_date_updated_at_label),
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
                 }
+
+                // favorite
+                Card(
+                    modifier = Modifier
+                        .weight(1F)
+                        .clickable {
+                            onFavoriteClick()
+                        },
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (favoriteOn) FavoriteYellow
+                        else Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+                    ),
+                ) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                PaddingValues(
+                                    start = 0.dp,
+                                    top = SMALL_PADDING,
+                                    end = SMALL_PADDING,
+                                    bottom = SMALL_PADDING
+                                )
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier.width(12.dp),
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "star"
+                        )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+                        Text(
+                            text = stringResource(id = R.string.badge_favorite_label),
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { PriorityItem(priority = Priority.HIGH) },
+                    onClick = {
+                        expanded = false
+                        onPrioritySelected(Priority.HIGH)
+                    })
+                DropdownMenuItem(
+                    text = { PriorityItem(priority = Priority.LOW) },
+                    onClick = {
+                        expanded = false
+                        onPrioritySelected(Priority.LOW)
+                    })
+                DropdownMenuItem(
+                    text = { PriorityItem(priority = Priority.NONE) },
+                    onClick = {
+                        expanded = false
+                        onPrioritySelected(Priority.NONE)
+                    })
             }
 
             if (startDate != null || endDate != null) {
@@ -274,12 +501,11 @@ private fun StatusLine(
                     modifier = Modifier
                         .padding(
                             PaddingValues(
-                                start = LARGE_PADDING,
-                                end = LARGE_PADDING,
                                 top = SMALL_PADDING
                             )
                         )
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     val startDateStr = if (startDate != null)
                         ZonedDateTime.ofInstant(
@@ -298,16 +524,19 @@ private fun StatusLine(
                             DateTimeFormatter.ofPattern("yy/MM/dd")
                         )
                     else stringResource(id = R.string.status_line_date_range_up_to_date_text)
-                    Text(
-                        modifier = Modifier.weight(1F),
-                        text = stringResource(id = R.string.status_line_date_range_text,
-                            startDateStr, endDateStr),
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize
-                    )
+                    Surface(tonalElevation = 2.dp) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.status_line_date_range_text,
+                                startDateStr, endDateStr
+                            ),
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize
+                        )
+                    }
 
                     Icon(
                         modifier = Modifier
-                            .padding(2.dp)
+                            .padding(4.dp)
                             .border(
                                 border = BorderStroke(
                                     width = 1.dp,
@@ -323,7 +552,6 @@ private fun StatusLine(
                 }
             }
         }
-
     }
 }
 

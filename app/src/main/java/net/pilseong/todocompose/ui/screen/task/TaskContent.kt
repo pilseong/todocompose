@@ -175,9 +175,13 @@ private fun ViewerContent(
             .verticalScroll(scrollState)
 
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        val priorityText = when (priority) {
+            Priority.HIGH -> stringResource(id = R.string.priority_high)
+            Priority.MEDIUM -> stringResource(id = R.string.priority_medium)
+            Priority.LOW -> stringResource(id = R.string.priority_low)
+            Priority.NONE -> stringResource(id = R.string.priority_none)
+        }
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -192,17 +196,40 @@ private fun ViewerContent(
 
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = priority.name,
+                    text = priorityText,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = updatedAt.toLocalDateTime()
-                        .format(DateTimeFormatter.ofPattern("yyyy년MM월dd일 HH시mm분"))
+                    text = "${stringResource(id = R.string.task_content_updated_at_label)}: ${
+                        updatedAt.toLocalDateTime()
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    stringResource(id = R.string.task_content_dateformat)
+                                )
+                            )
+                    }",
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize
                 )
             }
-
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = "${stringResource(id = R.string.sort_date_label)}: ${
+                        createdAt.toLocalDateTime()
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    stringResource(id = R.string.task_content_dateformat)
+                                )
+                            )
+                    }",
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize
+                )
+            }
         }
 
         Divider(

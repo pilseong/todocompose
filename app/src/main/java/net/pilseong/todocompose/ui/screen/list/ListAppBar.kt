@@ -202,26 +202,14 @@ fun ListAppBarActions(
         },
         onConfirmClick = onDatePickConfirmed
     )
-    CommonAction(
-        icon = Icons.Outlined.Star,
-        onClicked = { onFavoriteClick() },
-        tint = if (isFavoriteOn) FavoriteYellow else MaterialTheme.colorScheme.topBarContentColor,
-        description = "favorite"
-    )
+
     SearchAction(onSearchClicked)
     CommonAction(
         icon = Icons.Default.DateRange,
         onClicked = { datePickerExpanded = true },
         description = "date picker icon"
     )
-    SortAction(
-        orderEnabled = orderEnabled,
-        dateEnabled = dateEnabled,
-        onOrderEnabledClick = onOrderEnabledClick,
-        onDateEnabledClick = onDateEnabledClick,
-        onSortClicked = onSortClicked
-    )
-    DeleteAction(onDeleteAllClicked = { alertExpanded = true })
+    MenuAction(onDeleteAllClicked = { alertExpanded = true })
 }
 
 
@@ -257,6 +245,7 @@ fun SortAction(
         )
     }
     DropdownMenu(
+        offset = DpOffset(x = 80.dp, y = 0.dp),
         expanded = expanded,
         onDismissRequest = { expanded = false }
     ) {
@@ -306,7 +295,7 @@ fun SortAction(
 }
 
 @Composable
-fun DeleteAction(
+fun MenuAction(
     onDeleteAllClicked: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -322,12 +311,30 @@ fun DeleteAction(
     // 위치가 완전히 틀어 진다. 여기 서는 최대로 82 dp 만큼 우측 으로 옮김
     DropdownMenu(
         expanded = expanded,
-        offset = DpOffset(x = 82.dp, y = 0.dp),
+        offset = DpOffset(x = 130.dp, y = 0.dp),
         onDismissRequest = { expanded = false }
     ) {
         DropdownMenuItem(
 //            modifier = Modifier.padding(start = LARGE_PADDING),
             text = { Text(text = stringResource(id = R.string.delete_all_menu_text)) },
+            onClick = {
+                expanded = false
+                onDeleteAllClicked()
+            })
+        DropdownMenuItem(
+            text = { Text(text = stringResource(id = R.string.import_menu_label)) },
+            onClick = {
+                expanded = false
+                onDeleteAllClicked()
+            })
+        DropdownMenuItem(
+            text = { Text(text = stringResource(id = R.string.export_menu_label)) },
+            onClick = {
+                expanded = false
+                onDeleteAllClicked()
+            })
+        DropdownMenuItem(
+            text = { Text(text = stringResource(id = R.string.settings_menu_label)) },
             onClick = {
                 expanded = false
                 onDeleteAllClicked()

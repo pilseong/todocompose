@@ -10,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
@@ -19,6 +21,12 @@ import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 fun PriorityItem(
     priority: Priority
 ) {
+    val text = when (priority) {
+        Priority.HIGH -> stringResource(id = R.string.priority_high)
+        Priority.MEDIUM -> stringResource(id = R.string.priority_medium)
+        Priority.LOW -> stringResource(id = R.string.priority_low)
+        Priority.NONE -> stringResource(id = R.string.priority_none)
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -27,7 +35,7 @@ fun PriorityItem(
         }
         Text(
             modifier = Modifier.padding(LARGE_PADDING),
-            text = priority.name,
+            text = text,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface
         )

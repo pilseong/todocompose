@@ -39,13 +39,15 @@
     <string name="snackbar_message_priority_change">선택한 우선순위가 목록에 반영되었습니다.</string>
     <string name="sort_ascending_label">오름차순</string>
     <string name="sort_date_label">생성일자</string>
+    <string name="task_content_updated_at_label">수정일자</string>
     <string name="badge_priority_label">우선순위</string>
-    <string name="badge_order_label">정렬기준</string>
-    <string name="badge_date_label">일자기준</string>
+    <string name="badge_order_label">정렬</string>
+    <string name="badge_date_label">일자</string>
     <string name="badge_order_asc_label">오름차순</string>
     <string name="badge_order_desc_label">내림차순</string>
     <string name="badge_date_created_at_label">생성일자</string>
     <string name="badge_date_updated_at_label">수정일자</string>
+    <string name="badge_favorite_label">중요메모</string>
     <string name="snackbar_message_order_asc_change">오름차순으로 정렬합니다.</string>
     <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>
     <string name="snackbar_message_date_created_at_change">생성일을 정렬기준으로 반영합니다.</string>
@@ -58,4 +60,14 @@
     <string name="status_line_date_range_from_the_first_memo_text">첫메시지</string>
     <string name="loading_text">로딩중...</string>
     <string name="task_item_star_description">Favorite 선택 아이콘</string>
+    <string name="task_content_dateformat">yyyy년MM월dd일 HH시mm분</string>
+    <string name="priority_high">높음</string>
+    <string name="priority_medium">보통</string>
+    <string name="priority_low">낮음</string>
+    <string name="priority_none">미지정</string>
+    <string name="import_menu_label">가져오기</string>
+    <string name="export_menu_label">내보내기</string>
+    <string name="settings_menu_label">설정</string>
+
+
 </resources>

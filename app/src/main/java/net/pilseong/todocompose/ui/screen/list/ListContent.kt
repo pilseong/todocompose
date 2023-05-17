@@ -79,6 +79,7 @@ import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.NonePriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
 import net.pilseong.todocompose.util.ScreenMode
@@ -133,7 +134,7 @@ fun DisplayTasks(
         // 화면 의 크기의 반을 swipe 한 경우 처리
         val threshold = LocalConfiguration.current.screenWidthDp / 3
         LazyColumn(
-            modifier = Modifier.padding(all = SMALL_PADDING),
+            modifier = Modifier.padding(all = LARGE_PADDING),
             verticalArrangement = Arrangement.spacedBy(SMALL_PADDING),
         ) {
             items(
