@@ -21,7 +21,7 @@ fun NavGraphBuilder.listComposable(
                 type = NavType.StringType
             }
         )
-    ) { navBackStackEntry ->
+    ) {
         ListScreen(
             toTaskScreen = toTaskScreen,
             sharedViewModel = sharedViewModel,

@@ -26,8 +26,10 @@
     <string name="label_no">No</string>
     <string name="delete_task_dialog_title">Remove \'%1$s\'?</string>
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
+    <string name="export_task_dialog_confirmation">Are you sure to export all memos?</string>
     <string name="delete_all_task_dialog_title">Remove All Memos</string>
     <string name="delete_all_tasks_dialog_confirmation">Are you sure to remove all Memos? This cannot be revoked</string>
+    <string name="export_all_tasks_dialog_confirmation">Are you sure to export all Memos through Email? It might take some time</string>
     <string name="delete_label">Delete</string>
     <string name="update_label">Update</string>
     <string name="empty_title_popup">Title is empty</string>

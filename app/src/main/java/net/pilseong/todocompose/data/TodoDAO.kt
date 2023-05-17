@@ -31,9 +31,9 @@ abstract class TodoDAO {
                 "WHEN 1 THEN " +
                 "updated_at BETWEEN :startDate AND :endDate " +
                 "WHEN 2 THEN " +
-                "create_at BETWEEN :startDate AND :endDate " +
+                "created_at BETWEEN :startDate AND :endDate " +
                 "WHEN 3 THEN " +
-                "create_at BETWEEN :startDate AND :endDate " +
+                "created_at BETWEEN :startDate AND :endDate " +
                 "END) " +
                 "ORDER BY " +
                 "CASE :priority " +
@@ -54,8 +54,8 @@ abstract class TodoDAO {
                 "END, " +
                 "CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
                 "CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
-                "CASE WHEN :sortCondition = 2 THEN create_at END DESC, " +
-                "CASE WHEN :sortCondition = 3 THEN create_at END ASC " +
+                "CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
+                "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 "LIMIT :pageSize OFFSET (:page - 1 ) * :pageSize"
     )
     abstract suspend fun getTasks(

@@ -26,8 +26,10 @@
     <string name="label_no">취소</string>
     <string name="delete_task_dialog_title">\'%1$s\' 메모 삭제</string>
     <string name="delete_task_dialog_confirmation">\'%1$s\' 을 정말 삭제하시겠습니까?</string>
+    <string name="export_task_dialog_confirmation">내보내기를 싫행하시겠습니까?</string>
     <string name="delete_all_task_dialog_title">전체 삭제</string>
     <string name="delete_all_tasks_dialog_confirmation">모든 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
+    <string name="export_all_tasks_dialog_confirmation">모든 메모를 이메일 첨부파일로 생성합니다. 데이터가 많은 경우 시간이 걸릴 수 있습니다.</string>
     <string name="delete_label">삭제 아이콘</string>
     <string name="update_label">엡데이트 아이콘</string>
     <string name="empty_title_popup">제목이 비어 있습니다.</string>

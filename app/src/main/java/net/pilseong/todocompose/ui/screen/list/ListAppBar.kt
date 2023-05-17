@@ -73,7 +73,7 @@ fun ListAppBar(
                     )
                 },
                 onExportClick = {
-                  sharedViewModel.exportData()
+                    sharedViewModel.exportData()
                 },
             )
         }
@@ -134,23 +134,28 @@ fun ListAppBarActions(
     onDatePickConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit
 ) {
-    var alertExpanded by remember { mutableStateOf(false) }
-    var function by remember { mutableStateOf("delete_all") }
-
-    var onClick = onDeleteAllClicked
-    if (function == "export") {
-        onClick = onExportClick
-    }
+    // 다이얼 로그 박스 에 대한 상태
+    var deleteAlertExpanded by remember { mutableStateOf(false) }
 
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
-        title = if (function == "delete_all") stringResource(id = R.string.delete_all_task_dialog_title)
-        else "Export memos",
-        message = if (function == "delete_all") stringResource(id = R.string.delete_all_tasks_dialog_confirmation)
-                else "export all memos and send to email",
-        openDialog = alertExpanded,
-        onYesClicked = onClick,
-        onCloseDialog = { alertExpanded = false }
+        title = stringResource(id = R.string.delete_all_task_dialog_title),
+        message = stringResource(id = R.string.delete_all_tasks_dialog_confirmation),
+        openDialog = deleteAlertExpanded,
+        onYesClicked = onDeleteAllClicked,
+        onCloseDialog = { deleteAlertExpanded = false }
+    )
+
+    // 다이얼 로그 박스 에 대한 상태
+    var exportAlertExpanded by remember { mutableStateOf(false) }
+
+    // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
+    DisplayAlertDialog(
+        title = stringResource(id = R.string.export_task_dialog_confirmation),
+        message = stringResource(id = R.string.export_all_tasks_dialog_confirmation),
+        openDialog = exportAlertExpanded,
+        onYesClicked = onExportClick,
+        onCloseDialog = { exportAlertExpanded = false }
     )
 
 
@@ -170,8 +175,12 @@ fun ListAppBarActions(
         description = "date picker icon"
     )
     MenuAction(
-        onDeleteAllClicked = { alertExpanded = true },
-        onExportClick = onExportClick
+        onDeleteAllClicked = {
+            deleteAlertExpanded = true
+        },
+        onExportClick = {
+            exportAlertExpanded = true
+        }
     )
 }
 
