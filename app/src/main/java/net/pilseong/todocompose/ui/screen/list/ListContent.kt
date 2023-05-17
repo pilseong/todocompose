@@ -79,7 +79,6 @@ import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.NonePriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
-import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
 import net.pilseong.todocompose.util.ScreenMode

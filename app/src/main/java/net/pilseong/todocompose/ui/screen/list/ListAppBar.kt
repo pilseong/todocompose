@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,21 +30,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
-import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
-import net.pilseong.todocompose.ui.components.SortItem
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
-import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
@@ -67,30 +61,9 @@ fun ListAppBar(
                     sharedViewModel.refreshAllTasks()
                     sharedViewModel.searchAppBarState.value = SearchAppBarState.OPEN
                 },
-                onSortClicked = { priority ->
-                    Log.i("PHILIP", "onSortClicked")
-                    sharedViewModel.handleActions(
-                        Action.PRIORITY_CHANGE,
-                        priority = priority
-                    )
-                },
                 onDeleteAllClicked = {
                     Log.i("PHILIP", "onDeleteAllClicked")
                     sharedViewModel.handleActions(Action.DELETE_ALL)
-                },
-                orderEnabled = sharedViewModel.orderEnabled,
-                dateEnabled = sharedViewModel.dateEnabled,
-                onOrderEnabledClick = {
-                    sharedViewModel.handleActions(
-                        action = Action.SORT_ORDER_CHANGE,
-                        sortOrderEnabled = !sharedViewModel.orderEnabled
-                    )
-                },
-                onDateEnabledClick = {
-                    sharedViewModel.handleActions(
-                        action = Action.SORT_DATE_CHANGE,
-                        sortDateEnabled = !sharedViewModel.dateEnabled
-                    )
                 },
                 onDatePickConfirmed = { start, end ->
                     sharedViewModel.handleActions(
@@ -99,13 +72,9 @@ fun ListAppBar(
                         endDate = end
                     )
                 },
-                isFavoriteOn = sharedViewModel.sortFavorite,
-                onFavoriteClick = {
-                    sharedViewModel.handleActions(
-                        action = Action.SORT_FAVORITE_CHANGE,
-                        favorite = !sharedViewModel.sortFavorite
-                    )
-                }
+                onExportClick = {
+                  sharedViewModel.exportData()
+                },
             )
         }
 
@@ -133,15 +102,9 @@ fun ListAppBar(
 @Composable
 fun DefaultListAppBar(
     onSearchIconClicked: () -> Unit,
-    onSortClicked: (Priority) -> Unit,
     onDeleteAllClicked: () -> Unit,
-    orderEnabled: Boolean = false,
-    dateEnabled: Boolean = false,
-    onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
-    isFavoriteOn: Boolean  = false,
-    onFavoriteClick: () -> Unit
+    onExportClick: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -156,15 +119,9 @@ fun DefaultListAppBar(
         actions = {
             ListAppBarActions(
                 onSearchClicked = onSearchIconClicked,
-                onSortClicked = onSortClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
-                orderEnabled = orderEnabled,
-                dateEnabled = dateEnabled,
-                onOrderEnabledClick = onOrderEnabledClick,
-                onDateEnabledClick = onDateEnabledClick,
                 onDatePickConfirmed = onDatePickConfirmed,
-                isFavoriteOn = isFavoriteOn,
-                onFavoriteClick = onFavoriteClick
+                onExportClick = onExportClick
             )
         }
     )
@@ -173,26 +130,29 @@ fun DefaultListAppBar(
 @Composable
 fun ListAppBarActions(
     onSearchClicked: () -> Unit,
-    onSortClicked: (Priority) -> Unit,
     onDeleteAllClicked: () -> Unit,
-    orderEnabled: Boolean,
-    dateEnabled: Boolean,
-    onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
-    isFavoriteOn: Boolean = false,
-    onFavoriteClick: () -> Unit
+    onExportClick: () -> Unit
 ) {
     var alertExpanded by remember { mutableStateOf(false) }
+    var function by remember { mutableStateOf("delete_all") }
+
+    var onClick = onDeleteAllClicked
+    if (function == "export") {
+        onClick = onExportClick
+    }
 
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
-        title = stringResource(id = R.string.delete_all_task_dialog_title),
-        message = stringResource(id = R.string.delete_all_tasks_dialog_confirmation),
+        title = if (function == "delete_all") stringResource(id = R.string.delete_all_task_dialog_title)
+        else "Export memos",
+        message = if (function == "delete_all") stringResource(id = R.string.delete_all_tasks_dialog_confirmation)
+                else "export all memos and send to email",
         openDialog = alertExpanded,
-        onYesClicked = onDeleteAllClicked,
+        onYesClicked = onClick,
         onCloseDialog = { alertExpanded = false }
     )
+
 
     var datePickerExpanded by remember { mutableStateOf(false) }
     SimpleDatePickerDialog(
@@ -209,7 +169,10 @@ fun ListAppBarActions(
         onClicked = { datePickerExpanded = true },
         description = "date picker icon"
     )
-    MenuAction(onDeleteAllClicked = { alertExpanded = true })
+    MenuAction(
+        onDeleteAllClicked = { alertExpanded = true },
+        onExportClick = onExportClick
+    )
 }
 
 
@@ -227,76 +190,9 @@ fun SearchAction(
 }
 
 @Composable
-fun SortAction(
-    orderEnabled: Boolean,
-    dateEnabled: Boolean,
-    onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit,
-    onSortClicked: (Priority) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    IconButton(onClick = { expanded = true }
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_baseline_sort_24),
-            contentDescription = stringResource(R.string.sort_action),
-            tint = MaterialTheme.colorScheme.topBarContentColor
-        )
-    }
-    DropdownMenu(
-        offset = DpOffset(x = 80.dp, y = 0.dp),
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        Log.i("PHILIP", "orderEnabled $orderEnabled")
-        Log.i("PHILIP", "dateEnabled $dateEnabled")
-        DropdownMenuItem(
-            text = {
-                SortItem(
-                    text = stringResource(id = R.string.sort_ascending_label),
-                    enabled = orderEnabled,
-                    onclick = onOrderEnabledClick
-                )
-            },
-            onClick = {
-                onOrderEnabledClick()
-            })
-        DropdownMenuItem(
-            text = {
-                SortItem(
-                    text = stringResource(id = R.string.sort_date_label),
-                    enabled = dateEnabled,
-                    onclick = onDateEnabledClick
-                )
-            },
-            onClick = {
-                onDateEnabledClick()
-            })
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.HIGH) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.HIGH)
-            })
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.LOW) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.LOW)
-            })
-        DropdownMenuItem(
-            text = { PriorityItem(priority = Priority.NONE) },
-            onClick = {
-                expanded = false
-                onSortClicked(Priority.NONE)
-            })
-    }
-}
-
-@Composable
 fun MenuAction(
-    onDeleteAllClicked: () -> Unit
+    onDeleteAllClicked: () -> Unit,
+    onExportClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -311,8 +207,8 @@ fun MenuAction(
     // 위치가 완전히 틀어 진다. 여기 서는 최대로 82 dp 만큼 우측 으로 옮김
     DropdownMenu(
         expanded = expanded,
-        offset = DpOffset(x = 130.dp, y = 0.dp),
-        onDismissRequest = { expanded = false }
+        offset = DpOffset(x = 30.dp, y = 0.dp),
+        onDismissRequest = { expanded = false },
     ) {
         DropdownMenuItem(
 //            modifier = Modifier.padding(start = LARGE_PADDING),
@@ -331,7 +227,7 @@ fun MenuAction(
             text = { Text(text = stringResource(id = R.string.export_menu_label)) },
             onClick = {
                 expanded = false
-                onDeleteAllClicked()
+                onExportClick()
             })
         DropdownMenuItem(
             text = { Text(text = stringResource(id = R.string.settings_menu_label)) },

@@ -11,6 +11,8 @@ import java.time.ZonedDateTime
 @Dao
 abstract class TodoDAO {
 
+    @Query("SELECT * FROM todo_table")
+    abstract suspend fun allTasks(): List<TodoTask>
 
     @Query(
         "SELECT * FROM todo_table " +

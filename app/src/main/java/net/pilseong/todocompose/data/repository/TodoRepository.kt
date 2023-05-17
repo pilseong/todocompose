@@ -17,8 +17,11 @@ import javax.inject.Inject
 class TodoRepository @Inject constructor(
     private val todoDAO: TodoDAO
 ) {
+    suspend fun getAllTasks(): List<TodoTask> {
+        return todoDAO.allTasks()
+    }
 
-    fun getAllTasks(
+    fun getTasks(
         query: String,
         sortCondition: Int,
         priority: Priority = Priority.NONE,
