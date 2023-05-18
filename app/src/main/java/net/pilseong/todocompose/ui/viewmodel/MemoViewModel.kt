@@ -43,7 +43,7 @@ import kotlin.random.Random
 
 
 @HiltViewModel
-class SharedViewModel @Inject constructor(
+class MemoViewModel @Inject constructor(
     private val todoRepository: TodoRepository,
     private val dataStoreRepository: DataStoreRepository,
     @ApplicationContext private val context: Context
@@ -85,12 +85,12 @@ class SharedViewModel @Inject constructor(
     // 화면 인덱스 이동 - delay 를 준 것은 swipeToDismiss 에서 swipe animation 구동 시에
     // 전환 된 화면이 화면에 표출 되는 것을 막기 위함
     fun incrementIndex() {
-        Log.i("PHILIP", "[SharedViewModel] index: $index, snapshot ${snapshotTasks.size}")
+        Log.i("PHILIP", "[MemoViewModel] index: $index, snapshot ${snapshotTasks.size}")
         if (this.index < snapshotTasks.size - 1) {
             viewModelScope.launch {
                 delay(100)
                 index++
-                Log.i("PHILIP", "[SharedViewModel] incrementIndex $index")
+                Log.i("PHILIP", "[MemoViewModel] incrementIndex $index")
             }
         }
     }
@@ -100,7 +100,7 @@ class SharedViewModel @Inject constructor(
             viewModelScope.launch {
                 delay(300)
                 index--
-                Log.i("PHILIP", "[SharedViewModel] decrementIndex $index")
+                Log.i("PHILIP", "[MemoViewModel] decrementIndex $index")
             }
         }
     }
@@ -160,7 +160,7 @@ class SharedViewModel @Inject constructor(
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observePrioritySortState() {
-        Log.i("PHILIP", "[SharedViewModel] observePrioritySortState() executed")
+        Log.i("PHILIP", "[MemoViewModel] observePrioritySortState() executed")
         viewModelScope.launch(Dispatchers.IO) {
             delay(100)
             dataStoreRepository.readPrioritySortState
@@ -172,7 +172,7 @@ class SharedViewModel @Inject constructor(
                         prioritySortState = priority
                         Log.i(
                             "PHILIP",
-                            "[SharedViewModel] refreshAllTasks() executed with priority $prioritySortState"
+                            "[MemoViewModel] refreshAllTasks() executed with priority $prioritySortState"
                         )
                         refreshAllTasks()
                     }
@@ -183,7 +183,7 @@ class SharedViewModel @Inject constructor(
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observeOrderEnabledState() {
-        Log.i("PHILIP", "[SharedViewModel] observeOrderEnabledState() executed")
+        Log.i("PHILIP", "[MemoViewModel] observeOrderEnabledState() executed")
         viewModelScope.launch(Dispatchers.IO) {
             delay(100)
             dataStoreRepository.readOrderEnabledState
@@ -195,7 +195,7 @@ class SharedViewModel @Inject constructor(
                         orderEnabled = state
                         Log.i(
                             "PHILIP",
-                            "[SharedViewModel] refreshAllTasks() executed with orderEnabled $orderEnabled"
+                            "[MemoViewModel] refreshAllTasks() executed with orderEnabled $orderEnabled"
                         )
                         refreshAllTasks()
                     }
@@ -205,7 +205,7 @@ class SharedViewModel @Inject constructor(
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observeDateEnabledState() {
-        Log.i("PHILIP", "[SharedViewModel] observeDateEnabledState() executed")
+        Log.i("PHILIP", "[MemoViewModel] observeDateEnabledState() executed")
         viewModelScope.launch(Dispatchers.IO) {
             delay(100)
             dataStoreRepository.readDateEnabledState
@@ -217,7 +217,7 @@ class SharedViewModel @Inject constructor(
 
                         Log.i(
                             "PHILIP",
-                            "[SharedViewModel] refreshAllTasks() executed with dateEnabled $dateEnabled"
+                            "[MemoViewModel] refreshAllTasks() executed with dateEnabled $dateEnabled"
                         )
                         refreshAllTasks()
                     }
@@ -226,7 +226,7 @@ class SharedViewModel @Inject constructor(
     }
 
     fun observeFavoriteState() {
-        Log.i("PHILIP", "[SharedViewModel] observeFavoriteState() executed")
+        Log.i("PHILIP", "[MemoViewModel] observeFavoriteState() executed")
         viewModelScope.launch(Dispatchers.IO) {
             delay(100)
             dataStoreRepository.readFavoriteState
@@ -238,7 +238,7 @@ class SharedViewModel @Inject constructor(
 
                         Log.i(
                             "PHILIP",
-                            "[SharedViewModel] refreshAllTasks() executed with sortFavorite $sortFavorite"
+                            "[MemoViewModel] refreshAllTasks() executed with sortFavorite $sortFavorite"
                         )
                         refreshAllTasks()
                     }
@@ -276,17 +276,19 @@ class SharedViewModel @Inject constructor(
     var tasks = MutableStateFlow<PagingData<TodoTask>>(PagingData.empty())
         private set
 
-    var action by mutableStateOf(Action.NO_ACTION)
+    // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
+    // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
+    var action = Action.NO_ACTION
         private set
 
     fun updateAction(action: Action) {
         this.action = action
-        Log.i("PHILIP", "[SharedViewModel] updateAction to ${action.name}")
+        Log.i("PHILIP", "[MemoViewModel] updateAction to ${action.name}")
     }
 
     // 오직 action 이 실행 되었을 경우를 구분 하기 위한 변수
-// view model 의 action 으로는 같은 action 이 두번 실행된 경우 확인할 수 없다.
-// 오직 가드 로만 활용 한다.
+    // view model 의 action 으로는 같은 action 이 두번 실행된 경우 확인할 수 없다.
+    // 오직 가드 로만 활용 한다.
     var actionPerformed by mutableStateOf(Random.Default.nextBytes(4))
         private set
 
@@ -333,7 +335,7 @@ class SharedViewModel @Inject constructor(
      */
 
     private fun updateTaskContent(todoTask: TodoTask?) {
-        Log.i("PHILIP", "[SharedViewModel] updateTaskContent with $todoTask")
+        Log.i("PHILIP", "[MemoViewModel] updateTaskContent with $todoTask")
         // null 이면 새로 todoTask 를 만드는 요청 이므로 초기화 한다.
         if (todoTask == null) {
             id = 0
@@ -371,7 +373,7 @@ class SharedViewModel @Inject constructor(
     ) {
         Log.i(
             "PHILIP",
-            "[SharedViewModel] handleActions performed with $action priority: $priority favorite: $favorite"
+            "[MemoViewModel] handleActions performed with $action priority: $priority favorite: $favorite"
         )
         when (action) {
             Action.ADD -> {
@@ -483,7 +485,7 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(
                 "PHILIP",
-                "[SharedViewModel] addTask performed with $title, $description, $priority"
+                "[MemoViewModel] addTask performed with $title, $description, $priority"
             )
             todoRepository.addTask(TodoTask(0, title, description, priority))
         }

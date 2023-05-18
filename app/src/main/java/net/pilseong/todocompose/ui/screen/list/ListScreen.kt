@@ -52,10 +52,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
@@ -68,7 +71,7 @@ import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
-import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 import java.time.Instant
@@ -79,22 +82,23 @@ import java.time.format.DateTimeFormatter
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
+    navHostController: NavHostController,
     toTaskScreen: (List<TodoTask>) -> Unit,
-    sharedViewModel: SharedViewModel,
+    memoViewModel: MemoViewModel,
 ) {
     /**
      * view model 을 통제 하는 코드가 여기서 실행 되고 관리 된다.
      */
     // 검색 기능의 상태를 매핑 그냥 view model 을 사용할 수 있지만 편의를 위한
     // composable 의 상태를 가지는 변수들
-    val searchAppBarState by sharedViewModel.searchAppBarState
-    val searchText: String = sharedViewModel.searchTextString
-    val prioritySortState: Priority = sharedViewModel.prioritySortState
+    val searchAppBarState by memoViewModel.searchAppBarState
+    val searchText: String = memoViewModel.searchTextString
+    val prioritySortState: Priority = memoViewModel.prioritySortState
 
 
     // Flow 에 대한 collection 을 처리 하는 파이프 연결 변수들. 이 변수들 은 외부 데이터 베이스 나 외부 API 에 의존 한다.
     // 모든 task 의 상태를 감시 한다. 리스트 는 nav graph 안에서 변동 될 수 있다.
-    val tasks = sharedViewModel.tasks.collectAsLazyPagingItems()
+    val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -102,33 +106,34 @@ fun ListScreen(
     // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
     DisplaySnackBar(
         snackBarHostState = snackBarHostState,
-        action = sharedViewModel.action,
-        enabled = sharedViewModel.actionPerformed,
-        title = sharedViewModel.title,
+        action = memoViewModel.action,
+        enabled = memoViewModel.actionPerformed,
+        title = memoViewModel.title,
         duration = SnackbarDuration.Short,
         buttonClicked = { selectedAction, result ->
             Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
             if (result == SnackbarResult.ActionPerformed
-                && sharedViewModel.action == Action.DELETE
+                && memoViewModel.action == Action.DELETE
             ) {
                 Log.i("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
-                sharedViewModel.handleActions(Action.UNDO)
+                memoViewModel.handleActions(Action.UNDO)
             } else {
-                sharedViewModel.updateAction(Action.NO_ACTION)
+                memoViewModel.updateAction(Action.NO_ACTION)
             }
         },
-        orderEnabled = sharedViewModel.snackBarOrderEnabled,
-        dateEnabled = sharedViewModel.snackBarDateEnabled,
-        startDate = sharedViewModel.startDate,
-        endDate = sharedViewModel.endDate
+        orderEnabled = memoViewModel.snackBarOrderEnabled,
+        dateEnabled = memoViewModel.snackBarDateEnabled,
+        startDate = memoViewModel.startDate,
+        endDate = memoViewModel.endDate,
+        memoViewModel = memoViewModel
     )
 
     // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
     BackHandler(
-        enabled = sharedViewModel.searchAppBarState.value != SearchAppBarState.CLOSE
+        enabled = memoViewModel.searchAppBarState.value != SearchAppBarState.CLOSE
     ) {
-        sharedViewModel.onCloseSearchBar()
+        memoViewModel.onCloseSearchBar()
     }
 
     /**
@@ -158,39 +163,39 @@ fun ListScreen(
 
                 StatusLine(
                     prioritySortState = prioritySortState,
-                    orderEnabled = sharedViewModel.orderEnabled,
-                    dateEnabled = sharedViewModel.dateEnabled,
-                    startDate = sharedViewModel.startDate,
-                    endDate = sharedViewModel.endDate,
+                    orderEnabled = memoViewModel.orderEnabled,
+                    dateEnabled = memoViewModel.dateEnabled,
+                    startDate = memoViewModel.startDate,
+                    endDate = memoViewModel.endDate,
                     onCloseClick = {
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             Action.SEARCH_WITH_DATE_RANGE,
                             startDate = null,
                             endDate = null
                         )
                     },
-                    favoriteOn = sharedViewModel.sortFavorite,
+                    favoriteOn = memoViewModel.sortFavorite,
                     onFavoriteClick = {
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             action = Action.SORT_FAVORITE_CHANGE,
-                            favorite = !sharedViewModel.sortFavorite
+                            favorite = !memoViewModel.sortFavorite
                         )
                     },
                     onOrderEnabledClick = {
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             action = Action.SORT_ORDER_CHANGE,
-                            sortOrderEnabled = !sharedViewModel.orderEnabled
+                            sortOrderEnabled = !memoViewModel.orderEnabled
                         )
                     },
                     onDateEnabledClick = {
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             action = Action.SORT_DATE_CHANGE,
-                            sortDateEnabled = !sharedViewModel.dateEnabled
+                            sortDateEnabled = !memoViewModel.dateEnabled
                         )
                     },
                     onPrioritySelected = { priority ->
                         Log.i("PHILIP", "onSortClicked")
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             Action.PRIORITY_CHANGE,
                             priority = priority
                         )
@@ -200,25 +205,25 @@ fun ListScreen(
                 ListContent(
                     tasks = tasks,
                     toTaskScreen = { index ->
-                        sharedViewModel.setTaskScreenToViewerMode()
-                        sharedViewModel.updateIndex(index)
+                        memoViewModel.setTaskScreenToViewerMode()
+                        memoViewModel.updateIndex(index)
                         toTaskScreen(tasks.itemSnapshotList.items)
                     },
 //                    onSwipeToDelete = { action, task ->
 //                        // undo 처리를 위해서 데이터 동기화 필요
-//                        sharedViewModel.updateTaskContent(task)
-//                        sharedViewModel.handleActions(action, task.id)
+//                        memoViewModel.updateTaskContent(task)
+//                        memoViewModel.handleActions(action, task.id)
 //                    },
                     onSwipeToUpdate = { index ->
-                        sharedViewModel.setTaskScreenToEditorMode()
-                        sharedViewModel.updateIndex(index)
+                        memoViewModel.setTaskScreenToEditorMode()
+                        memoViewModel.updateIndex(index)
                         toTaskScreen(tasks.itemSnapshotList.items)
                     },
-                    header = sharedViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
-                    screenMode = sharedViewModel.screenMode,
-                    dateEnabled = sharedViewModel.dateEnabled,
+                    header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
+                    screenMode = memoViewModel.screenMode,
+                    dateEnabled = memoViewModel.dateEnabled,
                     onFavoriteClick = { todo ->
-                        sharedViewModel.handleActions(
+                        memoViewModel.handleActions(
                             action = Action.FAVORITE_UPDATE,
                             todoTask = todo
                         )
@@ -227,19 +232,20 @@ fun ListScreen(
             }
         },
         floatingActionButton = {
-            ListFab(onFabClicked = {
-                sharedViewModel.setTaskScreenToEditorMode()
-                sharedViewModel.updateIndex(-1)
+            AddMemoFab(onFabClicked = {
+                memoViewModel.setTaskScreenToEditorMode()
+                memoViewModel.updateIndex(-1)
                 toTaskScreen(tasks.itemSnapshotList.items)
             })
         },
         topBar = {
             ListAppBar(
-                sharedViewModel = sharedViewModel,
+                memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText
             )
-        }
+        },
+        bottomBar = { BottomNavBar(navHostController) }
     )
 }
 
@@ -567,7 +573,8 @@ private fun DisplaySnackBar(
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     startDate: Long?,
-    endDate: Long?
+    endDate: Long?,
+    memoViewModel: MemoViewModel
 ) {
 
     val message = when (action) {
@@ -624,6 +631,7 @@ private fun DisplaySnackBar(
         Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
         if (action != Action.NO_ACTION) {
             Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
+            memoViewModel.updateAction(Action.NO_ACTION)
             val snackBarResult = snackBarHostState.showSnackbar(
                 message = message,
                 actionLabel = label,
@@ -636,7 +644,7 @@ private fun DisplaySnackBar(
 
 // Floating Action Button
 @Composable
-fun ListFab(
+fun AddMemoFab(
     onFabClicked: (taskId: Int) -> Unit
 ) {
     FloatingActionButton(
@@ -658,8 +666,9 @@ fun ListFab(
 private fun ListScreenPreview() {
     TodoComposeTheme {
         ListScreen(
+            navHostController = rememberNavController(),
             toTaskScreen = {},
-            sharedViewModel = viewModel(),
+            memoViewModel = viewModel(),
         )
     }
 }

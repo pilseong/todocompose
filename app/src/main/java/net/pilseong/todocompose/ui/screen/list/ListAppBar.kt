@@ -43,13 +43,13 @@ import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
-import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 
 @Composable
 fun ListAppBar(
-    sharedViewModel: SharedViewModel,
+    memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
     searchText: String
 ) {
@@ -58,22 +58,22 @@ fun ListAppBar(
             DefaultListAppBar(
                 onSearchIconClicked = {
                     // 초기 로딩 을 위한 데이터 검색
-                    sharedViewModel.refreshAllTasks()
-                    sharedViewModel.searchAppBarState.value = SearchAppBarState.OPEN
+                    memoViewModel.refreshAllTasks()
+                    memoViewModel.searchAppBarState.value = SearchAppBarState.OPEN
                 },
                 onDeleteAllClicked = {
                     Log.i("PHILIP", "onDeleteAllClicked")
-                    sharedViewModel.handleActions(Action.DELETE_ALL)
+                    memoViewModel.handleActions(Action.DELETE_ALL)
                 },
                 onDatePickConfirmed = { start, end ->
-                    sharedViewModel.handleActions(
+                    memoViewModel.handleActions(
                         action = Action.SEARCH_WITH_DATE_RANGE,
                         startDate = start,
                         endDate = end
                     )
                 },
                 onExportClick = {
-                    sharedViewModel.exportData()
+                    memoViewModel.exportData()
                 },
             )
         }
@@ -82,16 +82,16 @@ fun ListAppBar(
             SearchAppBar(
                 text = searchText,
                 onCloseClicked = {
-                    sharedViewModel.onCloseSearchBar()
+                    memoViewModel.onCloseSearchBar()
                 },
                 onSearchClicked = {
-                    sharedViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
-                    sharedViewModel.refreshAllTasks()
+                    memoViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
+                    memoViewModel.refreshAllTasks()
                 },
                 onTextChange = { text ->
-                    sharedViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
-                    sharedViewModel.searchTextString = text
-                    sharedViewModel.refreshAllTasks()
+                    memoViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
+                    memoViewModel.searchTextString = text
+                    memoViewModel.refreshAllTasks()
                 }
             )
         }

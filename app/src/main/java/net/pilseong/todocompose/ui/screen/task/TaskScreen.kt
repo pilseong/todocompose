@@ -18,62 +18,42 @@ import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.ui.viewmodel.SharedViewModel
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
-import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.copyToClipboard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TaskScreen(
-    sharedViewModel: SharedViewModel,
-    toListScreen: (Action) -> Unit,
+    memoViewModel: MemoViewModel,
+    toListScreen: (Int?) -> Unit,
 ) {
     // 세부 화면 스크린 에서는 리스트 에서 생성 하고 저장한 snapshot 만 의존 한다.
     // 1. 현재 리스트
     // 2. 해당 인덱스
     // 3. 테스크 top bar 의 상태
-    val taskScreenState = sharedViewModel.taskAppBarState
-    val index = sharedViewModel.index
+    val taskAppBarState = memoViewModel.taskAppBarState
+    val taskIndex = memoViewModel.index
 
-    Log.i("PHILIP", "[TaskScreen] index is $index")
-    MainScreen(
-        taskAppBarState = taskScreenState,
-        tasks = sharedViewModel.snapshotTasks,
-        taskIndex = index,
-        sharedViewModel = sharedViewModel,
-        toListScreen = toListScreen
-    )
-}
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun MainScreen(
-    taskAppBarState: TaskAppBarState,
-    tasks: List<TodoTask>,
-    taskIndex: Int,
-    sharedViewModel: SharedViewModel,
-    toListScreen: (Action) -> Unit,
-) {
-
+    Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
+    val tasks = memoViewModel.snapshotTasks
     Log.i("PHILIP", "[MainScreen] size of tasks ${tasks.size}")
-    val context = LocalContext.current
 
-    val selectedTask = sharedViewModel.selectedTask
+    val context = LocalContext.current
+    val selectedTask = memoViewModel.selectedTask
 
     // 인덱스 가 변경 되었을 경우 에만 editor 의 값을 초기화 한다.
     LaunchedEffect(key1 = taskIndex) {
         Log.i("PHILIP", "[MainScreen] selectedTask $selectedTask")
         if (taskIndex >= 0)
-            sharedViewModel.updateSelectedTask(tasks[taskIndex])
+            memoViewModel.updateSelectedTask(tasks[taskIndex])
         else
-            sharedViewModel.updateSelectedTask(TodoTask(-1, "", "", Priority.NONE))
-
+            memoViewModel.updateSelectedTask(TodoTask(-1, "", "", Priority.NONE))
     }
 
     // 뒤로 가기 버튼에 대한 가로 채기 및 처리
     BackHandler {
-        toListScreen(Action.NO_ACTION)
+        toListScreen(null)
     }
 
     val emptyTitleString = stringResource(id = R.string.empty_title_popup)
@@ -89,13 +69,13 @@ fun MainScreen(
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
-                        if (sharedViewModel.title.isEmpty()) {
+                        if (memoViewModel.title.isEmpty()) {
                             Toast.makeText(
                                 context,
                                 emptyTitleString,
                                 Toast.LENGTH_SHORT
                             ).show()
-                        } else if (sharedViewModel.description.isEmpty()) {
+                        } else if (memoViewModel.description.isEmpty()) {
                             Toast.makeText(
                                 context,
                                 emptyDescriptionString,
@@ -103,24 +83,24 @@ fun MainScreen(
                             ).show()
                             // the action is executed here
                         } else {
-                            sharedViewModel.handleActions(action = action)
-                            toListScreen(action)
+                            memoViewModel.handleActions(action = action)
+                            toListScreen(null)
                         }
                     } else {
-                        toListScreen(action)
+                        toListScreen(null)
                     }
                 },
                 onCopyClicked = {
                     scope.launch {
                         copyToClipboard(
                             context = context,
-                            label = "content", text = sharedViewModel.description
+                            label = "content", text = memoViewModel.description
                         )
                         Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onUpdateClicked = {
-                    sharedViewModel.setTaskScreenToEditorMode()
+                    memoViewModel.setTaskScreenToEditorMode()
                 }
             )
         },
@@ -134,23 +114,23 @@ fun MainScreen(
                     taskIndex = taskIndex,
                     tasks = tasks,
                     taskAppBarState = taskAppBarState,
-                    title = sharedViewModel.title,
-                    description = sharedViewModel.description,
-                    priority = sharedViewModel.priority,
-                    createdAt = sharedViewModel.createdAt,
-                    updatedAt = sharedViewModel.updatedAt,
+                    title = memoViewModel.title,
+                    description = memoViewModel.description,
+                    priority = memoViewModel.priority,
+                    createdAt = memoViewModel.createdAt,
+                    updatedAt = memoViewModel.updatedAt,
                     onTitleChange = { title ->
                         Log.i("PHILIP", "[TaskScreen] title has changed $title")
-                        sharedViewModel.updateTitle(title)
+                        memoViewModel.updateTitle(title)
                     },
                     onDescriptionChange = { description ->
-                        sharedViewModel.description = description
+                        memoViewModel.description = description
                     },
                     onPriorityChange = { priority ->
-                        sharedViewModel.priority = priority
+                        memoViewModel.priority = priority
                     },
-                    onSwipeRightOnViewer = { sharedViewModel.decrementIndex() },
-                    onSwipeLeftOnViewer = { sharedViewModel.incrementIndex() }
+                    onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
+                    onSwipeLeftOnViewer = { memoViewModel.incrementIndex() }
 
                 )
             }
