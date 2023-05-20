@@ -304,7 +304,6 @@ private fun EditorContent(
             color = MaterialTheme.colorScheme.background,
         )
         Card {
-
             TextField(
                 modifier = Modifier.fillMaxSize(),
                 value = description,
@@ -340,7 +339,8 @@ fun ViewerContentPreview() {
             createdAt = ZonedDateTime.now(),
             updatedAt = ZonedDateTime.now(),
             onSwipeRightOnViewer = {},
-            onSwipeLeftOnViewer = {}
+            onSwipeLeftOnViewer = {},
+            taskAppBarState = TaskAppBarState.EDITOR
         )
     }
 }

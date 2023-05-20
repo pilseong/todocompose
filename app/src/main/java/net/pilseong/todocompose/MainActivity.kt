@@ -50,11 +50,7 @@ fun MainScreen(
     navHostController: NavHostController,
     memoViewModel: MemoViewModel
 ) {
-    Scaffold(
-        bottomBar = {
-            BottomNavBar(navHostController)
-        }
-    ) {
+    Scaffold {
         MainNavGraph(navHostController, memoViewModel)
     }
 }

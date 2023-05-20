@@ -69,6 +69,7 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
+import net.pilseong.todocompose.ui.theme.onPrimaryElevation
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
@@ -154,83 +155,6 @@ fun ListScreen(
                 )
             }
         },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .fillMaxSize(),
-            ) {
-
-                StatusLine(
-                    prioritySortState = prioritySortState,
-                    orderEnabled = memoViewModel.orderEnabled,
-                    dateEnabled = memoViewModel.dateEnabled,
-                    startDate = memoViewModel.startDate,
-                    endDate = memoViewModel.endDate,
-                    onCloseClick = {
-                        memoViewModel.handleActions(
-                            Action.SEARCH_WITH_DATE_RANGE,
-                            startDate = null,
-                            endDate = null
-                        )
-                    },
-                    favoriteOn = memoViewModel.sortFavorite,
-                    onFavoriteClick = {
-                        memoViewModel.handleActions(
-                            action = Action.SORT_FAVORITE_CHANGE,
-                            favorite = !memoViewModel.sortFavorite
-                        )
-                    },
-                    onOrderEnabledClick = {
-                        memoViewModel.handleActions(
-                            action = Action.SORT_ORDER_CHANGE,
-                            sortOrderEnabled = !memoViewModel.orderEnabled
-                        )
-                    },
-                    onDateEnabledClick = {
-                        memoViewModel.handleActions(
-                            action = Action.SORT_DATE_CHANGE,
-                            sortDateEnabled = !memoViewModel.dateEnabled
-                        )
-                    },
-                    onPrioritySelected = { priority ->
-                        Log.i("PHILIP", "onSortClicked")
-                        memoViewModel.handleActions(
-                            Action.PRIORITY_CHANGE,
-                            priority = priority
-                        )
-                    },
-                )
-
-                ListContent(
-                    tasks = tasks,
-                    toTaskScreen = { index ->
-                        memoViewModel.setTaskScreenToViewerMode()
-                        memoViewModel.updateIndex(index)
-                        toTaskScreen(tasks.itemSnapshotList.items)
-                    },
-//                    onSwipeToDelete = { action, task ->
-//                        // undo 처리를 위해서 데이터 동기화 필요
-//                        memoViewModel.updateTaskContent(task)
-//                        memoViewModel.handleActions(action, task.id)
-//                    },
-                    onSwipeToUpdate = { index ->
-                        memoViewModel.setTaskScreenToEditorMode()
-                        memoViewModel.updateIndex(index)
-                        toTaskScreen(tasks.itemSnapshotList.items)
-                    },
-                    header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
-                    screenMode = memoViewModel.screenMode,
-                    dateEnabled = memoViewModel.dateEnabled,
-                    onFavoriteClick = { todo ->
-                        memoViewModel.handleActions(
-                            action = Action.FAVORITE_UPDATE,
-                            todoTask = todo
-                        )
-                    }
-                )
-            }
-        },
         floatingActionButton = {
             AddMemoFab(onFabClicked = {
                 memoViewModel.setTaskScreenToEditorMode()
@@ -245,8 +169,85 @@ fun ListScreen(
                 searchText = searchText
             )
         },
-        bottomBar = { BottomNavBar(navHostController) }
-    )
+        bottomBar = {
+            BottomNavBar(navHostController)
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues = paddingValues)
+                .fillMaxSize(),
+        ) {
+            StatusLine(
+                prioritySortState = prioritySortState,
+                orderEnabled = memoViewModel.orderEnabled,
+                dateEnabled = memoViewModel.dateEnabled,
+                startDate = memoViewModel.startDate,
+                endDate = memoViewModel.endDate,
+                onCloseClick = {
+                    memoViewModel.handleActions(
+                        Action.SEARCH_WITH_DATE_RANGE,
+                        startDate = null,
+                        endDate = null
+                    )
+                },
+                favoriteOn = memoViewModel.sortFavorite,
+                onFavoriteClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_FAVORITE_CHANGE,
+                        favorite = !memoViewModel.sortFavorite
+                    )
+                },
+                onOrderEnabledClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_ORDER_CHANGE,
+                        sortOrderEnabled = !memoViewModel.orderEnabled
+                    )
+                },
+                onDateEnabledClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_DATE_CHANGE,
+                        sortDateEnabled = !memoViewModel.dateEnabled
+                    )
+                },
+                onPrioritySelected = { priority ->
+                    Log.i("PHILIP", "onSortClicked")
+                    memoViewModel.handleActions(
+                        Action.PRIORITY_CHANGE,
+                        priority = priority
+                    )
+                },
+            )
+
+            ListContent(
+                tasks = tasks,
+                toTaskScreen = { index ->
+                    memoViewModel.setTaskScreenToViewerMode()
+                    memoViewModel.updateIndex(index)
+                    toTaskScreen(tasks.itemSnapshotList.items)
+                },
+//                    onSwipeToDelete = { action, task ->
+//                        // undo 처리를 위해서 데이터 동기화 필요
+//                        memoViewModel.updateTaskContent(task)
+//                        memoViewModel.handleActions(action, task.id)
+//                    },
+                onSwipeToUpdate = { index ->
+                    memoViewModel.setTaskScreenToEditorMode()
+                    memoViewModel.updateIndex(index)
+                    toTaskScreen(tasks.itemSnapshotList.items)
+                },
+                header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
+                screenMode = memoViewModel.screenMode,
+                dateEnabled = memoViewModel.dateEnabled,
+                onFavoriteClick = { todo ->
+                    memoViewModel.handleActions(
+                        action = Action.FAVORITE_UPDATE,
+                        todoTask = todo
+                    )
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -295,7 +296,7 @@ private fun StatusLine(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (startDate != null || endDate != null) 60.dp else 30.dp),
+            .height(if (startDate != null || endDate != null) 64.dp else 30.dp),
         color = MaterialTheme.colorScheme.topBarContainerColor
 
     ) {
@@ -502,6 +503,7 @@ private fun StatusLine(
                     })
             }
 
+            // 날짜 검색 부분 표출
             if (startDate != null || endDate != null) {
                 Row(
                     modifier = Modifier
@@ -530,22 +532,26 @@ private fun StatusLine(
                             DateTimeFormatter.ofPattern("yy/MM/dd")
                         )
                     else stringResource(id = R.string.status_line_date_range_up_to_date_text)
-                    Surface(tonalElevation = 2.dp) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.onPrimaryElevation
+                    ) {
                         Text(
+                            modifier = Modifier
+                                .padding(SMALL_PADDING),
                             text = stringResource(
                                 id = R.string.status_line_date_range_text,
                                 startDateStr, endDateStr
                             ),
-                            fontSize = MaterialTheme.typography.titleMedium.fontSize
+                            fontSize = MaterialTheme.typography.titleSmall.fontSize
                         )
                     }
 
                     Icon(
                         modifier = Modifier
-                            .padding(4.dp)
+//                            .padding(vertical = SMALL_PADDING)
                             .border(
                                 border = BorderStroke(
-                                    width = 1.dp,
+                                    0.dp,
                                     color = MaterialTheme.colorScheme.topBarContentColor
                                 )
                             )
@@ -651,6 +657,7 @@ fun AddMemoFab(
         onClick = {
             onFabClicked(-1)
         },
+        shape = RoundedCornerShape(4.dp),
         containerColor = MaterialTheme.colorScheme.fabContainerColor,
         contentColor = MaterialTheme.colorScheme.fabContent
     ) {

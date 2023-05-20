@@ -147,7 +147,7 @@ fun DetailTaskBar(
                 onClicked = { toListScreen(Action.NO_ACTION) },
                 icon = Icons.Default.Close,
                 description = stringResource(
-                    R.string.default_task_bar_back_arrow_icon
+                    R.string.default_task_bar_close_icon
                 )
             )
         },

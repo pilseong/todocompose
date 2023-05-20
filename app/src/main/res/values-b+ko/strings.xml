@@ -16,6 +16,7 @@
     <string name="new_task_title_placeholder">제목</string>
     <string name="new_task_description_placeholder">내용</string>
     <string name="default_task_bar_back_arrow_icon">뒤로 가기 아이콘</string>
+    <string name="default_task_bar_close_icon">화면 끄기 X 아이콘</string>
     <string name="new_task_added_message">메모가 추가되었습니다.</string>
     <string name="task_updated_message">메모가 업데이트 되었습니다.</string>
     <string name="task_deleted_message">메모가 삭제되었습니다.</string>
@@ -70,6 +71,10 @@
     <string name="import_menu_label">가져오기</string>
     <string name="export_menu_label">내보내기</string>
     <string name="settings_menu_label">설정</string>
+    <string name="bottom_nav_label_settings">설정</string>
+    <string name="bottom_nav_label_memo">메모</string>
+    <string name="bottom_nav_label_home">홈</string>
+
 
 
 </resources>

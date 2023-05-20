@@ -10,6 +10,7 @@ import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.memoNavGraph
 import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.list.ListScreen
+import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 
 @Composable
@@ -45,7 +46,7 @@ fun MainNavGraph(
         composable(
             route = BottomBarScreen.Settings.route
         ) {
-            HomeScreen(navHostController)
+            SettingsScreen(navHostController)
         }
     }
 }

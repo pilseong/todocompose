@@ -3,8 +3,10 @@ package net.pilseong.todocompose.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -63,6 +65,15 @@ val ColorScheme.taskItemContentColor: Color
         Color.LightGray
     else
         MaterialTheme.colorScheme.onSurface
+
+val ColorScheme.onPrimaryElevation: Color
+    @Composable
+    get() = if (isSystemInDarkTheme())
+        MaterialTheme.colorScheme
+            .surfaceColorAtElevation(2.dp)
+    else
+        MaterialTheme.colorScheme
+            .surfaceColorAtElevation(100000000.dp)
 
 val ColorScheme.mediumGray: Color
     @Composable

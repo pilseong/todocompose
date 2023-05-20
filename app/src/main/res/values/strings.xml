@@ -16,6 +16,7 @@
     <string name="new_task_title_placeholder">Title</string>
     <string name="new_task_description_placeholder">Description</string>
     <string name="default_task_bar_back_arrow_icon">Arrow backwards Icon</string>
+    <string name="default_task_bar_close_icon">Close Icon</string>
     <string name="new_task_added_message">added</string>
     <string name="task_updated_message">updated</string>
     <string name="task_deleted_message">deleted</string>
@@ -70,5 +71,8 @@
     <string name="import_menu_label">IMPORT</string>
     <string name="export_menu_label">EXPORT</string>
     <string name="settings_menu_label">SETTINGS</string>
+    <string name="bottom_nav_label_settings">Settings</string>
+    <string name="bottom_nav_label_memo">Memos</string>
+    <string name="bottom_nav_label_home">Home</string>
 
 </resources>

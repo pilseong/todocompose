@@ -5,6 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import net.pilseong.todocompose.data.model.TodoTask
@@ -49,6 +50,7 @@ fun NavGraphBuilder.memoNavGraph(
             route = Screen.MemoDetail.route,
         ) {
             TaskScreen(
+                navHostController = rememberNavController(),
                 memoViewModel = memoViewModel,
                 toListScreen = toListScreen
             )
