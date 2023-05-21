@@ -14,12 +14,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.copyToClipboard
@@ -27,7 +25,6 @@ import net.pilseong.todocompose.util.copyToClipboard
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TaskScreen(
-    navHostController: NavHostController,
     memoViewModel: MemoViewModel,
     toListScreen: (Int?) -> Unit,
 ) {
@@ -40,14 +37,14 @@ fun TaskScreen(
 
     Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
     val tasks = memoViewModel.snapshotTasks
-    Log.i("PHILIP", "[MainScreen] size of tasks ${tasks.size}")
+    Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.size}")
 
     val context = LocalContext.current
     val selectedTask = memoViewModel.selectedTask
 
     // 인덱스 가 변경 되었을 경우 에만 editor 의 값을 초기화 한다.
     LaunchedEffect(key1 = taskIndex) {
-        Log.i("PHILIP", "[MainScreen] selectedTask $selectedTask")
+        Log.i("PHILIP", "[TaskScreen] selectedTask $selectedTask")
         if (taskIndex >= 0)
             memoViewModel.updateSelectedTask(tasks[taskIndex])
         else

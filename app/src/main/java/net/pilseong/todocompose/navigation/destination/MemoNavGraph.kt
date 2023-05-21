@@ -1,14 +1,16 @@
 package net.pilseong.todocompose.navigation.destination
 
 import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.screen.list.ListScreen
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
@@ -19,14 +21,13 @@ import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
-    memoViewModel: MemoViewModel,
-    toTaskScreen: (List<TodoTask>) -> Unit,
+    toTaskScreen: () -> Unit,
     toListScreen: (Int?) -> Unit,
+    onClickBottomNavBar: (String) -> Unit
 ) {
-
     navigation(
         startDestination = Screen.MemoList.route,
-        route = MEMO_LIST
+        route = MEMO_LIST,
     ) {
         composable(
             route = Screen.MemoList.route,
@@ -36,26 +37,56 @@ fun NavGraphBuilder.memoNavGraph(
                     defaultValue = 0
                 }
             )
-        ) {
-            Log.i("PHILIP", "[memoNavGraph] ListScreen called with ${it.arguments?.getInt(NOTE_ID_ARGUMENT)}")
+        ) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navHostController.getBackStackEntry(MEMO_LIST)
+            }
+            val memoViewModel = hiltViewModel<MemoViewModel>(
+                viewModelStoreOwner = parentEntry
+            )
+
+            Log.i(
+                "PHILIP",
+                "[memoNavGraph] ListScreen called with " +
+                        "${backStackEntry.arguments?.getInt(NOTE_ID_ARGUMENT)}"
+            )
+
+            LaunchedEffect(key1 = Unit) {
+                memoViewModel.observePrioritySortState()
+                memoViewModel.observeOrderEnabledState()
+                memoViewModel.observeDateEnabledState()
+                memoViewModel.observeFavoriteState()
+            }
+
+
             ListScreen(
-                navHostController = navHostController,
-                toTaskScreen = toTaskScreen,
-                memoViewModel = memoViewModel
+                toTaskScreen = { snapshot ->
+                    Log.i("PHILIP", "Snapshot is $snapshot")
+                    memoViewModel.updateSnapshotTasks(snapshot)
+                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
+                    memoViewModel.updateAction(Action.NO_ACTION)
+                    toTaskScreen()
+                },
+                onClickBottomNavBar = onClickBottomNavBar,
+                memoViewModel = memoViewModel,
             )
         }
 
 
         composable(
             route = Screen.MemoDetail.route,
-        ) {
+        ) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navHostController.getBackStackEntry(MEMO_LIST)
+            }
+            val memoViewModel = hiltViewModel<MemoViewModel>(
+                viewModelStoreOwner = parentEntry
+            )
+
             TaskScreen(
-                navHostController = rememberNavController(),
                 memoViewModel = memoViewModel,
                 toListScreen = toListScreen
             )
         }
-
-
     }
 }

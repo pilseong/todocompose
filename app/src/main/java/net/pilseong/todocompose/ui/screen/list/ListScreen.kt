@@ -58,6 +58,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
@@ -83,8 +84,8 @@ import java.time.format.DateTimeFormatter
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
-    navHostController: NavHostController,
     toTaskScreen: (List<TodoTask>) -> Unit,
+    onClickBottomNavBar: (String) -> Unit,
     memoViewModel: MemoViewModel,
 ) {
     /**
@@ -170,7 +171,10 @@ fun ListScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(navHostController)
+            BottomNavBar(
+                onClick = onClickBottomNavBar,
+                currentDestination = Screen.MemoList.route
+            )
         }
     ) { paddingValues ->
         Column(
@@ -673,8 +677,8 @@ fun AddMemoFab(
 private fun ListScreenPreview() {
     TodoComposeTheme {
         ListScreen(
-            navHostController = rememberNavController(),
             toTaskScreen = {},
+            onClickBottomNavBar = {},
             memoViewModel = viewModel(),
         )
     }

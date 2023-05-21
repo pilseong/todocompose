@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.navigation.destination
 
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -12,7 +11,6 @@ import net.pilseong.todocompose.util.Constants.LIST_ARGUMENT_ACTION_TYPE
 import net.pilseong.todocompose.util.Constants.LIST_SCREEN
 
 fun NavGraphBuilder.listComposable(
-    navHostController: NavHostController,
     toTaskScreen: (List<TodoTask>) -> Unit,
     memoViewModel: MemoViewModel
 ) {
@@ -25,9 +23,9 @@ fun NavGraphBuilder.listComposable(
         )
     ) {
         ListScreen(
-            navHostController = navHostController,
             toTaskScreen = toTaskScreen,
             memoViewModel = memoViewModel,
+            onClickBottomNavBar = {}
         )
     }
 }

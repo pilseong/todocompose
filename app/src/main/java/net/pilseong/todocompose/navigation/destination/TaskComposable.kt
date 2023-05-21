@@ -17,7 +17,6 @@ fun NavGraphBuilder.taskComposable(
     composable(route = Constants.TASK_SCREEN) {
         // task 화면 표출
         TaskScreen(
-            navHostController = navHostController,
             toListScreen = toListScreen,
             memoViewModel = memoViewModel
         )

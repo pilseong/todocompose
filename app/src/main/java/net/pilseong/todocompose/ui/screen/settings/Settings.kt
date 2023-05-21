@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavHostController
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.screen.task.CommonAction
@@ -29,7 +30,7 @@ import net.pilseong.todocompose.ui.theme.topBarContentColor
 
 @Composable
 fun SettingsScreen(
-    navHostController: NavHostController,
+    onClickBottomNavBar: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -39,7 +40,10 @@ fun SettingsScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(navHostController)
+            BottomNavBar(
+                currentDestination = Screen.Settings.route,
+                onClick = onClickBottomNavBar
+            )
         }
     ) { it ->
         Surface(

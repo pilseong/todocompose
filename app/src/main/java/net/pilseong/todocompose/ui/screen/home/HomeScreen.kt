@@ -13,16 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import net.pilseong.todocompose.navigation.MainNavGraph
+import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 
 @Composable
 fun HomeScreen(
-    navHostController: NavHostController,
-    modifier: Modifier = Modifier
+    onClickBottomNavBar: (String) -> Unit
 ) {
     Scaffold(
         bottomBar = {
-            BottomNavBar(navHostController)
+            BottomNavBar(
+                currentDestination = Screen.Home.route,
+                onClick = onClickBottomNavBar
+            )
         }
     ) { it ->
         Surface(
@@ -37,7 +40,6 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "HOME",
-                    modifier = modifier,
                     color = MaterialTheme.colorScheme.inverseOnSurface,
                     style = MaterialTheme.typography.titleLarge
                 )
