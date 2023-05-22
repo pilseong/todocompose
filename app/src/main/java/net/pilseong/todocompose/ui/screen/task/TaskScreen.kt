@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
@@ -40,16 +38,6 @@ fun TaskScreen(
     Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.size}")
 
     val context = LocalContext.current
-    val selectedTask = memoViewModel.selectedTask
-
-    // 인덱스 가 변경 되었을 경우 에만 editor 의 값을 초기화 한다.
-    LaunchedEffect(key1 = taskIndex) {
-        Log.i("PHILIP", "[TaskScreen] selectedTask $selectedTask")
-        if (taskIndex >= 0)
-            memoViewModel.updateSelectedTask(tasks[taskIndex])
-        else
-            memoViewModel.updateSelectedTask(TodoTask(-1, "", "", Priority.NONE))
-    }
 
     // 뒤로 가기 버튼에 대한 가로 채기 및 처리
     BackHandler {
@@ -58,14 +46,14 @@ fun TaskScreen(
 
     val emptyTitleString = stringResource(id = R.string.empty_title_popup)
     val emptyDescriptionString = stringResource(id = R.string.empty_description_popup)
-    val scope = rememberCoroutineScope()
     val clipboardMessage = stringResource(id = R.string.viewer_appbar_clipboard_copied_popup)
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TaskAppBar(
                 taskAppBarState = taskAppBarState,
-                todoTask = selectedTask,
+                todoTask = if (taskIndex >= 0) tasks[taskIndex] else TodoTask.instance(),
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
@@ -99,8 +87,8 @@ fun TaskScreen(
                         Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
-                onUpdateClicked = {
-                    memoViewModel.setTaskScreenToEditorMode()
+                onEditClicked = {
+                    memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex])
                 }
             )
         },
@@ -117,8 +105,6 @@ fun TaskScreen(
                     title = memoViewModel.title,
                     description = memoViewModel.description,
                     priority = memoViewModel.priority,
-                    createdAt = memoViewModel.createdAt,
-                    updatedAt = memoViewModel.updatedAt,
                     onTitleChange = { title ->
                         Log.i("PHILIP", "[TaskScreen] title has changed $title")
                         memoViewModel.updateTitle(title)

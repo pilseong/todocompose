@@ -22,6 +22,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,8 +48,10 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
     memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
     searchText: String
@@ -56,6 +59,7 @@ fun ListAppBar(
     when (searchAppBarState) {
         SearchAppBarState.CLOSE -> {
             DefaultListAppBar(
+                scrollBehavior = scrollBehavior,
                 onSearchIconClicked = {
                     // 초기 로딩 을 위한 데이터 검색
                     memoViewModel.refreshAllTasks()
@@ -101,12 +105,14 @@ fun ListAppBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultListAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit
 ) {
     TopAppBar(
+        scrollBehavior = scrollBehavior,
         title = {
             Text(
                 text = stringResource(id = R.string.list_screen_title),

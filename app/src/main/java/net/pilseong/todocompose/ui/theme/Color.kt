@@ -27,6 +27,9 @@ val MediumPriorityColor = Color(0xFFFFC114)
 val HighPriorityColor = Color(0XFFFF6361)
 val NonePriorityColor = Color(0xFF8F8F8F)
 
+val WEEKDAY_COLOR = Color(0xFF5494A8)
+val WEEKEND_COLOR = Color(0xFFDF877A)
+
 // 색상 추가
 val ColorScheme.topBarContentColor: Color
     @Composable

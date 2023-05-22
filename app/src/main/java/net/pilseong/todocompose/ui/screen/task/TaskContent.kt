@@ -49,7 +49,6 @@ import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.util.TaskAppBarState
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,8 +60,6 @@ fun TaskContent(
     title: String,
     description: String,
     priority: Priority,
-    createdAt: ZonedDateTime,
-    updatedAt: ZonedDateTime,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onPriorityChange: (Priority) -> Unit,
@@ -119,11 +116,7 @@ fun TaskContent(
             },
             dismissContent = {
                 ViewerContent(
-                    title,
-                    priority,
-                    createdAt,
-                    updatedAt,
-                    description,
+                    task = tasks[taskIndex]
                 )
             },
             directions = getDirections(taskIndex, tasks.size - 1)
@@ -143,7 +136,7 @@ fun TaskContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun getDirections(selectedIndex: Int, endIndex: Int): Set<DismissDirection> {
-    val directions = mutableSetOf<DismissDirection>(
+    val directions = mutableSetOf(
         DismissDirection.StartToEnd, DismissDirection.EndToStart
     )
 
@@ -158,14 +151,8 @@ fun getDirections(selectedIndex: Int, endIndex: Int): Set<DismissDirection> {
 
 @Composable
 private fun ViewerContent(
-    title: String,
-    priority: Priority,
-    createdAt: ZonedDateTime,
-    updatedAt: ZonedDateTime,
-    description: String,
+    task: TodoTask
 ) {
-//    Log.i("PHILIP", "[ViewerContent] $title")
-
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -175,7 +162,7 @@ private fun ViewerContent(
             .verticalScroll(scrollState)
 
     ) {
-        val priorityText = when (priority) {
+        val priorityText = when (task.priority) {
             Priority.HIGH -> stringResource(id = R.string.priority_high)
             Priority.MEDIUM -> stringResource(id = R.string.priority_medium)
             Priority.LOW -> stringResource(id = R.string.priority_low)
@@ -191,7 +178,7 @@ private fun ViewerContent(
                         .padding(horizontal = SMALL_PADDING)
                         .size(PRIORITY_INDICATOR_SIZE)
                 ) {
-                    drawCircle(color = priority.color)
+                    drawCircle(color = task.priority.color)
                 }
 
                 Text(
@@ -203,7 +190,7 @@ private fun ViewerContent(
                 )
                 Text(
                     text = "${stringResource(id = R.string.task_content_updated_at_label)}: ${
-                        updatedAt.toLocalDateTime()
+                        task.updatedAt.toLocalDateTime()
                             .format(
                                 DateTimeFormatter.ofPattern(
                                     stringResource(id = R.string.task_content_dateformat)
@@ -220,7 +207,7 @@ private fun ViewerContent(
             ) {
                 Text(
                     text = "${stringResource(id = R.string.sort_date_label)}: ${
-                        createdAt.toLocalDateTime()
+                        task.createdAt.toLocalDateTime()
                             .format(
                                 DateTimeFormatter.ofPattern(
                                     stringResource(id = R.string.task_content_dateformat)
@@ -236,16 +223,12 @@ private fun ViewerContent(
             modifier = Modifier.height(MEDIUM_PADDING),
             color = MaterialTheme.colorScheme.background,
         )
-        Card(
-//            modifier = Modifier
-//                .weight(1F)
-//                .fillMaxWidth()
-        ) {
+        Card {
             SelectionContainer {
                 Text(
                     modifier = Modifier
                         .padding(LARGE_PADDING),
-                    text = description
+                    text = task.description
                 )
             }
         }
@@ -314,9 +297,7 @@ private fun EditorContent(
                 },
                 onValueChange = { onDescriptionChange(it) },
                 colors = TextFieldDefaults.colors(
-//                focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-//                disabledIndicatorColor = Color.Transparent
                 )
             )
         }
@@ -336,8 +317,6 @@ fun ViewerContentPreview() {
             onTitleChange = {},
             onDescriptionChange = {},
             onPriorityChange = {},
-            createdAt = ZonedDateTime.now(),
-            updatedAt = ZonedDateTime.now(),
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
             taskAppBarState = TaskAppBarState.EDITOR

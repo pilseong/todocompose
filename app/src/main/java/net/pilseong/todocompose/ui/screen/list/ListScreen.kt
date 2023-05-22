@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,19 +49,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
@@ -75,12 +76,15 @@ import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.util.Constants.MEMO_LIST
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.SearchAppBarState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
@@ -103,6 +107,7 @@ fun ListScreen(
     val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
 
     val snackBarHostState = remember { SnackbarHostState() }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     // task screen 에서 요청한 처리의 결과를 보여 준다. undo 의 경우는 특별 하게 처리 한다.
     // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
@@ -111,7 +116,6 @@ fun ListScreen(
         action = memoViewModel.action,
         enabled = memoViewModel.actionPerformed,
         title = memoViewModel.title,
-        duration = SnackbarDuration.Short,
         buttonClicked = { selectedAction, result ->
             Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
@@ -128,7 +132,7 @@ fun ListScreen(
         dateEnabled = memoViewModel.snackBarDateEnabled,
         startDate = memoViewModel.startDate,
         endDate = memoViewModel.endDate,
-        memoViewModel = memoViewModel
+        actionAfterPopup = { memoViewModel.updateAction(it) }
     )
 
     // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
@@ -144,6 +148,7 @@ fun ListScreen(
 
     // UI 처리 부분
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(
                 hostState = snackBarHostState
@@ -157,14 +162,17 @@ fun ListScreen(
             }
         },
         floatingActionButton = {
-            AddMemoFab(onFabClicked = {
-                memoViewModel.setTaskScreenToEditorMode()
-                memoViewModel.updateIndex(-1)
-                toTaskScreen(tasks.itemSnapshotList.items)
-            })
+            AddMemoFab(
+                onFabClicked = {
+                    memoViewModel.updateIndex(NEW_ITEM_ID)
+                    memoViewModel.setTaskScreenToEditorMode()
+                    toTaskScreen(tasks.itemSnapshotList.items)
+                }
+            )
         },
         topBar = {
             ListAppBar(
+                scrollBehavior = scrollBehavior,
                 memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText
@@ -173,7 +181,7 @@ fun ListScreen(
         bottomBar = {
             BottomNavBar(
                 onClick = onClickBottomNavBar,
-                currentDestination = Screen.MemoList.route
+                currentDestination = MEMO_LIST
             )
         }
     ) { paddingValues ->
@@ -235,9 +243,9 @@ fun ListScreen(
 //                        memoViewModel.updateTaskContent(task)
 //                        memoViewModel.handleActions(action, task.id)
 //                    },
-                onSwipeToUpdate = { index ->
-                    memoViewModel.setTaskScreenToEditorMode()
+                onSwipeToEdit = { index ->
                     memoViewModel.updateIndex(index)
+                    memoViewModel.setTaskScreenToEditorMode(tasks.peek(index)!!)
                     toTaskScreen(tasks.itemSnapshotList.items)
                 },
                 header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
@@ -580,11 +588,11 @@ private fun DisplaySnackBar(
     title: String,
     duration: SnackbarDuration = SnackbarDuration.Short,
     buttonClicked: (Action, SnackbarResult) -> Unit,
+    actionAfterPopup: (Action) -> Unit,
     orderEnabled: Boolean,
     dateEnabled: Boolean,
     startDate: Long?,
     endDate: Long?,
-    memoViewModel: MemoViewModel
 ) {
 
     val message = when (action) {
@@ -641,7 +649,7 @@ private fun DisplaySnackBar(
         Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
         if (action != Action.NO_ACTION) {
             Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
-            memoViewModel.updateAction(Action.NO_ACTION)
+            actionAfterPopup(Action.NO_ACTION)
             val snackBarResult = snackBarHostState.showSnackbar(
                 message = message,
                 actionLabel = label,
@@ -655,11 +663,11 @@ private fun DisplaySnackBar(
 // Floating Action Button
 @Composable
 fun AddMemoFab(
-    onFabClicked: (taskId: Int) -> Unit
+    onFabClicked: () -> Unit
 ) {
     FloatingActionButton(
         onClick = {
-            onFabClicked(-1)
+            onFabClicked()
         },
         shape = RoundedCornerShape(4.dp),
         containerColor = MaterialTheme.colorScheme.fabContainerColor,
@@ -672,6 +680,7 @@ fun AddMemoFab(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 private fun ListScreenPreview() {

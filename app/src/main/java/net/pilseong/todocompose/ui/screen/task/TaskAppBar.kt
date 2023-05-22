@@ -34,6 +34,7 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 
 @Composable
@@ -42,7 +43,7 @@ fun TaskAppBar(
     todoTask: TodoTask,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
-    onUpdateClicked: () -> Unit
+    onEditClicked: () -> Unit
 ) {
     when (taskAppBarState) {
         TaskAppBarState.VIEWER -> {
@@ -51,13 +52,13 @@ fun TaskAppBar(
                 todoTask = todoTask,
                 toListScreen = toListScreen,
                 onCopyClicked = onCopyClicked,
-                onUpdateClicked = onUpdateClicked
+                onEditClicked = onEditClicked
             )
         }
 
         TaskAppBarState.EDITOR -> {
-            Log.i("PHILIP", "[TaskAppBar] todo received ${todoTask.id != -1}")
-            EditTaskBar(toListScreen = toListScreen, edit = todoTask.id != -1)
+            Log.i("PHILIP", "[TaskAppBar] todo received ${todoTask.id != NEW_ITEM_ID}")
+            EditTaskBar(toListScreen = toListScreen, edit = todoTask.id != NEW_ITEM_ID)
 
         }
     }
@@ -138,7 +139,7 @@ fun DetailTaskBar(
     todoTask: TodoTask,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
-    onUpdateClicked: () -> Unit
+    onEditClicked: () -> Unit
 ) {
     Log.i("PHILIP", "[DetailTaskBar] todo received $todoTask")
     TopAppBar(
@@ -166,7 +167,7 @@ fun DetailTaskBar(
                 todoTask = todoTask,
                 toListScreen = toListScreen,
                 onCopyClicked = onCopyClicked,
-                onUpdateClicked = onUpdateClicked
+                onEditClicked = onEditClicked
             )
         }
     )
@@ -177,7 +178,7 @@ fun DetailTaskBarActions(
     todoTask: TodoTask,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
-    onUpdateClicked: () -> Unit
+    onEditClicked: () -> Unit
 ) {
     // deletion confirmation popup state
     var expanded by remember { mutableStateOf(false) }
@@ -197,9 +198,9 @@ fun DetailTaskBarActions(
         description = stringResource(id = R.string.viewer_appbar_clipboard_icon)
     )
 
-    // update
+    // Edit
     CommonAction(
-        onClicked = { onUpdateClicked() },
+        onClicked = { onEditClicked() },
         icon = Icons.Default.Edit,
         description = stringResource(id = R.string.viewer_appbar_update_icon)
     )
@@ -235,7 +236,7 @@ fun DetailTaskBarPreview() {
             ),
             toListScreen = {},
             onCopyClicked = {},
-            onUpdateClicked = {}
+            onEditClicked = {}
         )
     }
 }

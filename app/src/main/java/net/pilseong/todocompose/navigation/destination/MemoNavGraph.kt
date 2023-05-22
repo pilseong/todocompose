@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.navigation.destination
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +20,7 @@ import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
 
+@OptIn(ExperimentalFoundationApi::class)
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,

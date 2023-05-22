@@ -4,10 +4,8 @@ import androidx.navigation.NavHostController
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
-import net.pilseong.todocompose.util.Constants.LIST_SCREEN
 import net.pilseong.todocompose.util.Constants.MEMO_DETAIL
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
-import net.pilseong.todocompose.util.Constants.TASK_SCREEN
 
 class Router(
     private val navHostController: NavHostController,

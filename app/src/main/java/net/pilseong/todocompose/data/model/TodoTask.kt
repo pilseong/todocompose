@@ -6,6 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import net.pilseong.todocompose.util.Constants.MEMO_TABLE
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import java.time.ZonedDateTime
 
 @Entity(tableName = MEMO_TABLE)
@@ -26,7 +27,7 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     companion object {
         @JvmStatic fun instance(): TodoTask {
             return TodoTask(
-                id = 0,
+                id = NEW_ITEM_ID,
                 title = "",
                 description = "",
                 priority = Priority.NONE,

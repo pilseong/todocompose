@@ -2,6 +2,7 @@ package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -41,6 +43,7 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,24 +53,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
@@ -75,11 +77,12 @@ import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.LowPriorityColor
-import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.NonePriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.theme.WEEKDAY_COLOR
+import net.pilseong.todocompose.ui.theme.WEEKEND_COLOR
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
@@ -87,12 +90,13 @@ import net.pilseong.todocompose.util.ScreenMode
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+
 @Composable
 fun ListContent(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToUpdate: (Int) -> Unit,
+    onSwipeToEdit: (Int) -> Unit,
     header: Boolean = false,
     screenMode: ScreenMode,
     dateEnabled: Boolean = false,
@@ -105,7 +109,7 @@ fun ListContent(
             tasks = tasks,
             toTaskScreen = toTaskScreen,
 //            onSwipeToDelete = onSwipeToDelete,
-            onSwipeToUpdate = onSwipeToUpdate,
+            onSwipeToEdit = onSwipeToEdit,
             header = header,
             dateEnabled = dateEnabled,
             onFavoriteClick = onFavoriteClick
@@ -116,136 +120,238 @@ fun ListContent(
 }
 
 // tasks 가 있는 경우에 표출
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
+
 @Composable
 fun DisplayTasks(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToUpdate: (Int) -> Unit,
+    onSwipeToEdit: (Int) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit
 ) {
-    val context = LocalContext.current
     Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
         EmptyContent()
     } else {
-        // 화면 의 크기의 반을 swipe 한 경우 처리
-        val threshold = LocalConfiguration.current.screenWidthDp / 3
-        LazyColumn(
-            modifier = Modifier.padding(horizontal = XLARGE_PADDING),
-            verticalArrangement = Arrangement.spacedBy(SMALL_PADDING),
-        ) {
-            items(
-                count = tasks.itemCount,
-                key = tasks.itemKey(key = { item -> item.id }),
-                contentType = tasks.itemContentType(null)
-            ) { index ->
+        LazyItemList(
+            tasks = tasks,
+            header = header,
+            dateEnabled = dateEnabled,
+            onSwipeToEdit = onSwipeToEdit,
+            toTaskScreen = toTaskScreen,
+            onFavoriteClick = onFavoriteClick
+        )
+    }
+}
 
-                TaskItemHeader(header, dateEnabled, tasks, index)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalAnimationApi::class
+)
+@Composable
+fun LazyItemList(
+    tasks: LazyPagingItems<TodoTask>,
+    header: Boolean = false,
+    dateEnabled: Boolean = false,
+    onSwipeToEdit: (Int) -> Unit,
+    toTaskScreen: (Int) -> Unit,
+    onFavoriteClick: (TodoTask) -> Unit
+) {
+    val context = LocalContext.current
+    // 화면 의 크기의 반을 swipe 한 경우 처리
+    val threshold = LocalConfiguration.current.screenWidthDp / 3
+    val listState = rememberLazyListState()
+    val date: MutableState<String> = remember { mutableStateOf("") }
 
-                val currentItem by rememberUpdatedState(newValue = tasks[index])
-                val dismissState = rememberDismissState(
-                    confirmValueChange = {
-                        when (it) {
-                            DismissValue.Default -> false
-                            DismissValue.DismissedToEnd -> onSwipeToUpdate(index)
-                            DismissValue.DismissedToStart -> {}
+    val task = if (tasks.itemCount > listState.firstVisibleItemIndex)
+        tasks.peek(listState.firstVisibleItemIndex) else tasks.peek(tasks.itemCount-1)
+
+    val currentDate: ZonedDateTime? = if (dateEnabled) {
+        task?.createdAt
+    } else {
+        task?.updatedAt
+    }
+
+    date.value = currentDate?.toLocalDate().toString()
+
+    if (header) {
+        Surface {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PaddingValues(start = XLARGE_PADDING))
+            ) {
+                DateHeader(currentDate!!)
+            }
+        }
+    }
+
+    LazyColumn(
+        modifier = Modifier.padding(horizontal = XLARGE_PADDING),
+        state = listState
+    ) {
+        items(
+            count = tasks.itemCount,
+            key = tasks.itemKey(key = { item -> item.id }),
+            contentType = tasks.itemContentType(null)
+        ) { index ->
+//            if (header && index != 0) {
+            if (header && index != 0) {
+                TaskItemHeader(dateEnabled, tasks, index)
+            }
+
+            val currentItem by rememberUpdatedState(newValue = tasks[index])
+            val dismissState = rememberDismissState(
+                confirmValueChange = {
+                    when (it) {
+                        DismissValue.Default -> false
+                        DismissValue.DismissedToEnd -> onSwipeToEdit(index)
+                        DismissValue.DismissedToStart -> {}
 //                                onSwipeToDelete(
 //                                    Action.DELETE,
 //                                    currentItem!!
 //                                )
+                    }
+                    true
+                },
+                positionalThreshold = { threshold.dp.toPx() }
+            )
+
+            SwipeToDismiss(
+                state = dismissState,
+                background = {
+                    ColorBackGround(
+                        dismissState = dismissState,
+                        leftToRightColor = MediumPriorityColor,
+                        rightToLeftColor = HighPriorityColor,
+                        leftIcon = Icons.Default.Edit,
+                        rightIcon = Icons.Default.Delete
+                    )
+                },
+                dismissContent = {
+                    TaskItem(
+                        modifier = Modifier.animateItemPlacement(),
+                        todoTask = currentItem!!,
+                        toTaskScreen = {
+                            toTaskScreen(index)
+                        },
+                        onLongClick = {
+                            Toast.makeText(context, "long click activated", Toast.LENGTH_SHORT)
+                                .show()
+                        },
+                        onDeselectedClick = {
+
+                        },
+                        datetime = if (dateEnabled) currentItem!!.createdAt
+                        else currentItem!!.updatedAt,
+                        onFavoriteClick = {
+                            onFavoriteClick(currentItem!!)
                         }
-                        true
-                    },
-                    positionalThreshold = { threshold.dp.toPx() }
-                )
-
-                SwipeToDismiss(
-                    state = dismissState,
-                    background = {
-                        ColorBackGround(
-                            dismissState = dismissState,
-                            leftToRightColor = MediumPriorityColor,
-                            rightToLeftColor = HighPriorityColor,
-                            leftIcon = Icons.Default.Edit,
-                            rightIcon = Icons.Default.Delete
-                        )
-                    },
-                    dismissContent = {
-                        TaskItem(
-                            modifier = Modifier.animateItemPlacement(),
-                            todoTask = currentItem!!,
-                            toTaskScreen = {
-                                toTaskScreen(index)
-                            },
-                            onLongClick = {
-                                Toast.makeText(context, "long click activated", Toast.LENGTH_SHORT)
-                                    .show()
-                            },
-                            onDeselectedClick = {
-
-                            },
-                            datetime = if (dateEnabled) currentItem!!.createdAt
-                            else currentItem!!.updatedAt,
-                            onFavoriteClick = {
-                                onFavoriteClick(currentItem!!)
-                            }
-                        )
-                    },
-                    directions = setOf(DismissDirection.StartToEnd)
-                )
-            }
+                    )
+                },
+                directions = setOf(DismissDirection.StartToEnd)
+            )
         }
     }
 }
 
 @Composable
+fun DateHeader(time: ZonedDateTime) {
+    val backColor = if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
+        time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
+    ) {
+        WEEKEND_COLOR
+    } else {
+        WEEKDAY_COLOR
+    }
+
+    Row(
+        modifier = Modifier.padding(vertical = SMALL_PADDING),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.width(60.dp),
+            horizontalAlignment = Alignment.End) {
+            Text(
+                text = String.format("%02d", time.toLocalDate().dayOfMonth),
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Light
+                ),
+                color = backColor
+            )
+            Text(
+                text = time.toLocalDate().dayOfWeek.toString().take(3),
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Light
+                ),
+                color = backColor
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = time.toLocalDate().month.toString().lowercase().replaceFirstChar {
+                    it.titlecase()
+                },
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Light
+                ),
+                color = backColor
+            )
+            Text(
+                text = time.toLocalDate().year.toString(),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Light
+                )
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun DateHeaderPreview() {
+    DateHeader(ZonedDateTime.now())
+}
+
+@Composable
 private fun TaskItemHeader(
-    header: Boolean,
     dateEnabled: Boolean,
     tasks: LazyPagingItems<TodoTask>,
     index: Int
 ) {
-    var currentDate: ZonedDateTime? = null
-    var prevDate: ZonedDateTime? = null
+    val currentDate: ZonedDateTime?
+    val prevDate: ZonedDateTime?
 
-    if (header) {
-        if (dateEnabled) {
-            currentDate = tasks[index]?.createdAt
-            prevDate = if (index == 0) null
-            else tasks[index - 1]?.createdAt
-        } else {
-            currentDate = tasks[index]?.updatedAt
-            prevDate = if (index == 0) null
-            else tasks[index - 1]?.updatedAt
-        }
-        var currentDateString = currentDate?.toLocalDateTime()?.format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        ).toString()
+    if (dateEnabled) {
+        currentDate = tasks.peek(index)?.createdAt
+        prevDate = if (index == 0) null
+        else tasks.peek(index - 1)?.createdAt
+    } else {
+        currentDate = tasks.peek(index)?.updatedAt
+        prevDate = if (index == 0) null
+        else tasks.peek(index - 1)?.updatedAt
+    }
+    val currentDateString = currentDate?.toLocalDateTime()?.format(
+        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    ).toString()
 
-        val prevDateString = if (index == 0) null
-        else prevDate?.toLocalDateTime()?.format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        ).toString()
+    val prevDateString = if (index == 0) null
+    else prevDate?.toLocalDateTime()?.format(
+        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    ).toString()
 
-        if (currentDateString != prevDateString) {
-            Text(
-                modifier = Modifier.padding(
-                    PaddingValues(
-                        top = MEDIUM_PADDING,
-                        start = LARGE_PADDING
-                    )
-                ),
-                text = currentDateString,
-                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
+    if (currentDateString != prevDateString) {
+        DateHeader(currentDate!!)
     }
 }
 
@@ -315,127 +421,141 @@ fun TaskItem(
 ) {
     var selected by remember { mutableStateOf(false) }
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
+    val localDensity = LocalDensity.current
+    var componentHeight by remember { mutableStateOf(0.dp) }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(
-                onClick = {
-                    toTaskScreen(todoTask.id)
-
-                },
-                onLongClick = {
-                    selected = true
-                    onLongClick()
+    Row {
+        Spacer(modifier = Modifier.width(0.dp))
+        Surface(modifier = Modifier
+            .width(2.dp)
+            .height(SMALL_PADDING + componentHeight),
+            tonalElevation = 100000000.dp,
+            content = {}
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Surface(
+            modifier = Modifier
+                .onGloballyPositioned {
+                    componentHeight = with(localDensity) {
+                        it.size.height.toDp()
+                    }
                 }
-            ),
-        tonalElevation = 1.dp,
-        color = Color.Transparent,
-        shape = RectangleShape,
+                .combinedClickable(
+                    onClick = {
+                        toTaskScreen(todoTask.id)
 
+                    },
+                    onLongClick = {
+                        selected = true
+                        onLongClick()
+                    }
+                ),
+            color = Color.Transparent,
+            tonalElevation = 2.dp,
         ) {
-        val tintColor = when (todoTask.priority) {
-            Priority.HIGH -> HighPriorityColor
-            Priority.MEDIUM -> MediumPriorityColor
-            Priority.LOW -> LowPriorityColor
-            Priority.NONE -> NonePriorityColor
-        }
-        Card(
-            modifier = modifier,
-            colors = CardDefaults.cardColors(
-                containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ),
-            shape = RoundedCornerShape(4.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(vertical = LARGE_PADDING)
-                    .fillMaxWidth()
-                    .height(50.dp)
+            val tintColor = when (todoTask.priority) {
+                Priority.HIGH -> HighPriorityColor
+                Priority.MEDIUM -> MediumPriorityColor
+                Priority.LOW -> LowPriorityColor
+                Priority.NONE -> NonePriorityColor
+            }
+            Card(
+                modifier = modifier,
+                colors = CardDefaults.cardColors(
+                    containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(4.dp),
             ) {
-                Column(
+                Row(
                     modifier = Modifier
-                        .weight(2f)
-                        .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .padding(vertical = LARGE_PADDING)
+                        .fillMaxWidth()
+                        .height(50.dp)
                 ) {
-                    Icon(
-                        modifier = Modifier.clickable(enabled = selected) {
-                            selected = false
-                            onDeselectedClick()
-                        },
-                        painter = if (selected)
-                            painterResource(id = R.drawable.ic_baseline_check_circle_24)
-                        else
-                            painterResource(id = R.drawable.ic_baseline_circle_24),
-                        contentDescription = if (selected) "Checked Circle" else "Circle",
-                        tint = if (selected) MaterialTheme.colorScheme.primary else tintColor
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .weight(11f),
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = todoTask.title,
-                            color = MaterialTheme.colorScheme.taskItemContentColor,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1
-                        )
-                        Spacer(modifier = Modifier.width(SMALL_PADDING))
-                        Text(
-                            text = datetime.toLocalTime()
-                                .format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        )
-                    }
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = todoTask.description,
-                        color = MaterialTheme.colorScheme.taskItemContentColor,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .padding(PaddingValues(end = SMALL_PADDING))
-                        .fillMaxHeight()
-                        .weight(2.2f),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            modifier = Modifier,
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Column(
+                        modifier = Modifier
+                            .weight(2f)
+                            .fillMaxHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            modifier = Modifier.clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() }
-                            ) {
-                                onFavoriteClick()
-                                favoriteOn = !favoriteOn
+                            modifier = Modifier.clickable(enabled = selected) {
+                                selected = false
+                                onDeselectedClick()
                             },
-                            imageVector = Icons.Default.Star,
-                            contentDescription = stringResource(id = R.string.task_item_star_description),
-                            tint = if (favoriteOn) FavoriteYellow else Color.White
+                            painter = if (selected)
+                                painterResource(id = R.drawable.ic_baseline_check_circle_24)
+                            else
+                                painterResource(id = R.drawable.ic_baseline_circle_24),
+                            contentDescription = if (selected) "Checked Circle" else "Circle",
+                            tint = if (selected) MaterialTheme.colorScheme.primary else tintColor
                         )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(11f),
+                    ) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = todoTask.title,
+                                color = MaterialTheme.colorScheme.taskItemContentColor,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1
+                            )
+                        }
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = todoTask.description,
+                            color = MaterialTheme.colorScheme.taskItemContentColor,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(PaddingValues(end = SMALL_PADDING))
+                            .fillMaxHeight()
+                            .weight(2.2f),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .weight(1F)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                modifier = Modifier,
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                text = datetime.toLocalTime()
+                                    .format(DateTimeFormatter.ofPattern("HH:mm"))
+                                //                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .weight(2F)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
+                                ) {
+                                    onFavoriteClick()
+                                    favoriteOn = !favoriteOn
+                                },
+                                imageVector = Icons.Default.Star,
+                                contentDescription = stringResource(id = R.string.task_item_star_description),
+                                tint = if (favoriteOn) FavoriteYellow else Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -463,30 +583,30 @@ fun TaskItemPreview() {
     }
 }
 
-@Composable
-@Preview
-fun ListContentPreview() {
-    TodoComposeTheme {
-        ListContent(
-            tasks = flowOf(
-                PagingData.from<TodoTask>(
-                    listOf(
-                        TodoTask(
-                            1, "필성 힘내!!!",
-                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                            Priority.HIGH
-                        )
-                    )
-                )
-            ).collectAsLazyPagingItems(),
-            toTaskScreen = {},
-//            onSwipeToDelete = { a, b -> },
-            onSwipeToUpdate = {},
-            screenMode = ScreenMode.NORMAL,
-            onFavoriteClick = {}
-        )
-    }
-}
+//@Composable
+//@Preview
+//fun ListContentPreview() {
+//    TodoComposeTheme {
+//        ListContent(
+//            tasks = flowOf(
+//                PagingData.from<TodoTask>(
+//                    listOf(
+//                        TodoTask(
+//                            1, "필성 힘내!!!",
+//                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+//                            Priority.HIGH
+//                        )
+//                    )
+//                )
+//            ).collectAsLazyPagingItems(),
+//            toTaskScreen = {},
+////            onSwipeToDelete = { a, b -> },
+//            onSwipeToUpdate = {},
+//            screenMode = ScreenMode.NORMAL,
+//            onFavoriteClick = {},
+//        )
+//    }
+//}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
