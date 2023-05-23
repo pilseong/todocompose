@@ -1,6 +1,5 @@
-package net.pilseong.todocompose.data
+package net.pilseong.todocompose.data.model.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -18,8 +17,9 @@ import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
     exportSchema = true
 )
 @TypeConverters(ZonedDateTypeConverter::class)
-abstract class TodoDatabase : RoomDatabase() {
+abstract class MemoDatabase : RoomDatabase() {
 
     abstract fun getTodoDAO(): TodoDAO
+    abstract fun getNotebookDAO(): NotebookDAO
 
 }

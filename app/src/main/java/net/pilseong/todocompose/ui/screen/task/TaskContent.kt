@@ -158,7 +158,7 @@ private fun ViewerContent(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
-            .padding(all = LARGE_PADDING)
+//            .padding(all = LARGE_PADDING)
             .verticalScroll(scrollState)
 
     ) {
@@ -248,7 +248,7 @@ private fun EditorContent(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
-            .padding(all = LARGE_PADDING)
+//            .padding(all = LARGE_PADDING)
     ) {
         Card {
 
@@ -274,7 +274,7 @@ private fun EditorContent(
         )
         Card {
             PriorityDropDown(
-                modifier = Modifier.fillMaxWidth(0.95F),
+//                modifier = Modifier.fillMaxWidth(0.95F),
                 priority = priority,
                 onPrioritySelected = {
                     onPriorityChange(it)

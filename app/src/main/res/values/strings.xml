@@ -9,6 +9,7 @@
     <string name="close_icon">Close Icon</string>
     <string name="delete_all_action">Delete All Memos</string>
     <string name="list_screen_title">Memo List</string>
+    <string name="home_screen_title">NoteBooks</string>
     <string name="delete_all_menu_text">DELETE ALL</string>
     <string name="drop_down_menu_icon">Drop Down Menu Icon</string>
     <string name="new_task_appbar_title">Add Memo</string>
@@ -74,5 +75,6 @@
     <string name="bottom_nav_label_settings">Settings</string>
     <string name="bottom_nav_label_memo">Memos</string>
     <string name="bottom_nav_label_home">Home</string>
+    <string name="note_content_dateformat">LLL MM, yyyy</string>
 
 </resources>

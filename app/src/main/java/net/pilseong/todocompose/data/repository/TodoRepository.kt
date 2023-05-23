@@ -4,16 +4,18 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.flow.Flow
-import net.pilseong.todocompose.data.TodoDAO
+import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject
 
-@ViewModelScoped
+//@ViewModelScoped
+@ActivityRetainedScoped
 class TodoRepository @Inject constructor(
     private val todoDAO: TodoDAO
 ) {

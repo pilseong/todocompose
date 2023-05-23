@@ -12,6 +12,7 @@ data class Notebook(
     val id: Int = 0,
     val title: String,
     val description: String,
+    val priority: Priority,
     @ColumnInfo(name = "created_at")
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")

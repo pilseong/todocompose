@@ -3,7 +3,7 @@ package net.pilseong.todocompose.data.paging
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import net.pilseong.todocompose.data.TodoDAO
+import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.util.Constants

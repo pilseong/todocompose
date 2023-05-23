@@ -187,7 +187,10 @@ fun ListScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(paddingValues = paddingValues)
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = SMALL_PADDING
+                )
                 .fillMaxSize(),
         ) {
             StatusLine(
@@ -249,7 +252,6 @@ fun ListScreen(
                     toTaskScreen(tasks.itemSnapshotList.items)
                 },
                 header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
-                screenMode = memoViewModel.screenMode,
                 dateEnabled = memoViewModel.dateEnabled,
                 onFavoriteClick = { todo ->
                     memoViewModel.handleActions(

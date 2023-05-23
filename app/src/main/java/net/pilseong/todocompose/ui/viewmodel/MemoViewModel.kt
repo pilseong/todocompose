@@ -31,10 +31,8 @@ import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
-import net.pilseong.todocompose.util.ScreenMode
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
-import net.pilseong.todocompose.util.StreamState
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.io.File
 import java.time.ZonedDateTime
@@ -49,12 +47,12 @@ class MemoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    var tasks = MutableStateFlow<PagingData<TodoTask>>(PagingData.empty())
+        private set
+
     /**
      * 화면의 state 를 관리 하는 변수들 선언
      */
-    // 현재 스트림 을 저장 한다.
-    private var currentStream by mutableStateOf(StreamState.DEFAULT)
-    var screenMode by mutableStateOf(ScreenMode.NORMAL)
 
     // 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
     var sortFavorite by mutableStateOf(false)
@@ -164,7 +162,6 @@ class MemoViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
                 .collect {
                     tasks.value = it
-                    currentStream = StreamState.DEFAULT
                 }
         }
     }
@@ -299,9 +296,6 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    var tasks = MutableStateFlow<PagingData<TodoTask>>(PagingData.empty())
-        private set
-
     // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
     // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
     var action = Action.NO_ACTION
@@ -362,31 +356,31 @@ class MemoViewModel @Inject constructor(
         when (action) {
             Action.ADD -> {
                 addTask()
-                refreshStream()
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
             Action.UPDATE -> {
                 updateTask()
-                refreshStream()
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
             Action.DELETE -> {
                 deleteTask(todoId)
-                refreshStream()
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
             Action.DELETE_ALL -> {
                 deleteAllTasks()
-                refreshStream()
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
             Action.UNDO -> {
                 undoTask()
-                refreshStream()
+                refreshAllTasks()
                 updateActionPerformed()
             }
 
@@ -455,15 +449,6 @@ class MemoViewModel @Inject constructor(
         refreshAllTasks()
     }
 
-    // 현재 스트림 을 기준 으로 목록을 갱신 한다.
-    private fun refreshStream() {
-        when (currentStream) {
-            StreamState.DEFAULT -> refreshAllTasks()
-            StreamState.SEARCH -> refreshAllTasks()
-            StreamState.PRIORITY -> refreshAllTasks()
-        }
-    }
-
     private fun addTask() {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(
@@ -486,7 +471,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             todoRepository.updateFavorite(todo.copy(favorite = !todo.favorite))
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
-            if (sortFavorite) refreshStream()
+            if (sortFavorite) refreshAllTasks()
         }
     }
 

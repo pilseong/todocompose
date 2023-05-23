@@ -67,9 +67,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
@@ -98,7 +101,6 @@ fun ListContent(
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
     onSwipeToEdit: (Int) -> Unit,
     header: Boolean = false,
-    screenMode: ScreenMode,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
 
@@ -167,7 +169,7 @@ fun LazyItemList(
     val date: MutableState<String> = remember { mutableStateOf("") }
 
     val task = if (tasks.itemCount > listState.firstVisibleItemIndex)
-        tasks.peek(listState.firstVisibleItemIndex) else tasks.peek(tasks.itemCount-1)
+        tasks.peek(listState.firstVisibleItemIndex) else tasks.peek(tasks.itemCount - 1)
 
     val currentDate: ZonedDateTime? = if (dateEnabled) {
         task?.createdAt
@@ -182,7 +184,7 @@ fun LazyItemList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(PaddingValues(start = XLARGE_PADDING))
+                    .padding(horizontal = XLARGE_PADDING)
             ) {
                 DateHeader(currentDate!!)
             }
@@ -269,12 +271,16 @@ fun DateHeader(time: ZonedDateTime) {
     }
 
     Row(
-        modifier = Modifier.padding(vertical = SMALL_PADDING),
+        modifier = Modifier.padding(
+            top = LARGE_PADDING,
+            bottom = SMALL_PADDING
+        ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier.width(60.dp),
-            horizontalAlignment = Alignment.End) {
+            horizontalAlignment = Alignment.End
+        ) {
             Text(
                 text = String.format("%02d", time.toLocalDate().dayOfMonth),
                 style = TextStyle(
@@ -408,207 +414,6 @@ fun ColorBackGround(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun TaskItem(
-    modifier: Modifier = Modifier,
-    todoTask: TodoTask,
-    toTaskScreen: (Int) -> Unit,
-    onLongClick: () -> Unit,
-    onDeselectedClick: () -> Unit,
-    datetime: ZonedDateTime,
-    onFavoriteClick: () -> Unit
-) {
-    var selected by remember { mutableStateOf(false) }
-    var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
-    val localDensity = LocalDensity.current
-    var componentHeight by remember { mutableStateOf(0.dp) }
-
-    Row {
-        Spacer(modifier = Modifier.width(0.dp))
-        Surface(modifier = Modifier
-            .width(2.dp)
-            .height(SMALL_PADDING + componentHeight),
-            tonalElevation = 100000000.dp,
-            content = {}
-        )
-        Spacer(modifier = Modifier.width(20.dp))
-        Surface(
-            modifier = Modifier
-                .onGloballyPositioned {
-                    componentHeight = with(localDensity) {
-                        it.size.height.toDp()
-                    }
-                }
-                .combinedClickable(
-                    onClick = {
-                        toTaskScreen(todoTask.id)
-
-                    },
-                    onLongClick = {
-                        selected = true
-                        onLongClick()
-                    }
-                ),
-            color = Color.Transparent,
-            tonalElevation = 2.dp,
-        ) {
-            val tintColor = when (todoTask.priority) {
-                Priority.HIGH -> HighPriorityColor
-                Priority.MEDIUM -> MediumPriorityColor
-                Priority.LOW -> LowPriorityColor
-                Priority.NONE -> NonePriorityColor
-            }
-            Card(
-                modifier = modifier,
-                colors = CardDefaults.cardColors(
-                    containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(4.dp),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = LARGE_PADDING)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(2f)
-                            .fillMaxHeight(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            modifier = Modifier.clickable(enabled = selected) {
-                                selected = false
-                                onDeselectedClick()
-                            },
-                            painter = if (selected)
-                                painterResource(id = R.drawable.ic_baseline_check_circle_24)
-                            else
-                                painterResource(id = R.drawable.ic_baseline_circle_24),
-                            contentDescription = if (selected) "Checked Circle" else "Circle",
-                            tint = if (selected) MaterialTheme.colorScheme.primary else tintColor
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .weight(11f),
-                    ) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                text = todoTask.title,
-                                color = MaterialTheme.colorScheme.taskItemContentColor,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1
-                            )
-                        }
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = todoTask.description,
-                            color = MaterialTheme.colorScheme.taskItemContentColor,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .padding(PaddingValues(end = SMALL_PADDING))
-                            .fillMaxHeight()
-                            .weight(2.2f),
-                        verticalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .weight(1F)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier,
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                text = datetime.toLocalTime()
-                                    .format(DateTimeFormatter.ofPattern("HH:mm"))
-                                //                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
-                            )
-                        }
-                        Row(
-                            modifier = Modifier
-                                .weight(2F)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                modifier = Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) {
-                                    onFavoriteClick()
-                                    favoriteOn = !favoriteOn
-                                },
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(id = R.string.task_item_star_description),
-                                tint = if (favoriteOn) FavoriteYellow else Color.White
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun TaskItemPreview() {
-    TodoComposeTheme {
-        TaskItem(
-            todoTask = TodoTask(
-                1, "필성 힘내!!!",
-                "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                Priority.HIGH
-            ),
-            toTaskScreen = {},
-            onLongClick = {},
-            onDeselectedClick = {},
-            datetime = ZonedDateTime.now(),
-            onFavoriteClick = {}
-        )
-    }
-}
-
-//@Composable
-//@Preview
-//fun ListContentPreview() {
-//    TodoComposeTheme {
-//        ListContent(
-//            tasks = flowOf(
-//                PagingData.from<TodoTask>(
-//                    listOf(
-//                        TodoTask(
-//                            1, "필성 힘내!!!",
-//                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-//                            Priority.HIGH
-//                        )
-//                    )
-//                )
-//            ).collectAsLazyPagingItems(),
-//            toTaskScreen = {},
-////            onSwipeToDelete = { a, b -> },
-//            onSwipeToUpdate = {},
-//            screenMode = ScreenMode.NORMAL,
-//            onFavoriteClick = {},
-//        )
-//    }
-//}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
@@ -685,3 +490,29 @@ fun EmptyContentPreview() {
         EmptyContent()
     }
 }
+
+
+//@Composable
+//@Preview
+//fun ListContentPreview() {
+//    TodoComposeTheme {
+//        ListContent(
+//            tasks = flowOf(
+//                PagingData.from<TodoTask>(
+//                    listOf(
+//                        TodoTask(
+//                            1, "필성 힘내!!!",
+//                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+//                            Priority.HIGH
+//                        )
+//                    )
+//                )
+//            ).collectAsLazyPagingItems(),
+//            toTaskScreen = {},
+////            onSwipeToDelete = { a, b -> },
+//            onSwipeToEdit = {},
+////            screenMode = ScreenMode.NORMAL,
+//            onFavoriteClick = {},
+//        )
+//    }
+//}

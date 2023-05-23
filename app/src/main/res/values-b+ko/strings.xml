@@ -9,6 +9,7 @@
     <string name="close_icon">닫기 아이콘</string>
     <string name="delete_all_action">Delete All Tasks</string>
     <string name="list_screen_title">메모 목록</string>
+    <string name="home_screen_title">노트북 목록</string>
     <string name="delete_all_menu_text">전체 삭제</string>
     <string name="drop_down_menu_icon">드롭다운 메뉴 화살표 아이콘</string>
     <string name="new_task_appbar_title">메모 추가</string>
@@ -74,6 +75,7 @@
     <string name="bottom_nav_label_settings">설정</string>
     <string name="bottom_nav_label_memo">메모</string>
     <string name="bottom_nav_label_home">홈</string>
+    <string name="note_content_dateformat">yyyy년MM월dd일</string>
 
 
 

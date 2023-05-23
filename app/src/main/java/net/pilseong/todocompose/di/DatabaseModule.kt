@@ -7,8 +7,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.pilseong.todocompose.data.TodoDAO
-import net.pilseong.todocompose.data.TodoDatabase
+import net.pilseong.todocompose.data.model.database.MemoDatabase
+import net.pilseong.todocompose.data.model.database.NotebookDAO
+import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.util.Constants.DATABASE_NAME
 import javax.inject.Singleton
 
@@ -20,15 +21,21 @@ object DatabaseModule {
     @Provides
     fun provideDatabase(
         @ApplicationContext context: Context
-    ): TodoDatabase = Room.databaseBuilder(
+    ): MemoDatabase = Room.databaseBuilder(
         context = context,
-        TodoDatabase::class.java,
+        MemoDatabase::class.java,
         DATABASE_NAME
     ).build()
 
     @Singleton
     @Provides
-    fun provideTodoDAO(database: TodoDatabase): TodoDAO {
+    fun provideTodoDAO(database: MemoDatabase): TodoDAO {
         return database.getTodoDAO()
+    }
+
+    @Singleton
+    @Provides
+    fun provideNotebookDAO(database: MemoDatabase): NotebookDAO {
+        return database.getNotebookDAO()
     }
 }

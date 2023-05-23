@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.data
+package net.pilseong.todocompose.data.model.database
 
 import androidx.room.Dao
 import androidx.room.Insert

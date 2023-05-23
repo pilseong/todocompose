@@ -16,6 +16,9 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.SMALL_PADDING
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.copyToClipboard
@@ -95,7 +98,12 @@ fun TaskScreen(
         content = { paddingValues ->
             Column(
                 modifier = Modifier
-                    .padding(top = paddingValues.calculateTopPadding())
+                    .padding(
+                        top = paddingValues.calculateTopPadding() + LARGE_PADDING,
+                        start = XLARGE_PADDING,
+                        end = XLARGE_PADDING,
+                        bottom = SMALL_PADDING
+                    )
                     .fillMaxSize()
             ) {
                 TaskContent(
