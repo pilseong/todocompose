@@ -21,11 +21,13 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     @ColumnInfo(name = "created_at")
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
-    val updatedAt: ZonedDateTime = ZonedDateTime.now()
+    val updatedAt: ZonedDateTime = ZonedDateTime.now(),
+    @ColumnInfo(name = "notebook_id", defaultValue = "-1")
+    val notebookId: Int
 ) {
 
     companion object {
-        @JvmStatic fun instance(): TodoTask {
+        @JvmStatic fun instance(notebookId: Int = -1): TodoTask {
             return TodoTask(
                 id = NEW_ITEM_ID,
                 title = "",
@@ -33,7 +35,8 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
                 priority = Priority.NONE,
                 favorite = false,
                 createdAt = ZonedDateTime.now(),
-                updatedAt = ZonedDateTime.now()
+                updatedAt = ZonedDateTime.now(),
+                notebookId = notebookId
             )
         }
     }

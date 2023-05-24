@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -81,6 +82,7 @@ class MemoViewModel @Inject constructor(
     var title by mutableStateOf("")
     var description by mutableStateOf("")
     var priority by mutableStateOf(Priority.LOW)
+    var notebookId by mutableStateOf(-1)
     private var createdAt = ZonedDateTime.now()
     private var updatedAt = ZonedDateTime.now()
 
@@ -150,6 +152,7 @@ class MemoViewModel @Inject constructor(
                 query = searchTextString,
                 sortCondition = condition.ordinal,
                 priority = prioritySortState,
+                notebookId = notebookIdState,
                 startDate = startDate,
                 endDate = endDate,
                 isFavoriteOn = sortFavorite
@@ -179,6 +182,7 @@ class MemoViewModel @Inject constructor(
     var prioritySortState by mutableStateOf(Priority.NONE)
     var orderEnabled by mutableStateOf(false)
     var dateEnabled by mutableStateOf(false)
+    var notebookIdState by mutableStateOf(-1)
 
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
@@ -248,6 +252,27 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+    fun observeNotebookIdChange() {
+        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed")
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(100)
+            dataStoreRepository.readSelectedNotebookId
+                .map { it }
+                .collect { state ->
+                    if (state != notebookIdState || !firstFetch) {
+                        if (!firstFetch) firstFetch = true
+                        notebookIdState = state
+
+                        Log.i(
+                            "PHILIP",
+                            "[MemoViewModel] observeNotebookIdChange() executed with dateEnabled $notebookIdState"
+                        )
+                        refreshAllTasks()
+                    }
+                }
+        }
+    }
+
     fun observeFavoriteState() {
         Log.i("PHILIP", "[MemoViewModel] observeFavoriteState() executed")
         viewModelScope.launch(Dispatchers.IO) {
@@ -310,7 +335,7 @@ class MemoViewModel @Inject constructor(
         this.actionPerformed = Random.nextBytes(4)
     }
 
-    fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance()) {
+    fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
         taskAppBarState = TaskAppBarState.EDITOR
         copySelectedTaskToEditFields(task)
     }
@@ -320,6 +345,7 @@ class MemoViewModel @Inject constructor(
         title = task.title
         description = task.description
         priority = task.priority
+        notebookId = task.notebookId
         createdAt = task.createdAt
         updatedAt = task.updatedAt
     }
@@ -351,7 +377,7 @@ class MemoViewModel @Inject constructor(
     ) {
         Log.i(
             "PHILIP",
-            "[MemoViewModel] handleActions performed with $action priority: $priority favorite: $favorite"
+            "[MemoViewModel] handleActions qwe123performed with $action priority: $priority favorite: $favorite"
         )
         when (action) {
             Action.ADD -> {
@@ -453,16 +479,16 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(
                 "PHILIP",
-                "[MemoViewModel] addTask performed with $title, $description, $priority"
+                "[MemoViewModel] addTask performed with $title, $description, $priority $notebookIdState"
             )
-            todoRepository.addTask(TodoTask(0, title, description, priority))
+            todoRepository.addTask(TodoTask(0, title, description, priority, notebookId = notebookIdState))
         }
         this.action = Action.ADD
     }
 
     private fun undoTask() {
         viewModelScope.launch(Dispatchers.IO) {
-            todoRepository.addTask(TodoTask(0, title, description, priority, createdAt = createdAt))
+            todoRepository.addTask(TodoTask(0, title, description, priority, notebookId = notebookId, createdAt = createdAt))
         }
         this.action = Action.UNDO
     }
@@ -483,6 +509,7 @@ class MemoViewModel @Inject constructor(
                     title,
                     description,
                     priority,
+                    notebookId = notebookId,
                     createdAt = createdAt
                 )
             )
@@ -511,6 +538,25 @@ class MemoViewModel @Inject constructor(
             ZonedDateTypeAdapter()
         )
         .serializeNulls().setPrettyPrinting().create()
+
+    fun handleImport(uri: Uri?) {
+        val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
+        val bytes = item?.readBytes()
+
+        if (bytes != null) {
+            val memoString = String(bytes, Charsets.UTF_8)
+            val myType = object : TypeToken<List<TodoTask>>() {}.type
+            val memos = gson.fromJson<List<TodoTask>>(memoString, myType)
+
+            Log.i("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
+
+            viewModelScope.launch(Dispatchers.IO) {
+                todoRepository.insertMultipleMemos(memos)
+            }
+        }
+
+        item?.close()
+    }
 
     fun exportData() {
         viewModelScope.launch(Dispatchers.IO) {

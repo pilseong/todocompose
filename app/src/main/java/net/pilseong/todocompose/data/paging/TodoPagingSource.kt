@@ -16,7 +16,8 @@ class TodoPagingSource(
     private val priority: Priority,
     private val startDate: Long? = Instant.now().toEpochMilli(),
     private val endDate: Long? = Instant.now().toEpochMilli(),
-    private val isFavoriteOn: Boolean = false
+    private val isFavoriteOn: Boolean = false,
+    private val notebookId: Int = -1
 ) : PagingSource<Int, TodoTask>() {
 
     override fun getRefreshKey(state: PagingState<Int, TodoTask>): Int? {
@@ -42,7 +43,8 @@ class TodoPagingSource(
                     priority = priority.name,
                     startDate = if (startDate != null) startDate / 1000 else  0 ,
                     endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE,
-                    favorite = isFavoriteOn
+                    favorite = isFavoriteOn,
+                    notebookId = notebookId
                 )
             Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 

@@ -58,6 +58,7 @@ fun NavGraphBuilder.memoNavGraph(
                 memoViewModel.observeOrderEnabledState()
                 memoViewModel.observeDateEnabledState()
                 memoViewModel.observeFavoriteState()
+                memoViewModel.observeNotebookIdChange()
             }
 
 

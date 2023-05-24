@@ -41,7 +41,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.NoteAction
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
@@ -57,10 +62,10 @@ fun NavGraphBuilder.homeComposable(
         route = route,
     ) {
         val noteViewModel = hiltViewModel<NoteViewModel>()
-        val message = remember { mutableStateOf("Edit Me") }
+
+        noteViewModel.observeNotebookIdChange()
 
         val openDialog = remember { mutableStateOf(false) }
-        val editMessage = remember { mutableStateOf("") }
 
         val scope = rememberCoroutineScope()
 
@@ -75,6 +80,13 @@ fun NavGraphBuilder.homeComposable(
             onFabClick = {
                 openDialog.value = true
             },
+            onSelectNotebook = {it ->
+                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, it)
+                scope.launch {
+                    delay(500)
+                    navHostController.navigate(Screen.MemoList.route)
+                }
+            },
             notebooks = noteViewModel.notebooks.collectAsState().value
         )
 
@@ -82,11 +94,15 @@ fun NavGraphBuilder.homeComposable(
             visible = openDialog.value,
             title = noteViewModel.title.value,
             description = noteViewModel.description.value,
+            priority = noteViewModel.priority.value,
             onTitleChange = {
                 noteViewModel.title.value = it
             },
             onDescriptionChange = {
                 noteViewModel.description.value = it
+            },
+            onPriorityChange = {
+                noteViewModel.priority.value = it
             },
             onDismissRequest = {
                 openDialog.value = false
@@ -95,6 +111,8 @@ fun NavGraphBuilder.homeComposable(
                 Log.i("PHILIP", "OK clicked")
                 noteViewModel.handleActions(NoteAction.ADD)
                 openDialog.value = false
+                noteViewModel.title.value = ""
+                noteViewModel.description.value = ""
             }
         )
     }
@@ -119,9 +137,11 @@ fun CustomAlertDialog(
 fun CreateNotebookDialog(
     visible: Boolean,
     title: String,
+    priority: Priority,
     description: String,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
+    onPriorityChange: (Priority) -> Unit,
     onDismissRequest: () -> Unit,
     onOKClick: () -> Unit
 ) {
@@ -180,6 +200,19 @@ fun CreateNotebookDialog(
                         )
                     }
                 }
+                Card(
+                    modifier = Modifier.padding(horizontal = XLARGE_PADDING),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+
+                    PriorityDropDown(
+//                modifier = Modifier.fillMaxWidth(0.95F),
+                        priority = priority,
+                        onPrioritySelected = {
+                            onPriorityChange(it)
+                        }
+                    )
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,7 +240,7 @@ fun CreateNotebookDialog(
                             ),
                             value = description,
                             maxLines = 4,
-                            onValueChange = {onDescriptionChange(it)}
+                            onValueChange = { onDescriptionChange(it) }
                         )
                     }
                 }
@@ -237,9 +270,11 @@ fun CreateNotebookDialogPreview() {
         CreateNotebookDialog(
             visible = true,
             title = "꽃밭",
+            priority = Priority.HIGH,
             description = "수엘이",
             onTitleChange = {},
             onDescriptionChange = {},
+            onPriorityChange = {},
             onOKClick = {},
             onDismissRequest = {}
         )

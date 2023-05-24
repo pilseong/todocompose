@@ -216,7 +216,8 @@ fun TaskItemPreview() {
             todoTask = TodoTask(
                 1, "필성 힘내!!!",
                 "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                Priority.HIGH
+                Priority.HIGH,
+                notebookId = -1
             ),
             toTaskScreen = {},
             onLongClick = {},

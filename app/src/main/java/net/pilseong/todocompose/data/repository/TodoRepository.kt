@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.room.Transaction
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,8 @@ class TodoRepository @Inject constructor(
         priority: Priority = Priority.NONE,
         startDate: Long? = null,
         endDate: Long? = null,
-        isFavoriteOn: Boolean = false
+        isFavoriteOn: Boolean = false,
+        notebookId: Int = -1
     ): Flow<PagingData<TodoTask>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed")
         return Pager(
@@ -42,7 +44,8 @@ class TodoRepository @Inject constructor(
                     priority = priority,
                     startDate = startDate,
                     endDate = endDate,
-                    isFavoriteOn = isFavoriteOn
+                    isFavoriteOn = isFavoriteOn,
+                    notebookId = notebookId
                 )
             }
         ).flow
@@ -67,5 +70,12 @@ class TodoRepository @Inject constructor(
 
     suspend fun updateFavorite(todoTask: TodoTask) {
         todoDAO.updateFavorite(todoTask)
+    }
+
+    @Transaction
+    suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
+        tasks.forEach {it
+            todoDAO.addTask(it)
+        }
     }
 }

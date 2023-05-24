@@ -3,6 +3,8 @@ package net.pilseong.todocompose.ui.screen.list
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -50,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -100,6 +103,11 @@ fun ListScreen(
     val searchAppBarState by memoViewModel.searchAppBarState
     val searchText: String = memoViewModel.searchTextString
     val prioritySortState: Priority = memoViewModel.prioritySortState
+
+    val intentResultLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent() ) { uri ->
+        memoViewModel.handleImport(uri)
+    }
 
 
     // Flow 에 대한 collection 을 처리 하는 파이프 연결 변수들. 이 변수들 은 외부 데이터 베이스 나 외부 API 에 의존 한다.
@@ -175,7 +183,10 @@ fun ListScreen(
                 scrollBehavior = scrollBehavior,
                 memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
-                searchText = searchText
+                searchText = searchText,
+                onImportClick = {
+                    intentResultLauncher.launch("*/*")
+                }
             )
         },
         bottomBar = {

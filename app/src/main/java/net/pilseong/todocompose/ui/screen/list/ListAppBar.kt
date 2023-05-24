@@ -54,7 +54,8 @@ fun ListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
-    searchText: String
+    searchText: String,
+    onImportClick: () -> Unit,
 ) {
     when (searchAppBarState) {
         SearchAppBarState.CLOSE -> {
@@ -75,6 +76,9 @@ fun ListAppBar(
                         startDate = start,
                         endDate = end
                     )
+                },
+                onImportClick = {
+                    onImportClick()
                 },
                 onExportClick = {
                     memoViewModel.exportData()
@@ -109,6 +113,7 @@ fun DefaultListAppBar(
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
+    onImportClick: () -> Unit,
     onExportClick: () -> Unit
 ) {
     TopAppBar(
@@ -127,6 +132,7 @@ fun DefaultListAppBar(
                 onSearchClicked = onSearchIconClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
                 onDatePickConfirmed = onDatePickConfirmed,
+                onImportClick = onImportClick,
                 onExportClick = onExportClick
             )
         }
@@ -138,6 +144,7 @@ fun ListAppBarActions(
     onSearchClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
+    onImportClick: () -> Unit,
     onExportClick: () -> Unit
 ) {
     // 다이얼 로그 박스 에 대한 상태
@@ -184,6 +191,7 @@ fun ListAppBarActions(
         onDeleteAllClicked = {
             deleteAlertExpanded = true
         },
+        onImportClick = onImportClick,
         onExportClick = {
             exportAlertExpanded = true
         }
@@ -207,6 +215,7 @@ fun SearchAction(
 @Composable
 fun MenuAction(
     onDeleteAllClicked: () -> Unit,
+    onImportClick: () -> Unit,
     onExportClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -236,7 +245,7 @@ fun MenuAction(
             text = { Text(text = stringResource(id = R.string.import_menu_label)) },
             onClick = {
                 expanded = false
-                onDeleteAllClicked()
+                onImportClick()
             })
         DropdownMenuItem(
             text = { Text(text = stringResource(id = R.string.export_menu_label)) },

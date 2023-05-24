@@ -7,9 +7,9 @@ import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.NonePriorityColor
 
 
-enum class Priority(val color: Color) {
-    HIGH(HighPriorityColor),
-    MEDIUM(MediumPriorityColor),
-    LOW(LowPriorityColor),
-    NONE(NonePriorityColor)
+enum class Priority(val color: Color, val label: String) {
+    HIGH(HighPriorityColor, "High"),
+    MEDIUM(MediumPriorityColor, "Medium"),
+    LOW(LowPriorityColor, "Low"),
+    NONE(NonePriorityColor, "None")
 }

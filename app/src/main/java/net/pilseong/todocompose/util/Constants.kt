@@ -19,6 +19,7 @@ object Constants {
     const val ORDER_ENABLED_PREFERENCE_KEY = "order_sort_key"
     const val DATE_ENABLED_PREFERENCE_KEY = "date_sort_key"
     const val FAVORITE_ENABLED_PREFERENCE_KEY = "favorite_sort_key"
+    const val NOTEBOOK_ID_PREFERENCE_KEY = "notebook_id_key"
 
     const val NEW_ITEM_ID = -1
 

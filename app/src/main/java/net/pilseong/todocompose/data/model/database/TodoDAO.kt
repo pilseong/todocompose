@@ -16,7 +16,8 @@ abstract class TodoDAO {
 
     @Query(
         "SELECT * FROM todo_table " +
-                "WHERE (title LIKE :query OR description LIKE :query) " +
+                "WHERE " + "notebook_id = :notebookId " +
+                "AND (title LIKE :query OR description LIKE :query) " +
                 "AND " +
                 "(CASE :favorite " +
                 "WHEN 0 THEN " +
@@ -66,7 +67,8 @@ abstract class TodoDAO {
         priority: String = "HIGH",
         startDate: Long = Long.MIN_VALUE,
         endDate: Long = Long.MAX_VALUE,
-        favorite: Boolean = false
+        favorite: Boolean = false,
+        notebookId: Int = -1
     ): List<TodoTask>
 
     @Query("SELECT * FROM todo_table WHERE id = :taskId")
@@ -74,6 +76,9 @@ abstract class TodoDAO {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun addTask(todo: TodoTask)
+
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    abstract suspend fun insertTask(todo: TodoTask)
 
     suspend fun updateTaskWithTimestamp(todo: TodoTask) =
         updateTask(todo.copy(updatedAt = ZonedDateTime.now()))

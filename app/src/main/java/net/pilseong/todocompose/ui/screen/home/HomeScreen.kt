@@ -1,9 +1,13 @@
 package net.pilseong.todocompose.ui.screen.home
 
 import android.util.Log
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,6 +35,7 @@ import net.pilseong.todocompose.util.Constants
 fun HomeScreen(
     onClickBottomNavBar: (String) -> Unit,
     onFabClick: () -> Unit,
+    onSelectNotebook: (Int) -> Unit,
     notebooks: List<Notebook>
 ) {
 
@@ -39,8 +44,8 @@ fun HomeScreen(
 
     val scrollBehavior = exitUntilCollapsedScrollBehavior()
 
-
     Scaffold(
+//        modifier = Modifier.verticalScroll(rememberScrollState()),
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -79,7 +84,10 @@ fun HomeScreen(
                 )
                 .fillMaxSize(),
         ) {
-            NoteContent()
+            NoteContent(
+                notebooks = notebooks,
+                onSelectNotebook = onSelectNotebook
+            )
         }
     }
 }
