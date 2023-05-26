@@ -52,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,6 +80,7 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
+import net.pilseong.todocompose.util.ScreenMode
 import net.pilseong.todocompose.util.SearchAppBarState
 import java.time.Instant
 import java.time.ZoneId
@@ -94,6 +94,7 @@ fun ListScreen(
     toTaskScreen: (List<TodoTask>) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
     memoViewModel: MemoViewModel,
+    onAppBarTitleClick: () -> Unit
 ) {
     /**
      * view model 을 통제 하는 코드가 여기서 실행 되고 관리 된다.
@@ -105,9 +106,9 @@ fun ListScreen(
     val prioritySortState: Priority = memoViewModel.prioritySortState
 
     val intentResultLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent() ) { uri ->
-        memoViewModel.handleImport(uri)
-    }
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            memoViewModel.handleImport(uri)
+        }
 
 
     // Flow 에 대한 collection 을 처리 하는 파이프 연결 변수들. 이 변수들 은 외부 데이터 베이스 나 외부 API 에 의존 한다.
@@ -181,11 +182,17 @@ fun ListScreen(
         topBar = {
             ListAppBar(
                 scrollBehavior = scrollBehavior,
+                appbarTitle = memoViewModel.selectedNotebook.value.title,
                 memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,
                 onImportClick = {
                     intentResultLauncher.launch("*/*")
+                },
+                onAppBarTitleClick = onAppBarTitleClick,
+                selectedItemsCount = memoViewModel.selectedItems.size,
+                onDeleteSelectedClicked = {
+                    memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
                 }
             )
         },
@@ -269,6 +276,12 @@ fun ListScreen(
                         action = Action.FAVORITE_UPDATE,
                         todoTask = todo
                     )
+                },
+                onLongClickReleased = {
+                    memoViewModel.removeMultiSelectedItem(it)
+                },
+                onLongClickApplied = {
+                    memoViewModel.appendMultiSelectedItem(it)
                 }
             )
         }
@@ -648,6 +661,9 @@ private fun DisplaySnackBar(
         Action.SORT_FAVORITE_CHANGE ->
             stringResource(id = R.string.snackbar_favorite_change_message)
 
+        Action.DELETE_SELECTED_ITEMS ->
+            stringResource(id = R.string.snackbar_selected_items_deleted_message)
+        
         else -> {
             ""
         }
@@ -659,9 +675,9 @@ private fun DisplaySnackBar(
 
     // enabled 는 이벤트 가 발생한 경우를 정확 하게 구분 하기 위한 변수
     LaunchedEffect(key1 = enabled) {
-        Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
+//        Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
         if (action != Action.NO_ACTION) {
-            Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
+//            Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
             actionAfterPopup(Action.NO_ACTION)
             val snackBarResult = snackBarHostState.showSnackbar(
                 message = message,
@@ -702,6 +718,7 @@ private fun ListScreenPreview() {
             toTaskScreen = {},
             onClickBottomNavBar = {},
             memoViewModel = viewModel(),
+            onAppBarTitleClick = {}
         )
     }
 }

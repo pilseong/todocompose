@@ -56,7 +56,8 @@ fun RowScope.addItem(
     NavigationBarItem(
         selected = currentDestination == screen.route,
         onClick = {
-            onClick(screen.route)
+            if (currentDestination != screen.route)
+                onClick(screen.route)
         },
         colors = NavigationBarItemDefaults.colors(
             selectedIconColor = Color.Transparent,

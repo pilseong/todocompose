@@ -319,7 +319,7 @@ fun NoteContent(
                 Spacer(modifier = Modifier.height(LARGE_PADDING))
                 Surface(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+//                        .clip(RoundedCornerShape(4.dp))
 //                .padding(horizontal = SMALL_PADDING)
                         .height(300.dp)
                         .fillMaxWidth(),
@@ -337,10 +337,16 @@ fun NoteContent(
                                         .clickable {
                                             onSelectNotebook(notebooks[index].id)
                                         },
-                                    shadowElevation = 6.dp
+                                    shadowElevation = 6.dp,
                                 ) {
                                     Card(
-                                        shape = RoundedCornerShape(4.dp),
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            topEnd = 4.dp,
+                                            bottomStart = 0.dp,
+                                            bottomEnd = 4.dp
+                                        )
+//                                        shape = RoundedCornerShape(4.dp),
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxSize()

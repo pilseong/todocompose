@@ -57,7 +57,6 @@ fun TaskAppBar(
         }
 
         TaskAppBarState.EDITOR -> {
-            Log.i("PHILIP", "[TaskAppBar] todo received ${todoTask.id != NEW_ITEM_ID}")
             EditTaskBar(toListScreen = toListScreen, edit = todoTask.id != NEW_ITEM_ID)
 
         }

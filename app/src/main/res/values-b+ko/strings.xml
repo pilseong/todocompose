@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">메모</string>
+    <string name="app_name">노트북</string>
     <string name="add_button_icon">추가 더하기 아이콘</string>
     <string name="empty_list_content_label">메모가 없습니다.</string>
     <string name="search_bar_visible_action_icon">검색 기능 보이게 하는 검색 아이콘</string>
@@ -30,7 +30,9 @@
     <string name="delete_task_dialog_confirmation">\'%1$s\' 을 정말 삭제하시겠습니까?</string>
     <string name="export_task_dialog_confirmation">내보내기를 싫행하시겠습니까?</string>
     <string name="delete_all_task_dialog_title">전체 삭제</string>
+    <string name="delete_selected_task_dialog_title">선택 삭제</string>
     <string name="delete_all_tasks_dialog_confirmation">모든 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
+    <string name="delete_seleccted_tasks_dialog_confirmation">선택된 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
     <string name="export_all_tasks_dialog_confirmation">모든 메모를 이메일 첨부파일로 생성합니다. 데이터가 많은 경우 시간이 걸릴 수 있습니다.</string>
     <string name="delete_label">삭제 아이콘</string>
     <string name="update_label">엡데이트 아이콘</string>
@@ -59,6 +61,7 @@
     <string name="snackbar_message_date_range_applied">범위 필터가 적용되었습니다.</string>
     <string name="snackbar_message_date_range_cancelled">범위 필터가 해제되었습니다.</string>
     <string name="snackbar_favorite_change_message">중요메모만 검색합니다.</string>
+    <string name="snackbar_selected_items_deleted_message">선택된 메모가 삭제되었습니다.</string>
     <string name="status_line_date_range_text">검색일 %1$s 부터 %2$s 까지</string>
     <string name="status_line_date_range_up_to_date_text">오늘</string>
     <string name="status_line_date_range_from_the_first_memo_text">첫메시지</string>
@@ -76,6 +79,7 @@
     <string name="bottom_nav_label_memo">메모</string>
     <string name="bottom_nav_label_home">홈</string>
     <string name="note_content_dateformat">yyyy년MM월dd일</string>
+    <string name="default_note_title">기본 노트</string>
 
 
 

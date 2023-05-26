@@ -1,20 +1,25 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,9 +36,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
@@ -52,38 +63,53 @@ import net.pilseong.todocompose.util.SearchAppBarState
 @Composable
 fun ListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
+    appbarTitle: String,
     memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
     searchText: String,
     onImportClick: () -> Unit,
+    onAppBarTitleClick: () -> Unit,
+    selectedItemsCount: Int,
+    onDeleteSelectedClicked: () -> Unit
 ) {
+    Log.i("PHILIP", "selectedItems $selectedItemsCount")
     when (searchAppBarState) {
         SearchAppBarState.CLOSE -> {
-            DefaultListAppBar(
-                scrollBehavior = scrollBehavior,
-                onSearchIconClicked = {
-                    // 초기 로딩 을 위한 데이터 검색
-                    memoViewModel.refreshAllTasks()
-                    memoViewModel.searchAppBarState.value = SearchAppBarState.OPEN
-                },
-                onDeleteAllClicked = {
-                    Log.i("PHILIP", "onDeleteAllClicked")
-                    memoViewModel.handleActions(Action.DELETE_ALL)
-                },
-                onDatePickConfirmed = { start, end ->
-                    memoViewModel.handleActions(
-                        action = Action.SEARCH_WITH_DATE_RANGE,
-                        startDate = start,
-                        endDate = end
-                    )
-                },
-                onImportClick = {
-                    onImportClick()
-                },
-                onExportClick = {
-                    memoViewModel.exportData()
-                },
-            )
+            if (selectedItemsCount == 0) {
+                DefaultListAppBar(
+                    scrollBehavior = scrollBehavior,
+                    appbarTitle = appbarTitle,
+                    onSearchIconClicked = {
+                        // 초기 로딩 을 위한 데이터 검색
+                        memoViewModel.refreshAllTasks()
+                        memoViewModel.searchAppBarState.value = SearchAppBarState.OPEN
+                    },
+                    onDeleteAllClicked = {
+                        Log.i("PHILIP", "onDeleteAllClicked")
+                        memoViewModel.handleActions(Action.DELETE_ALL)
+                    },
+                    onDatePickConfirmed = { start, end ->
+                        memoViewModel.handleActions(
+                            action = Action.SEARCH_WITH_DATE_RANGE,
+                            startDate = start,
+                            endDate = end
+                        )
+                    },
+                    onImportClick = {
+                        onImportClick()
+                    },
+                    onExportClick = {
+                        memoViewModel.exportData()
+                    },
+                    onAppBarTitleClick = onAppBarTitleClick
+                )
+            } else {
+                MultiSelectAppbar(
+                    scrollBehavior = scrollBehavior,
+                    selectedItemsCount = selectedItemsCount,
+                    onDeleteSelectedClicked = onDeleteSelectedClicked
+                )
+            }
         }
 
         else -> {
@@ -106,23 +132,58 @@ fun ListAppBar(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
 @Composable
 fun DefaultListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
+    appbarTitle: String = "Default",
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
     onImportClick: () -> Unit,
-    onExportClick: () -> Unit
+    onExportClick: () -> Unit,
+    onAppBarTitleClick: () -> Unit,
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
         title = {
-            Text(
-                text = stringResource(id = R.string.list_screen_title),
-                color = MaterialTheme.colorScheme.topBarContentColor
-            )
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onAppBarTitleClick()
+                    },
+            ) {
+
+                val textMeasurer = rememberTextMeasurer()
+
+                var textSize: IntSize
+                var boxWidth = LocalDensity.current.run { maxWidth.toPx() }.toInt()
+                val localStyle = LocalTextStyle.current
+
+                // 글자를 하나씩 더해 가면서 좌우 크기를 계산 하여 전체 박스에 들어갈 수 있는지 판단
+                // title 과 박스 크기가 변하지 않는 이상 계산 하지 않는다.
+                var index = remember(appbarTitle, boxWidth) {
+                    var i = 0
+                    while (i < appbarTitle.length) {
+                        val textLayoutResult =
+                            textMeasurer.measure(
+                                text = AnnotatedString(appbarTitle.substring(0, i)),
+                                style = localStyle
+                            )
+                        textSize = textLayoutResult.size
+                        if (boxWidth < textSize.width) break
+                        i++
+                    }
+                    i
+                }
+
+                Text(
+                    text = if (appbarTitle.length == index) appbarTitle
+                    else appbarTitle.substring(startIndex = 0, endIndex = index - 3) + "...",
+                    color = MaterialTheme.colorScheme.topBarContentColor
+                )
+            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.topBarContainerColor
@@ -137,6 +198,22 @@ fun DefaultListAppBar(
             )
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun PreviewDefaultListAppBar() {
+    DefaultListAppBar(
+        scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
+        onSearchIconClicked = { /*TODO*/ },
+        onDeleteAllClicked = { /*TODO*/ },
+        onDatePickConfirmed = { start, end ->
+        },
+        onImportClick = { /*TODO*/ },
+        onExportClick = { /*TODO*/ }) {
+
+    }
 }
 
 @Composable
@@ -345,3 +422,70 @@ fun SearchAppBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
+@Composable
+fun MultiSelectAppbar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    selectedItemsCount: Int,
+    onDeleteSelectedClicked: () -> Unit,
+) {
+    TopAppBar(
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            CommonAction(
+                onClicked = { },
+                icon = Icons.Default.ArrowBack,
+                description = "Arrow backwards Icon"
+            )
+        },
+        title = {
+            Text(
+                text = "$selectedItemsCount",
+                color = MaterialTheme.colorScheme.topBarContentColor
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+        ),
+        actions = {
+            MultiSelectAppbarActions(
+                onDeleteSelectedClicked = onDeleteSelectedClicked,
+            )
+        }
+    )
+}
+
+@Composable
+fun MultiSelectAppbarActions(
+    onDeleteSelectedClicked: () -> Unit,
+) {
+    // 다이얼 로그 박스 에 대한 상태
+    var deleteAlertExpanded by remember { mutableStateOf(false) }
+
+    // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
+    DisplayAlertDialog(
+        title = stringResource(id = R.string.delete_selected_task_dialog_title),
+        message = stringResource(id = R.string.delete_seleccted_tasks_dialog_confirmation),
+        openDialog = deleteAlertExpanded,
+        onYesClicked = onDeleteSelectedClicked,
+        onCloseDialog = { deleteAlertExpanded = false }
+    )
+
+    CommonAction(
+        icon = Icons.Default.Remove,
+        onClicked = { deleteAlertExpanded = true },
+        description = "date picker icon"
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun PreviewMultiSelectAppbar() {
+    MultiSelectAppbar(
+        scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
+        selectedItemsCount = 1
+    ) {
+
+    }
+}

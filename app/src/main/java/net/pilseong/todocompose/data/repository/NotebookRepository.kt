@@ -17,8 +17,22 @@ class NotebookRepository @Inject constructor(
         return notebookDAO.getNotebooks()
     }
 
+    suspend fun getAllNotebooks(): List<Notebook> {
+        return notebookDAO.getAllNotebooks()
+    }
+
+    fun getNotebook(id: Int): Notebook {
+        return notebookDAO.getNotebook(id)
+    }
+
     suspend fun addNotebook(notebook: Notebook) {
         notebookDAO.addNotebook(notebook)
+    }
+
+    suspend fun insertMultipleNotebooks(notebooks: List<Notebook>) {
+        notebooks.forEach{
+            notebookDAO.addNotebook(it)
+        }
     }
 }
 

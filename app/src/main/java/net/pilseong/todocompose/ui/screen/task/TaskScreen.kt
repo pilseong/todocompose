@@ -60,22 +60,27 @@ fun TaskScreen(
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
-                        if (memoViewModel.title.isEmpty()) {
-                            Toast.makeText(
-                                context,
-                                emptyTitleString,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else if (memoViewModel.description.isEmpty()) {
-                            Toast.makeText(
-                                context,
-                                emptyDescriptionString,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            // the action is executed here
-                        } else {
+                        if (action == Action.DELETE) {
                             memoViewModel.handleActions(action = action)
                             toListScreen(null)
+                        } else {
+                            if (memoViewModel.title.isEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    emptyTitleString,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else if (memoViewModel.description.isEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    emptyDescriptionString,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                // the action is executed here
+                            } else {
+                                memoViewModel.handleActions(action = action)
+                                toListScreen(null)
+                            }
                         }
                     } else {
                         toListScreen(null)

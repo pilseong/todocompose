@@ -1,37 +1,26 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissState
 import androidx.compose.material3.DismissValue
@@ -48,22 +37,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -76,20 +61,15 @@ import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
-import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
-import net.pilseong.todocompose.ui.theme.NonePriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.WEEKDAY_COLOR
 import net.pilseong.todocompose.ui.theme.WEEKEND_COLOR
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
-import net.pilseong.todocompose.ui.theme.taskItemContentColor
-import net.pilseong.todocompose.util.ScreenMode
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -103,8 +83,9 @@ fun ListContent(
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
-
-    ) {
+    onLongClickReleased: (Int) -> Unit,
+    onLongClickApplied: (Int) -> Unit
+) {
 
     if (tasks.loadState.refresh is LoadState.NotLoading) {
         DisplayTasks(
@@ -114,7 +95,9 @@ fun ListContent(
             onSwipeToEdit = onSwipeToEdit,
             header = header,
             dateEnabled = dateEnabled,
-            onFavoriteClick = onFavoriteClick
+            onFavoriteClick = onFavoriteClick,
+            onLongClickReleased = onLongClickReleased,
+            onLongClickApplied = onLongClickApplied
         )
     } else {
         LoadingContent()
@@ -132,9 +115,11 @@ fun DisplayTasks(
     onSwipeToEdit: (Int) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
-    onFavoriteClick: (TodoTask) -> Unit
+    onFavoriteClick: (TodoTask) -> Unit,
+    onLongClickReleased: (Int) -> Unit,
+    onLongClickApplied: (Int) -> Unit
 ) {
-    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
+//    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
         EmptyContent()
     } else {
@@ -144,7 +129,9 @@ fun DisplayTasks(
             dateEnabled = dateEnabled,
             onSwipeToEdit = onSwipeToEdit,
             toTaskScreen = toTaskScreen,
-            onFavoriteClick = onFavoriteClick
+            onFavoriteClick = onFavoriteClick,
+            onLongClickReleased = onLongClickReleased,
+            onLongClickApplied = onLongClickApplied
         )
     }
 }
@@ -160,7 +147,9 @@ fun LazyItemList(
     dateEnabled: Boolean = false,
     onSwipeToEdit: (Int) -> Unit,
     toTaskScreen: (Int) -> Unit,
-    onFavoriteClick: (TodoTask) -> Unit
+    onFavoriteClick: (TodoTask) -> Unit,
+    onLongClickReleased: (Int) -> Unit,
+    onLongClickApplied: (Int) -> Unit
 ) {
     val context = LocalContext.current
     // 화면 의 크기의 반을 swipe 한 경우 처리
@@ -240,18 +229,20 @@ fun LazyItemList(
                         toTaskScreen = {
                             toTaskScreen(index)
                         },
-                        onLongClick = {
-                            Toast.makeText(context, "long click activated", Toast.LENGTH_SHORT)
-                                .show()
-                        },
-                        onDeselectedClick = {
-
-                        },
+//                        onLongClick = {
+//                            Toast.makeText(context, "long click activated", Toast.LENGTH_SHORT)
+//                                .show()
+//                        },
+//                        onDeselectedClick = {
+//
+//                        },
                         datetime = if (dateEnabled) currentItem!!.createdAt
                         else currentItem!!.updatedAt,
                         onFavoriteClick = {
                             onFavoriteClick(currentItem!!)
-                        }
+                        },
+                        onLongClickReleased = onLongClickReleased,
+                        onLongClickApplied = onLongClickApplied
                     )
                 },
                 directions = setOf(DismissDirection.StartToEnd)
@@ -492,27 +483,31 @@ fun EmptyContentPreview() {
 }
 
 
-//@Composable
-//@Preview
-//fun ListContentPreview() {
-//    TodoComposeTheme {
-//        ListContent(
-//            tasks = flowOf(
-//                PagingData.from<TodoTask>(
-//                    listOf(
-//                        TodoTask(
-//                            1, "필성 힘내!!!",
-//                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-//                            Priority.HIGH
-//                        )
-//                    )
-//                )
-//            ).collectAsLazyPagingItems(),
-//            toTaskScreen = {},
-////            onSwipeToDelete = { a, b -> },
-//            onSwipeToEdit = {},
-////            screenMode = ScreenMode.NORMAL,
-//            onFavoriteClick = {},
-//        )
-//    }
-//}
+@Composable
+@Preview
+fun ListContentPreview() {
+    MaterialTheme {
+        ListContent(
+            tasks = flowOf(
+                PagingData.from<TodoTask>(
+                    listOf(
+                        TodoTask(
+                            1,
+                            "필성 힘내!!!",
+                            "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                            Priority.HIGH,
+                            notebookId = -1
+                        )
+                    )
+                )
+            ).collectAsLazyPagingItems(),
+            toTaskScreen = {},
+//            onSwipeToDelete = { a, b -> },
+            onSwipeToEdit = {},
+//            screenMode = ScreenMode.NORMAL,
+            onFavoriteClick = {},
+            onLongClickReleased = {},
+            onLongClickApplied = {}
+        )
+    }
+}

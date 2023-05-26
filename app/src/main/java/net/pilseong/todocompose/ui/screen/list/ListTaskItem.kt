@@ -59,10 +59,12 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     todoTask: TodoTask,
     toTaskScreen: (Int) -> Unit,
-    onLongClick: () -> Unit,
-    onDeselectedClick: () -> Unit,
+//    onLongClick: () -> Unit,
+//    onDeselectedClick: (Int) -> Unit,
     datetime: ZonedDateTime,
-    onFavoriteClick: () -> Unit
+    onFavoriteClick: () -> Unit,
+    onLongClickReleased: (Int) -> Unit,
+    onLongClickApplied: (Int) -> Unit
 ) {
     var selected by remember { mutableStateOf(false) }
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
@@ -88,11 +90,10 @@ fun TaskItem(
                 .combinedClickable(
                     onClick = {
                         toTaskScreen(todoTask.id)
-
                     },
                     onLongClick = {
                         selected = true
-                        onLongClick()
+                        onLongClickApplied(todoTask.id)
                     }
                 ),
             color = Color.Transparent,
@@ -127,10 +128,11 @@ fun TaskItem(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            modifier = Modifier.clickable(enabled = selected) {
-                                selected = false
-                                onDeselectedClick()
-                            },
+                            modifier = Modifier
+                                .clickable(enabled = selected) {
+                                    selected = false
+                                    onLongClickReleased(todoTask.id)
+                                },
                             painter = if (selected)
                                 painterResource(id = R.drawable.ic_baseline_check_circle_24)
                             else
@@ -147,7 +149,7 @@ fun TaskItem(
                             text = todoTask.title,
                             color = MaterialTheme.colorScheme.taskItemContentColor,
                             style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1
+                            maxLines = 1,
                         )
                         Text(
                             modifier = Modifier.fillMaxWidth(),
@@ -220,10 +222,10 @@ fun TaskItemPreview() {
                 notebookId = -1
             ),
             toTaskScreen = {},
-            onLongClick = {},
-            onDeselectedClick = {},
             datetime = ZonedDateTime.now(),
-            onFavoriteClick = {}
+            onFavoriteClick = {},
+            onLongClickReleased = {},
+            onLongClickApplied = {}
         )
     }
 }

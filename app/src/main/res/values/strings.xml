@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Original Memo</string>
+    <string name="app_name">Notebooks</string>
     <string name="add_button_icon">Add Memo Button Icon</string>
     <string name="empty_list_content_label">NO MEMO FOUND</string>
     <string name="search_bar_visible_action_icon">Search Bar Show</string>
@@ -9,7 +9,7 @@
     <string name="close_icon">Close Icon</string>
     <string name="delete_all_action">Delete All Memos</string>
     <string name="list_screen_title">Memo List</string>
-    <string name="home_screen_title">NoteBooks</string>
+    <string name="home_screen_title">Notebooks</string>
     <string name="delete_all_menu_text">DELETE ALL</string>
     <string name="drop_down_menu_icon">Drop Down Menu Icon</string>
     <string name="new_task_appbar_title">Add Memo</string>
@@ -29,8 +29,10 @@
     <string name="delete_task_dialog_title">Remove \'%1$s\'?</string>
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
     <string name="export_task_dialog_confirmation">Are you sure to export all memos?</string>
-    <string name="delete_all_task_dialog_title">Remove All Memos</string>
+    <string name="delete_all_task_dialog_title">Remove All Notes</string>
+    <string name="delete_selected_task_dialog_title">Remove Selected Notes</string>
     <string name="delete_all_tasks_dialog_confirmation">Are you sure to remove all Memos? This cannot be revoked</string>
+    <string name="delete_seleccted_tasks_dialog_confirmation">Are you sure to remove all selected notes? This cannot be revoked</string>
     <string name="export_all_tasks_dialog_confirmation">Are you sure to export all Memos through Email? It might take some time</string>
     <string name="delete_label">Delete</string>
     <string name="update_label">Update</string>
@@ -58,7 +60,8 @@
     <string name="snackbar_message_date_updated_at_change">Updated time used for ordering</string>
     <string name="snackbar_message_date_range_applied">Date range filter applied</string>
     <string name="snackbar_message_date_range_cancelled">Date range filter removed</string>
-    <string name="snackbar_favorite_change_message">Favorite Memos filtered</string>
+    <string name="snackbar_favorite_change_message">Favorite notes filtered</string>
+    <string name="snackbar_selected_items_deleted_message">Selected notes deleted</string>
     <string name="status_line_date_range_text">Date from %1$s to %2$s</string>
     <string name="status_line_date_range_up_to_date_text">up to date</string>
     <string name="status_line_date_range_from_the_first_memo_text">the first meno</string>
@@ -76,5 +79,6 @@
     <string name="bottom_nav_label_memo">Memos</string>
     <string name="bottom_nav_label_home">Home</string>
     <string name="note_content_dateformat">LLL MM, yyyy</string>
+    <string name="default_note_title">Default Notebook</string>
 
 </resources>

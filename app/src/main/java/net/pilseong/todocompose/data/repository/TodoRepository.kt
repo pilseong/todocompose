@@ -33,7 +33,7 @@ class TodoRepository @Inject constructor(
         isFavoriteOn: Boolean = false,
         notebookId: Int = -1
     ): Flow<PagingData<TodoTask>> {
-        Log.i("PHILIP", "[TodoRepository] getAllTasks performed")
+        Log.i("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
         return Pager(
             config = PagingConfig(pageSize = PAGE_SIZE),
             pagingSourceFactory = {
@@ -66,6 +66,13 @@ class TodoRepository @Inject constructor(
 
     suspend fun deleteAllTasks() {
         todoDAO.deleteAllTasks()
+    }
+
+    @Transaction
+    suspend fun deleteSelectedTasks(notesIds: List<Int>) {
+        notesIds.forEach {
+            todoDAO.deleteTask(it)
+        }
     }
 
     suspend fun updateFavorite(todoTask: TodoTask) {

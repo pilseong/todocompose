@@ -19,4 +19,10 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
     val updatedAt: ZonedDateTime = ZonedDateTime.now()
-)
+) {
+    companion object {
+        fun instance(title: String = ""): Notebook {
+            return Notebook(title = title, description = "", priority = Priority.NONE)
+        }
+    }
+}
