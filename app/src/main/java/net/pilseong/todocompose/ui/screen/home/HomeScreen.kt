@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -19,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
@@ -68,6 +71,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             AddMemoFab(
+                icon = Icons.Default.FiberNew,
                 onFabClicked = {
                     onFabClick()
                 }
@@ -89,5 +93,18 @@ fun HomeScreen(
                 onSelectNotebook = onSelectNotebook
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewHomeScreen() {
+    MaterialTheme {
+        HomeScreen(
+            onClickBottomNavBar = {},
+            onFabClick = { /*TODO*/ },
+            onSelectNotebook = {},
+            notebooks = listOf()
+        )
     }
 }

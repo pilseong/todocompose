@@ -40,6 +40,7 @@ fun MainNavGraph(
         )
 
         memoNavGraph(
+            navHostController = navHostController,
             viewModelStoreOwner = viewModelStoreOwner,
             toTaskScreen = {
                 navHostController.navigate(Screen.MemoDetail.route)

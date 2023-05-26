@@ -55,6 +55,7 @@ import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
 
 fun NavGraphBuilder.memoNavGraph(
+    navHostController: NavHostController,
     viewModelStoreOwner: ViewModelStoreOwner,
     toTaskScreen: () -> Unit,
     toListScreen: (Int?) -> Unit,
@@ -76,6 +77,16 @@ fun NavGraphBuilder.memoNavGraph(
             val memoViewModel = hiltViewModel<MemoViewModel>(
                 viewModelStoreOwner = viewModelStoreOwner
             )
+
+            // 아래 루틴은 직전이 memo graph 에 속해 있지 않을 경우 action 을 None 으로 초기화 한다.
+            // 이유는 마지막 action 에 대한 snackbar 를 화면에 보여 주어야 할지를 판단할 수가 없기 때문 이다.
+            // memo detail 에서 온 경우는 어떤 action 에 의해 list 화면 으로 돌아 오는 것이기 때문에
+            // action 에 대해 처리를 해야 하지만 다른 곳에서 온 경우는 엑션이 실행 되면 안된다.
+            // action 은 stat e가 아니기 때문에 memolist 로 새로 진입한 경우 snackbar 는 그려 주어야 할지 판단할 수 없다.
+            val route = navHostController.previousBackStackEntry?.destination?.route
+            if (route != null && route != Screen.MemoDetail.route) {
+                memoViewModel.updateAction(Action.NO_ACTION)
+            }
 
             val openDialog = remember { mutableStateOf(false) }
 

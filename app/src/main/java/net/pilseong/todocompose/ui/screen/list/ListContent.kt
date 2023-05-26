@@ -84,7 +84,8 @@ fun ListContent(
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit
+    onLongClickApplied: (Int) -> Unit,
+    selectedItemsIds: List<Int>
 ) {
 
     if (tasks.loadState.refresh is LoadState.NotLoading) {
@@ -97,7 +98,8 @@ fun ListContent(
             dateEnabled = dateEnabled,
             onFavoriteClick = onFavoriteClick,
             onLongClickReleased = onLongClickReleased,
-            onLongClickApplied = onLongClickApplied
+            onLongClickApplied = onLongClickApplied,
+            selectedItemsIds = selectedItemsIds
         )
     } else {
         LoadingContent()
@@ -117,7 +119,8 @@ fun DisplayTasks(
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit
+    onLongClickApplied: (Int) -> Unit,
+    selectedItemsIds: List<Int>
 ) {
 //    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
@@ -131,7 +134,8 @@ fun DisplayTasks(
             toTaskScreen = toTaskScreen,
             onFavoriteClick = onFavoriteClick,
             onLongClickReleased = onLongClickReleased,
-            onLongClickApplied = onLongClickApplied
+            onLongClickApplied = onLongClickApplied,
+            selectedItemsIds = selectedItemsIds
         )
     }
 }
@@ -149,7 +153,8 @@ fun LazyItemList(
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit
+    onLongClickApplied: (Int) -> Unit,
+    selectedItemsIds: List<Int>
 ) {
     val context = LocalContext.current
     // 화면 의 크기의 반을 swipe 한 경우 처리
@@ -242,7 +247,8 @@ fun LazyItemList(
                             onFavoriteClick(currentItem!!)
                         },
                         onLongClickReleased = onLongClickReleased,
-                        onLongClickApplied = onLongClickApplied
+                        onLongClickApplied = onLongClickApplied,
+                        selectedItemsIds = selectedItemsIds
                     )
                 },
                 directions = setOf(DismissDirection.StartToEnd)
@@ -507,7 +513,8 @@ fun ListContentPreview() {
 //            screenMode = ScreenMode.NORMAL,
             onFavoriteClick = {},
             onLongClickReleased = {},
-            onLongClickApplied = {}
+            onLongClickApplied = {},
+            selectedItemsIds = emptyList()
         )
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
+import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
@@ -70,7 +72,8 @@ fun ListAppBar(
     onImportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     selectedItemsCount: Int,
-    onDeleteSelectedClicked: () -> Unit
+    onDeleteSelectedClicked: () -> Unit,
+    onBackButtonClick: () -> Unit
 ) {
     Log.i("PHILIP", "selectedItems $selectedItemsCount")
     when (searchAppBarState) {
@@ -107,7 +110,8 @@ fun ListAppBar(
                 MultiSelectAppbar(
                     scrollBehavior = scrollBehavior,
                     selectedItemsCount = selectedItemsCount,
-                    onDeleteSelectedClicked = onDeleteSelectedClicked
+                    onDeleteSelectedClicked = onDeleteSelectedClicked,
+                    onBackButtonClick = onBackButtonClick,
                 )
             }
         }
@@ -147,43 +151,11 @@ fun DefaultListAppBar(
     TopAppBar(
         scrollBehavior = scrollBehavior,
         title = {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onAppBarTitleClick()
-                    },
-            ) {
-
-                val textMeasurer = rememberTextMeasurer()
-
-                var textSize: IntSize
-                var boxWidth = LocalDensity.current.run { maxWidth.toPx() }.toInt()
-                val localStyle = LocalTextStyle.current
-
-                // 글자를 하나씩 더해 가면서 좌우 크기를 계산 하여 전체 박스에 들어갈 수 있는지 판단
-                // title 과 박스 크기가 변하지 않는 이상 계산 하지 않는다.
-                var index = remember(appbarTitle, boxWidth) {
-                    var i = 0
-                    while (i < appbarTitle.length) {
-                        val textLayoutResult =
-                            textMeasurer.measure(
-                                text = AnnotatedString(appbarTitle.substring(0, i)),
-                                style = localStyle
-                            )
-                        textSize = textLayoutResult.size
-                        if (boxWidth < textSize.width) break
-                        i++
-                    }
-                    i
-                }
-
-                Text(
-                    text = if (appbarTitle.length == index) appbarTitle
-                    else appbarTitle.substring(startIndex = 0, endIndex = index - 3) + "...",
-                    color = MaterialTheme.colorScheme.topBarContentColor
-                )
-            }
+            FittedTextTitle(
+                onAppBarTitleClick = onAppBarTitleClick,
+                appbarTitle = appbarTitle,
+                clickEnabled = true
+            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.topBarContainerColor
@@ -199,6 +171,7 @@ fun DefaultListAppBar(
         }
     )
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -428,12 +401,15 @@ fun MultiSelectAppbar(
     scrollBehavior: TopAppBarScrollBehavior,
     selectedItemsCount: Int,
     onDeleteSelectedClicked: () -> Unit,
+    onBackButtonClick: () -> Unit,
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
         navigationIcon = {
             CommonAction(
-                onClicked = { },
+                onClicked = {
+                    onBackButtonClick()
+                },
                 icon = Icons.Default.ArrowBack,
                 description = "Arrow backwards Icon"
             )
@@ -472,7 +448,7 @@ fun MultiSelectAppbarActions(
     )
 
     CommonAction(
-        icon = Icons.Default.Remove,
+        icon = Icons.Default.Delete,
         onClicked = { deleteAlertExpanded = true },
         description = "date picker icon"
     )
@@ -484,8 +460,8 @@ fun MultiSelectAppbarActions(
 fun PreviewMultiSelectAppbar() {
     MultiSelectAppbar(
         scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
-        selectedItemsCount = 1
-    ) {
-
-    }
+        selectedItemsCount = 1,
+        onBackButtonClick = {},
+        onDeleteSelectedClicked = {}
+    )
 }

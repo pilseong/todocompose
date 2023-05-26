@@ -146,7 +146,11 @@ class MemoViewModel @Inject constructor(
     val selectedItems = mutableStateListOf<Int>()
 
     fun appendMultiSelectedItem(id: Int) {
-        selectedItems.add(id)
+        if (selectedItems.contains(id)) {
+            selectedItems.remove(id)
+        } else {
+            selectedItems.add(id)
+        }
     }
 
     fun removeMultiSelectedItem(id: Int) {
@@ -414,6 +418,7 @@ class MemoViewModel @Inject constructor(
     private fun persistNotebookIdState(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistSelectedNotebookId(id)
+            updateActionPerformed()
         }
     }
 

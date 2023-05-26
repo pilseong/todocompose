@@ -168,7 +168,7 @@ fun CreateNotebookDialog(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        text = "Create Notebook",
+                        text = stringResource(id = R.string.note_screen_create_notebook_dialog_title),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
 
                         style = MaterialTheme.typography.bodyLarge

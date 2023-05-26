@@ -30,6 +30,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
+import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
@@ -76,7 +77,7 @@ fun EditTaskBar(
         navigationIcon = {
             CommonAction(
                 onClicked = { toListScreen(Action.NO_ACTION) },
-                icon = Icons.Default.ArrowBack,
+                icon = Icons.Default.Close,
                 description = "Arrow backwards Icon"
             )
         },
@@ -145,18 +146,23 @@ fun DetailTaskBar(
         navigationIcon = {
             CommonAction(
                 onClicked = { toListScreen(Action.NO_ACTION) },
-                icon = Icons.Default.Close,
+                icon = Icons.Default.ArrowBack,
                 description = stringResource(
                     R.string.default_task_bar_close_icon
                 )
             )
         },
         title = {
-            Text(
-                text = todoTask.title,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.topBarContentColor
+            FittedTextTitle(
+                onAppBarTitleClick = { },
+                appbarTitle = todoTask.title,
+                clickEnabled = false
             )
+//            Text(
+//                text = todoTask.title,
+//                overflow = TextOverflow.Ellipsis,
+//                color = MaterialTheme.colorScheme.topBarContentColor
+//            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.topBarContainerColor

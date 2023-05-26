@@ -84,6 +84,7 @@ fun TaskScreen(
                         }
                     } else {
                         toListScreen(null)
+                        memoViewModel.refreshAllTasks()
                     }
                 },
                 onCopyClicked = {

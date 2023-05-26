@@ -62,6 +62,7 @@
     <string name="snackbar_message_date_range_cancelled">범위 필터가 해제되었습니다.</string>
     <string name="snackbar_favorite_change_message">중요메모만 검색합니다.</string>
     <string name="snackbar_selected_items_deleted_message">선택된 메모가 삭제되었습니다.</string>
+    <string name="snackbar_changed_notebook_message">선택한 노트북으로 변경되었습니다.</string>
     <string name="status_line_date_range_text">검색일 %1$s 부터 %2$s 까지</string>
     <string name="status_line_date_range_up_to_date_text">오늘</string>
     <string name="status_line_date_range_from_the_first_memo_text">첫메시지</string>
@@ -80,6 +81,9 @@
     <string name="bottom_nav_label_home">홈</string>
     <string name="note_content_dateformat">yyyy년MM월dd일</string>
     <string name="default_note_title">기본 노트</string>
+    <string name="note_screen_recent_notebooks">최근 사용한 노트북</string>
+    <string name="note_screen_list_of_notebooks">노트북 목록</string>
+    <string name="note_screen_create_notebook_dialog_title">노트북 만들기</string>
 
 
 

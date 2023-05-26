@@ -59,14 +59,17 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     todoTask: TodoTask,
     toTaskScreen: (Int) -> Unit,
-//    onLongClick: () -> Unit,
-//    onDeselectedClick: (Int) -> Unit,
     datetime: ZonedDateTime,
     onFavoriteClick: () -> Unit,
     onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit
+    onLongClickApplied: (Int) -> Unit,
+    selectedItemsIds: List<Int>
 ) {
-    var selected by remember { mutableStateOf(false) }
+
+    var selected = remember(selectedItemsIds.size) {
+        mutableStateOf(selectedItemsIds.contains(todoTask.id))
+    }
+
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -92,7 +95,7 @@ fun TaskItem(
                         toTaskScreen(todoTask.id)
                     },
                     onLongClick = {
-                        selected = true
+                        selected.value = !selected.value
                         onLongClickApplied(todoTask.id)
                     }
                 ),
@@ -108,7 +111,7 @@ fun TaskItem(
             Card(
                 modifier = modifier,
                 colors = CardDefaults.cardColors(
-                    containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (selected.value) MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surface
                 ),
                 shape = RoundedCornerShape(4.dp),
@@ -129,16 +132,30 @@ fun TaskItem(
                     ) {
                         Icon(
                             modifier = Modifier
-                                .clickable(enabled = selected) {
-                                    selected = false
-                                    onLongClickReleased(todoTask.id)
-                                },
-                            painter = if (selected)
+                                .combinedClickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = {
+                                        if (selected.value) {
+                                            selected.value = false
+                                            onLongClickReleased(todoTask.id)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        selected.value = !selected.value
+                                        onLongClickApplied(todoTask.id)
+                                    }
+                                ),
+//                                .clickable(enabled = selected.value) {
+//                                    selected.value = false
+//                                    onLongClickReleased(todoTask.id)
+//                                },
+                            painter = if (selected.value)
                                 painterResource(id = R.drawable.ic_baseline_check_circle_24)
                             else
                                 painterResource(id = R.drawable.ic_baseline_circle_24),
-                            contentDescription = if (selected) "Checked Circle" else "Circle",
-                            tint = if (selected) MaterialTheme.colorScheme.primary else tintColor
+                            contentDescription = if (selected.value) "Checked Circle" else "Circle",
+                            tint = if (selected.value) MaterialTheme.colorScheme.primary else tintColor
                         )
                     }
                     Column(
@@ -225,7 +242,8 @@ fun TaskItemPreview() {
             datetime = ZonedDateTime.now(),
             onFavoriteClick = {},
             onLongClickReleased = {},
-            onLongClickApplied = {}
+            onLongClickApplied = {},
+            selectedItemsIds = emptyList()
         )
     }
 }

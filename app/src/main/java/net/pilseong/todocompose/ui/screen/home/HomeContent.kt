@@ -231,7 +231,7 @@ fun NoteContent(
 //                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Top Notebooks",
+                        text = stringResource(id = R.string.note_screen_recent_notebooks),
                         fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
                         fontSize = MaterialTheme.typography.headlineLarge.fontSize
                     )
@@ -311,7 +311,7 @@ fun NoteContent(
 //                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "List of notebooks",
+                        text = stringResource(id = R.string.note_screen_list_of_notebooks),
                         fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
                         fontSize = MaterialTheme.typography.headlineLarge.fontSize
                     )
