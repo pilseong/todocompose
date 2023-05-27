@@ -80,10 +80,13 @@
     <string name="bottom_nav_label_memo">메모</string>
     <string name="bottom_nav_label_home">홈</string>
     <string name="note_content_dateformat">yyyy년MM월dd일</string>
+    <string name="note_content_today">오늘</string>
+    <string name="note_inside_dateformat">yy년MM월dd일</string>
     <string name="default_note_title">기본 노트</string>
     <string name="note_screen_recent_notebooks">최근 사용한 노트북</string>
     <string name="note_screen_list_of_notebooks">노트북 목록</string>
     <string name="note_screen_create_notebook_dialog_title">노트북 만들기</string>
+
 
 
 

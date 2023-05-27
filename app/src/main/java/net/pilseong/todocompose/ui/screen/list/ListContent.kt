@@ -142,7 +142,6 @@ fun DisplayTasks(
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalAnimationApi::class
 )
 @Composable
 fun LazyItemList(
@@ -199,6 +198,23 @@ fun LazyItemList(
                 TaskItemHeader(dateEnabled, tasks, index)
             }
 
+            val drawEndEdge = remember(dateEnabled, tasks, index) {
+                val currentDate: ZonedDateTime?
+                val nextDate: ZonedDateTime?
+
+                if (dateEnabled) {
+                    currentDate = tasks.peek(index)?.createdAt
+                    nextDate = if (index == tasks.itemCount-1) null
+                    else tasks.peek(index + 1)?.createdAt
+                } else {
+                    currentDate = tasks.peek(index)?.updatedAt
+                    nextDate = if (index == tasks.itemCount-1) null
+                    else tasks.peek(index + 1)?.updatedAt
+                }
+
+                currentDate?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
+            }
+
             val currentItem by rememberUpdatedState(newValue = tasks[index])
             val dismissState = rememberDismissState(
                 confirmValueChange = {
@@ -231,6 +247,7 @@ fun LazyItemList(
                     TaskItem(
                         modifier = Modifier.animateItemPlacement(),
                         todoTask = currentItem!!,
+                        drawEndEdge = drawEndEdge,
                         toTaskScreen = {
                             toTaskScreen(index)
                         },
@@ -275,13 +292,13 @@ fun DateHeader(time: ZonedDateTime) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            modifier = Modifier.width(60.dp),
+            modifier = Modifier.width(42.dp),
             horizontalAlignment = Alignment.End
         ) {
             Text(
                 text = String.format("%02d", time.toLocalDate().dayOfMonth),
                 style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Light
                 ),
                 color = backColor
@@ -289,7 +306,7 @@ fun DateHeader(time: ZonedDateTime) {
             Text(
                 text = time.toLocalDate().dayOfWeek.toString().take(3),
                 style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Light
                 ),
                 color = backColor
@@ -302,7 +319,7 @@ fun DateHeader(time: ZonedDateTime) {
                     it.titlecase()
                 },
                 style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Light
                 ),
                 color = backColor
@@ -311,7 +328,7 @@ fun DateHeader(time: ZonedDateTime) {
                 text = time.toLocalDate().year.toString(),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Light
                 )
             )
@@ -344,18 +361,22 @@ private fun TaskItemHeader(
         prevDate = if (index == 0) null
         else tasks.peek(index - 1)?.updatedAt
     }
-    val currentDateString = currentDate?.toLocalDateTime()?.format(
-        DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    ).toString()
 
-    val prevDateString = if (index == 0) null
-    else prevDate?.toLocalDateTime()?.format(
-        DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    ).toString()
-
-    if (currentDateString != prevDateString) {
+    if (currentDate?.toLocalDate().toString() != prevDate?.toLocalDate().toString()) {
         DateHeader(currentDate!!)
     }
+//    val currentDateString = currentDate?.toLocalDateTime()?.format(
+//        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+//    ).toString()
+//
+//    val prevDateString = if (index == 0) null
+//    else prevDate?.toLocalDateTime()?.format(
+//        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+//    ).toString()
+//
+//    if (currentDateString != prevDateString) {
+//        DateHeader(currentDate!!)
+//    }
 }
 
 

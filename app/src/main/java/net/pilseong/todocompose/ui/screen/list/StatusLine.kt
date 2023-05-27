@@ -25,17 +25,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
@@ -47,9 +47,6 @@ import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.ui.theme.onPrimaryElevation
-import net.pilseong.todocompose.ui.theme.topBarContainerColor
-import net.pilseong.todocompose.ui.theme.topBarContentColor
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -102,7 +99,8 @@ fun StatusLine(
         modifier = Modifier
             .fillMaxWidth()
             .height(if (startDate != null || endDate != null) 64.dp else 30.dp),
-        color = MaterialTheme.colorScheme.topBarContainerColor
+//        tonalElevation = 1.dp
+//        color = MaterialTheme.colorScheme.topBarContainerColor
 
     ) {
         Column(
@@ -117,11 +115,16 @@ fun StatusLine(
                     modifier = Modifier
                         .clickable { expanded = true }
                         .weight(1F),
+                    border = if (prioritySortState != Priority.NONE )
+                        BorderStroke(color = Color.Transparent, width = 0.dp)
+                    else
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
                     shape = RoundedCornerShape(4.dp),
-
                     colors = CardDefaults.cardColors(
                         containerColor = containerColor,
-                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
                     ),
                 ) {
                     Row(
@@ -147,7 +150,7 @@ fun StatusLine(
                         Text(
                             text = priorityText,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            fontWeight = FontWeight.ExtraBold
+//                            fontWeight = FontWeight.ExtraBold
                         )
                     }
                 }
@@ -160,10 +163,17 @@ fun StatusLine(
                             onOrderEnabledClick()
                         },
                     shape = RoundedCornerShape(4.dp),
+                    border = if (orderEnabled)
+                        BorderStroke(color = Color.Transparent, width = 0.dp)
+                    else
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (orderEnabled) HighPriorityColor
+                        containerColor = if (orderEnabled) MaterialTheme.colorScheme
+                            .surfaceColorAtElevation(6.dp)
                         else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
                     ),
                 ) {
                     Row(
@@ -191,7 +201,6 @@ fun StatusLine(
                             text = if (orderEnabled) stringResource(id = R.string.badge_order_asc_label)
                             else stringResource(id = R.string.badge_order_desc_label),
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            fontWeight = FontWeight.ExtraBold
                         )
                     }
                 }
@@ -204,10 +213,17 @@ fun StatusLine(
                             onDateEnabledClick()
                         },
                     shape = RoundedCornerShape(4.dp),
+                    border = if (dateEnabled)
+                        BorderStroke(color = Color.Transparent, width = 0.dp)
+                    else
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (dateEnabled) HighPriorityColor
+                        containerColor = if (dateEnabled) MaterialTheme.colorScheme
+                            .surfaceColorAtElevation(6.dp)
                         else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
                     ),
                 ) {
                     Row(
@@ -235,7 +251,7 @@ fun StatusLine(
                             text = if (dateEnabled) stringResource(id = R.string.badge_date_created_at_label)
                             else stringResource(id = R.string.badge_date_updated_at_label),
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            fontWeight = FontWeight.ExtraBold
+//                            fontWeight = FontWeight.ExtraBold
                         )
                     }
                 }
@@ -248,10 +264,17 @@ fun StatusLine(
                             onFavoriteClick()
                         },
                     shape = RoundedCornerShape(4.dp),
+                    border = if (favoriteOn)
+                        BorderStroke(color = Color.Transparent, width = 0.dp)
+                    else
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
                     colors = CardDefaults.cardColors(
                         containerColor = if (favoriteOn) FavoriteYellow
                         else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+//                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
                     ),
                 ) {
 
@@ -278,7 +301,6 @@ fun StatusLine(
                         Text(
                             text = stringResource(id = R.string.badge_favorite_label),
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            fontWeight = FontWeight.ExtraBold
                         )
                     }
                 }
@@ -338,7 +360,7 @@ fun StatusLine(
                         )
                     else stringResource(id = R.string.status_line_date_range_up_to_date_text)
                     Surface(
-                        color = MaterialTheme.colorScheme.onPrimaryElevation
+//                        color = MaterialTheme.colorScheme.onPrimaryElevation
                     ) {
                         Text(
                             modifier = Modifier
@@ -357,7 +379,8 @@ fun StatusLine(
                             .border(
                                 border = BorderStroke(
                                     0.dp,
-                                    color = MaterialTheme.colorScheme.topBarContentColor
+//                                    color = MaterialTheme.colorScheme.topBarContentColor
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             )
                             .clickable {

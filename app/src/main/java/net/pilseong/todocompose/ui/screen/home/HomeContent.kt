@@ -226,14 +226,14 @@ fun NoteContent(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(top = 24.dp)
+//                        .padding(top = 24.dp)
                         .fillMaxWidth(),
 //                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = stringResource(id = R.string.note_screen_recent_notebooks),
-                        fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
-                        fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
                     )
                 }
                 Row(
@@ -244,9 +244,8 @@ fun NoteContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(start = 4.dp),
-                        text = ZonedDateTime.now().toLocalDate().format(
-                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
-                        ),
+                        text = stringResource(id = R.string.note_content_today) + ": ${ZonedDateTime.now().toLocalDate().format(
+                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat)))}",
                         fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
                         fontSize = MaterialTheme.typography.titleSmall.fontSize
                     )
@@ -312,8 +311,8 @@ fun NoteContent(
                 ) {
                     Text(
                         text = stringResource(id = R.string.note_screen_list_of_notebooks),
-                        fontStyle = MaterialTheme.typography.headlineLarge.fontStyle,
-                        fontSize = MaterialTheme.typography.headlineLarge.fontSize
+                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
                     )
                 }
                 Spacer(modifier = Modifier.height(LARGE_PADDING))
@@ -391,7 +390,9 @@ fun NoteContent(
                                                             modifier = Modifier.padding(bottom = SMALL_PADDING),
                                                             text = notebooks[index].createdAt.toLocalDate()
                                                                 .format(
-                                                                    DateTimeFormatter.ofPattern("LLL, dd, yy")
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        stringResource(id = R.string.note_inside_dateformat)
+                                                                    )
                                                                 ),
                                                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                                                         )

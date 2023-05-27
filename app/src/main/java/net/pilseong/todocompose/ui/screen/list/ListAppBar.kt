@@ -1,10 +1,10 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -13,14 +13,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,15 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
@@ -55,7 +49,6 @@ import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
-import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
@@ -158,7 +151,7 @@ fun DefaultListAppBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
         ),
         actions = {
             ListAppBarActions(
@@ -235,7 +228,7 @@ fun ListAppBarActions(
     CommonAction(
         icon = Icons.Default.DateRange,
         onClicked = { datePickerExpanded = true },
-        description = "date picker icon"
+        description = "date picker icon",
     )
     MenuAction(
         onDeleteAllClicked = {
@@ -257,7 +250,7 @@ fun SearchAction(
         Icon(
             imageVector = Icons.Filled.Search,
             contentDescription = stringResource(R.string.search_bar_visible_action_icon),
-            tint = MaterialTheme.colorScheme.topBarContentColor
+//            tint = MaterialTheme.colorScheme.topBarContentColor
         )
     }
 }
@@ -274,7 +267,8 @@ fun MenuAction(
         Icon(
             imageVector = Icons.Filled.Menu,
             contentDescription = stringResource(R.string.delete_all_action),
-            tint = MaterialTheme.colorScheme.topBarContentColor
+//            tint = MaterialTheme.colorScheme.topBarContentColor
+            tint = MaterialTheme.colorScheme.onSurface
         )
     }
     // offset 은 메뉴와 아이템 의 위치를 보정 하기 위함. 기본적 으로 우측의 경계를 넘어 가면
@@ -319,80 +313,100 @@ fun SearchAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit
 ) {
-    Surface(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(TOP_BAR_HEIGHT),
-        color = MaterialTheme.colorScheme.topBarContainerColor
+            .height(TOP_BAR_HEIGHT)
     ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = text,
-            singleLine = true,
-            onValueChange = { text ->
-                onTextChange(text)
-            },
-            placeholder = {
-                Text(
-                    modifier = Modifier
-                        .alpha(ALPHA_NOT_FOCUSED),
-                    text = stringResource(id = R.string.search_placeholder),
-                    color = MaterialTheme.colorScheme.topBarContentColor
-                )
-            },
-            leadingIcon = {
-                IconButton(onClick = {
-                    onSearchClicked(text)
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(
-                            id = R.string.search_execution_icon
-                        ),
-                        modifier = if (text.isNotEmpty()) Modifier.alpha(ALPHA_FOCUSED)
-                        else Modifier.alpha(ALPHA_NOT_FOCUSED),
-                        tint = MaterialTheme.colorScheme.topBarContentColor
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(),
+//                .height(TOP_BAR_HEIGHT),
+            shape = RoundedCornerShape(30.dp),
+            tonalElevation = 16.dp
+//        color = MaterialTheme.colorScheme.topBarContainerColor
+        ) {
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = text,
+                singleLine = true,
+                onValueChange = { text ->
+                    onTextChange(text)
+                },
+                placeholder = {
+                    Text(
+                        modifier = Modifier
+                            .alpha(ALPHA_NOT_FOCUSED),
+                        text = stringResource(id = R.string.search_placeholder),
+//                    color = MaterialTheme.colorScheme.topBarContentColor
                     )
-                }
-            },
-            trailingIcon = {
-                IconButton(onClick = {
-                    if (text.isNotEmpty()) {
-                        onTextChange("")
-                    } else {
-                        onTextChange("")
-                        onCloseClicked()
+                },
+                leadingIcon = {
+                    IconButton(onClick = {
+                        onSearchClicked(text)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(
+                                id = R.string.search_execution_icon
+                            ),
+                            modifier = if (text.isNotEmpty()) Modifier.alpha(ALPHA_FOCUSED)
+                            else Modifier.alpha(ALPHA_NOT_FOCUSED),
+//                        tint = MaterialTheme.colorScheme.topBarContentColor
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(
-                            id = R.string.close_icon
-                        ),
-                        tint = MaterialTheme.colorScheme.topBarContentColor
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearchClicked(text)
-                }
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.topBarContentColor,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.topBarContentColor,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        if (text.isNotEmpty()) {
+                            onTextChange("")
+                        } else {
+                            onTextChange("")
+                            onCloseClicked()
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(
+                                id = R.string.close_icon
+                            ),
+//                        tint = MaterialTheme.colorScheme.topBarContentColor
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        onSearchClicked(text)
+                    }
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.topBarContentColor,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.topBarContentColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                )
             )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewSearchAppBar() {
+    MaterialTheme {
+        SearchAppBar(text = "검색",
+            onTextChange = {},
+            onCloseClicked = { /*TODO*/ },
+            onSearchClicked = {}
         )
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
@@ -417,11 +431,11 @@ fun MultiSelectAppbar(
         title = {
             Text(
                 text = "$selectedItemsCount",
-                color = MaterialTheme.colorScheme.topBarContentColor
+//                color = MaterialTheme.colorScheme.topBarContentColor
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
         ),
         actions = {
             MultiSelectAppbarActions(

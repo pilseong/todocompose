@@ -61,7 +61,7 @@ fun FittedTextTitle(
         Text(
             text = if (appbarTitle.length == index) appbarTitle
             else appbarTitle.substring(startIndex = 0, endIndex = index - 3) + "...",
-            color = MaterialTheme.colorScheme.topBarContentColor
+//            color = MaterialTheme.colorScheme.topBarContentColor
         )
     }
 }

@@ -1,25 +1,23 @@
 package net.pilseong.todocompose.navigation.destination
 
-import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
 import net.pilseong.todocompose.navigation.Screen
-import net.pilseong.todocompose.ui.theme.onPrimaryElevation
-import net.pilseong.todocompose.ui.theme.topBarContainerColor
-import net.pilseong.todocompose.ui.theme.topBarContentColor
 
 @Composable
 fun BottomNavBar(
@@ -33,18 +31,45 @@ fun BottomNavBar(
     )
 
     // 현재 페이지 를 찾는다
-    NavigationBar(
-        modifier = Modifier.height(40.dp),
-        containerColor = MaterialTheme.colorScheme.topBarContainerColor,
+    Surface(
+//        modifier = Modifier
+//            .shadow(
+//                elevation = 20.dp,
+//                spotColor = Color.Red
+//            )
+//            .background(color = MaterialTheme.colorScheme.surface)
+//            .fillMaxWidth(),
+        tonalElevation = 4.dp,
+        shadowElevation = 15.dp
     ) {
-        screens.forEach { screen ->
-            addItem(
-                screen = screen,
-                currentDestination = currentDestination,
-                onClick = onClick
-            )
+        NavigationBar(
+            modifier = Modifier.height(56.dp),
+//            .graphicsLayer {
+//                clip = true
+//                shape = RoundedCornerShape(topStart = 60.dp, topEnd = 60.dp)
+//                shadowElevation = 40F
+//            }
+//            .padding(top = 3.dp)
+            containerColor = Color.Transparent,
+        ) {
+            screens.forEach { screen ->
+                addItem(
+                    screen = screen,
+                    currentDestination = currentDestination,
+                    onClick = onClick
+                )
+            }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewBottomNavBar() {
+    MaterialTheme {
+        BottomNavBar(currentDestination = Screen.Home.route, onClick = {})
+    }
+
 }
 
 @Composable
@@ -60,17 +85,20 @@ fun RowScope.addItem(
                 onClick(screen.route)
         },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = Color.Transparent,
-            indicatorColor = MaterialTheme.colorScheme.onPrimaryElevation
+//            selectedIconColor = Color.Transparent,
+//            indicatorColor = MaterialTheme.colorScheme.onPrimaryElevation
 
         ),
         icon = {
             Icon(
-                modifier = Modifier.size(15.dp),
+//                modifier = Modifier.size(20.dp),
                 imageVector = screen.icon,
-                tint = MaterialTheme.colorScheme.topBarContentColor,
+//                tint = MaterialTheme.colorScheme.topBarContentColor,
                 contentDescription = "Navigation Icon"
             )
         },
+//        label = {
+//            Text(text = stringResource(id = screen.title))
+//        }
     )
 }

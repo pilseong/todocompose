@@ -62,14 +62,11 @@ fun NavGraphBuilder.homeComposable(
         route = route,
     ) {
         val noteViewModel = hiltViewModel<NoteViewModel>()
-
-        noteViewModel.observeNotebookIdChange()
-
         val openDialog = remember { mutableStateOf(false) }
-
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(key1 = Unit) {
+            noteViewModel.observeNotebookIdChange()
             noteViewModel.getNotebooks()
         }
 
@@ -83,7 +80,7 @@ fun NavGraphBuilder.homeComposable(
             onSelectNotebook = {it ->
                 noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, it)
                 scope.launch {
-                    delay(500)
+                    delay(100)
                     navHostController.navigate(Screen.MemoList.route)
                 }
             },

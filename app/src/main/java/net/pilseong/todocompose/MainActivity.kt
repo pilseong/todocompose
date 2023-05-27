@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -23,10 +24,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             TodoComposeTheme {
                 val navHostController = rememberNavController()
-                MainNavGraph(
-                    startDestination = BottomBarScreen.Home.route,
-                    navHostController = navHostController
-                )
+                // 아래 surface는 네비게이션 전환 시 발생하는 cross fade 표과를 제거하기 위해 추가 되었다.
+                // dark mode에서는 더 이상 이슈가 생기지 않지만
+                // light 모드 에서는 배경색으로 인한 flikering이 여전히 존재
+                Surface {
+                    MainNavGraph(
+                        startDestination = BottomBarScreen.Home.route,
+                        navHostController = navHostController
+                    )
+                }
             }
         }
     }

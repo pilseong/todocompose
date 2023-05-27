@@ -28,7 +28,6 @@ class NoteViewModel @Inject constructor(
     private val notebookRepository: NotebookRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-
     var notebookIdState by mutableStateOf(-1)
 
     var notebooks = MutableStateFlow<List<Notebook>>(emptyList())
@@ -59,7 +58,6 @@ class NoteViewModel @Inject constructor(
     fun observeNotebookIdChange() {
         Log.i("PHILIP", "[NoteViewModel] observeNotebookIdChange() executed")
         viewModelScope.launch(Dispatchers.IO) {
-            delay(100)
             dataStoreRepository.readSelectedNotebookId
                 .map { it }
                 .collect { state ->

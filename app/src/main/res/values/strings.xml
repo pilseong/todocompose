@@ -69,6 +69,7 @@
     <string name="loading_text">Loading...</string>
     <string name="task_item_star_description">Favorite icon</string>
     <string name="task_content_dateformat">HH:mm LLL MM, yyyy</string>
+    <string name="note_content_today">Today</string>
     <string name="priority_high">High</string>
     <string name="priority_medium">Medium</string>
     <string name="priority_low">Low</string>
@@ -80,9 +81,10 @@
     <string name="bottom_nav_label_memo">Memos</string>
     <string name="bottom_nav_label_home">Home</string>
     <string name="note_content_dateformat">LLL MM, yyyy</string>
+    <string name="note_inside_dateformat">LLL, dd, yy</string>
     <string name="default_note_title">Default Notebook</string>
-    <string name="note_screen_recent_notebooks">Recent Notebooks</string>
-    <string name="note_screen_list_of_notebooks">List of notebooks</string>
+    <string name="note_screen_recent_notebooks">Recent</string>
+    <string name="note_screen_list_of_notebooks">Notebook Collection</string>
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
 
 </resources>

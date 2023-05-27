@@ -19,7 +19,7 @@ val Pink40 = Color(0xFF7D5260)
 val LightGray = Color(0xFFFCFCFC)
 val MediumGray = Color(0xFF9C9C9C)
 val DarkGray = Color(0xFF141414)
-val FavoriteYellow = Color(0xFFCA9800)
+val FavoriteYellow = Color(0xFFFFE500)
 val FavoriteYellowForDarkTheme = Color(0xFFC5A31C)
 
 val LowPriorityColor = Color(0xFF6F975C)

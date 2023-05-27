@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -23,7 +22,9 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +41,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
+import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
@@ -79,7 +81,19 @@ fun ListScreen(
     val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
 
     val snackBarHostState = remember { SnackbarHostState() }
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    // multi select 가 된 경우는 헤더를 고정 한다.
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        canScroll = {
+            memoViewModel.selectedItems.isEmpty()
+        },
+        state = TopAppBarState(
+            initialContentOffset = 0F,
+            initialHeightOffset = 0F,
+            initialHeightOffsetLimit = 0F
+        )
+    )
+
 
     // task screen 에서 요청한 처리의 결과를 보여 준다. undo 의 경우는 특별 하게 처리 한다.
     // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
@@ -110,7 +124,7 @@ fun ListScreen(
     // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
     BackHandler(
         enabled = memoViewModel.searchAppBarState.value != SearchAppBarState.CLOSE ||
-        memoViewModel.selectedItems.size != 0
+                memoViewModel.selectedItems.size != 0
     ) {
         if (memoViewModel.selectedItems.size != 0) {
             memoViewModel.selectedItems.clear()
@@ -149,24 +163,26 @@ fun ListScreen(
             )
         },
         topBar = {
-            ListAppBar(
-                scrollBehavior = scrollBehavior,
-                appbarTitle = memoViewModel.selectedNotebook.value.title,
-                memoViewModel = memoViewModel,
-                searchAppBarState = searchAppBarState,
-                searchText = searchText,
-                onImportClick = {
-                    intentResultLauncher.launch("*/*")
-                },
-                onAppBarTitleClick = onAppBarTitleClick,
-                selectedItemsCount = memoViewModel.selectedItems.size,
-                onDeleteSelectedClicked = {
-                    memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
-                },
-                onBackButtonClick = {
-                    memoViewModel.selectedItems.clear()
-                }
-            )
+//            Surface(tonalElevation = 1.dp) {
+                ListAppBar(
+                    scrollBehavior = scrollBehavior,
+                    appbarTitle = memoViewModel.selectedNotebook.value.title,
+                    memoViewModel = memoViewModel,
+                    searchAppBarState = searchAppBarState,
+                    searchText = searchText,
+                    onImportClick = {
+                        intentResultLauncher.launch("*/*")
+                    },
+                    onAppBarTitleClick = onAppBarTitleClick,
+                    selectedItemsCount = memoViewModel.selectedItems.size,
+                    onDeleteSelectedClicked = {
+                        memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
+                    },
+                    onBackButtonClick = {
+                        memoViewModel.selectedItems.clear()
+                    }
+                )
+//            }
         },
         bottomBar = {
             BottomNavBar(
@@ -178,8 +194,8 @@ fun ListScreen(
         Column(
             modifier = Modifier
                 .padding(
-                    top = paddingValues.calculateTopPadding(),
-                    bottom = SMALL_PADDING
+                    top = paddingValues.calculateTopPadding() + SMALL_PADDING,
+                    bottom = paddingValues.calculateBottomPadding()
                 )
                 .fillMaxSize(),
         ) {
@@ -241,7 +257,7 @@ fun ListScreen(
                     memoViewModel.setTaskScreenToEditorMode(tasks.peek(index)!!)
                     toTaskScreen(tasks.itemSnapshotList.items)
                 },
-                header = memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
+                header = true,//memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
                 dateEnabled = memoViewModel.dateEnabled,
                 onFavoriteClick = { todo ->
                     memoViewModel.handleActions(
@@ -319,7 +335,7 @@ private fun DisplaySnackBar(
 
         Action.DELETE_SELECTED_ITEMS ->
             stringResource(id = R.string.snackbar_selected_items_deleted_message)
-        
+
         Action.NOTEBOOK_CHANGE ->
             stringResource(id = R.string.snackbar_changed_notebook_message)
 

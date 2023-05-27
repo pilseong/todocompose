@@ -3,6 +3,8 @@ package net.pilseong.todocompose.ui.screen.task
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -78,18 +80,18 @@ fun EditTaskBar(
             CommonAction(
                 onClicked = { toListScreen(Action.NO_ACTION) },
                 icon = Icons.Default.Close,
-                description = "Arrow backwards Icon"
+                description = stringResource(id = R.string.default_task_bar_close_icon)
             )
         },
         title = {
             Text(
                 text = if (edit) stringResource(id = R.string.edit_task_appbar_title)
                 else stringResource(id = R.string.new_task_appbar_title),
-                color = MaterialTheme.colorScheme.topBarContentColor
+//                color = MaterialTheme.colorScheme.topBarContentColor
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
         ),
         actions = {
             // done action
@@ -114,7 +116,7 @@ fun CommonAction(
     icon: ImageVector? = null,
     painter: Painter? = null,
     description: String,
-    tint: Color = MaterialTheme.colorScheme.topBarContentColor
+    tint: Color = MaterialTheme.colorScheme.onSurface
 ) {
     IconButton(onClick = { onClicked() }) {
         if (icon == null && painter != null) {
@@ -146,7 +148,7 @@ fun DetailTaskBar(
         navigationIcon = {
             CommonAction(
                 onClicked = { toListScreen(Action.NO_ACTION) },
-                icon = Icons.Default.ArrowBack,
+                icon = Icons.Default.ArrowBackIosNew,
                 description = stringResource(
                     R.string.default_task_bar_close_icon
                 )
@@ -165,7 +167,7 @@ fun DetailTaskBar(
 //            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
         ),
         actions = {
             DetailTaskBarActions(
