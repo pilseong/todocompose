@@ -39,6 +39,7 @@ fun BottomNavBar(
 //            )
 //            .background(color = MaterialTheme.colorScheme.surface)
 //            .fillMaxWidth(),
+        color = Color.Transparent,
         tonalElevation = 4.dp,
         shadowElevation = 15.dp
     ) {
@@ -50,7 +51,7 @@ fun BottomNavBar(
 //                shadowElevation = 40F
 //            }
 //            .padding(top = 3.dp)
-            containerColor = Color.Transparent,
+//            containerColor = Color.Transparent,
         ) {
             screens.forEach { screen ->
                 addItem(

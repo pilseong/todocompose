@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -48,7 +49,10 @@ import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
+import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
@@ -319,6 +323,10 @@ fun SearchAppBar(
     ) {
         Surface(
             modifier = Modifier
+                .padding(
+                    horizontal = XLARGE_PADDING,
+                    vertical = SMALL_PADDING
+                )
                 .fillMaxWidth(),
 //                .height(TOP_BAR_HEIGHT),
             shape = RoundedCornerShape(30.dp),
@@ -382,11 +390,11 @@ fun SearchAppBar(
                     }
                 ),
                 colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.topBarContentColor,
+//                    focusedTextColor = MaterialTheme.colorScheme.topBarContentColor,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.topBarContentColor,
+//                    cursorColor = MaterialTheme.colorScheme.topBarContentColor,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,

@@ -579,7 +579,7 @@ class MemoViewModel @Inject constructor(
     fun onCloseSearchBar() {
         searchTextString = ""
         searchAppBarState.value = SearchAppBarState.CLOSE
-        refreshAllTasks()
+//        refreshAllTasks()
     }
 
     private fun addTask() {

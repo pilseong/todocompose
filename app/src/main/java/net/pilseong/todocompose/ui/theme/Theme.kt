@@ -60,10 +60,10 @@ fun TodoComposeTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // 상태 바를 다크 모드 일 경우 블랙으로 변경
-            window.statusBarColor =
-                if (darkTheme) Color.BLACK else colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+//            // 상태 바를 다크 모드 일 경우 블랙 으로 변경
+            window.statusBarColor = colorScheme.surface.toArgb()
+//                if (darkTheme) Color.BLACK else colorScheme.primary.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
