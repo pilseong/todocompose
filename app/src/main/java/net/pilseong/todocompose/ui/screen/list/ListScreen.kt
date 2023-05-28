@@ -22,7 +22,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
@@ -41,7 +40,6 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
@@ -106,7 +104,7 @@ fun ListScreen(
             Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
             if (result == SnackbarResult.ActionPerformed
-                && memoViewModel.action == Action.DELETE
+                && selectedAction == Action.DELETE
             ) {
                 Log.i("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
                 memoViewModel.handleActions(Action.UNDO)
@@ -243,7 +241,7 @@ fun ListScreen(
             ListContent(
                 tasks = tasks,
                 toTaskScreen = { index ->
-                    memoViewModel.setTaskScreenToViewerMode()
+                    memoViewModel.setTaskScreenToViewerMode(tasks.peek(index)!!)
                     memoViewModel.updateIndex(index)
                     toTaskScreen(tasks.itemSnapshotList.items)
                 },

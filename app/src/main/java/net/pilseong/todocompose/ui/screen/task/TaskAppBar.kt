@@ -2,8 +2,6 @@ package net.pilseong.todocompose.ui.screen.task
 
 import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -26,7 +24,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
@@ -34,8 +31,6 @@ import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
-import net.pilseong.todocompose.ui.theme.topBarContainerColor
-import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState

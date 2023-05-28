@@ -1,13 +1,10 @@
 package net.pilseong.todocompose.data.repository;
 
-import net.pilseong.todocompose.data.model.database.NotebookDAO;
-
-import javax.inject.Inject;
-
-import dagger.hilt.android.scopes.ActivityRetainedScoped;
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.database.NotebookDAO
+import javax.inject.Inject
 
 @ActivityRetainedScoped
 class NotebookRepository @Inject constructor(

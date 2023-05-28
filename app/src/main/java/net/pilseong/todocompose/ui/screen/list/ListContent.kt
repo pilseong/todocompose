@@ -1,7 +1,5 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.widget.Toast
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -71,7 +69,6 @@ import net.pilseong.todocompose.ui.theme.WEEKEND_COLOR
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 
 @Composable

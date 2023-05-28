@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.TodoTask
 
 @Dao
 abstract class NotebookDAO {

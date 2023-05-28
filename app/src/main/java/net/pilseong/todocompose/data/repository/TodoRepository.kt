@@ -6,11 +6,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.room.Transaction
 import dagger.hilt.android.scopes.ActivityRetainedScoped
-import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.flow.Flow
-import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject

@@ -1,22 +1,14 @@
 package net.pilseong.todocompose
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.core.view.WindowCompat
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
-import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
-import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

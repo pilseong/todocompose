@@ -36,7 +36,6 @@ import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
-import net.pilseong.todocompose.util.ScreenMode
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.TaskAppBarState
@@ -451,8 +450,9 @@ class MemoViewModel @Inject constructor(
         updatedAt = task.updatedAt
     }
 
-    fun setTaskScreenToViewerMode() {
+    fun setTaskScreenToViewerMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
         taskAppBarState = TaskAppBarState.VIEWER
+        copySelectedTaskToEditFields(task)
     }
 
     /**
@@ -604,6 +604,7 @@ class MemoViewModel @Inject constructor(
 
     private fun undoTask() {
         viewModelScope.launch(Dispatchers.IO) {
+            Log.i("PHILIP", "[MemoViewModel] undoTask - undo with $title, $description, $priority, $notebookId, $createdAt")
             todoRepository.addTask(
                 TodoTask(
                     0,

@@ -24,7 +24,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -109,7 +108,6 @@ fun NavGraphBuilder.memoNavGraph(
 
             ListScreen(
                 toTaskScreen = { snapshot ->
-                    Log.i("PHILIP", "Snapshot is $snapshot")
                     memoViewModel.updateSnapshotTasks(snapshot)
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)

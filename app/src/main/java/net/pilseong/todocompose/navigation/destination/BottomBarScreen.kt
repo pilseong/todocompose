@@ -3,14 +3,9 @@ package net.pilseong.todocompose.navigation.destination
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Note
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.util.Constants.HOME_SCREEN
 import net.pilseong.todocompose.util.Constants.MEMO_LIST

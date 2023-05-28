@@ -69,7 +69,7 @@ fun TaskItem(
     selectedItemsIds: List<Int>
 ) {
 
-    var selected = remember(selectedItemsIds.size) {
+    val selected = remember(selectedItemsIds.size) {
         mutableStateOf(selectedItemsIds.contains(todoTask.id))
     }
 

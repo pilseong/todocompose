@@ -1,22 +1,13 @@
 package net.pilseong.todocompose.navigation
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
-import net.pilseong.todocompose.navigation.destination.CreateNotebookDialog
 import net.pilseong.todocompose.navigation.destination.homeComposable
 import net.pilseong.todocompose.navigation.destination.memoNavGraph
-import net.pilseong.todocompose.ui.screen.home.HomeScreen
-import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
 
 @Composable

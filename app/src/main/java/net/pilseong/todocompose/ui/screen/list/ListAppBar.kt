@@ -49,11 +49,9 @@ import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.ui.theme.topBarContentColor
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
