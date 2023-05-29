@@ -152,7 +152,6 @@ fun LazyItemList(
     onLongClickApplied: (Int) -> Unit,
     selectedItemsIds: List<Int>
 ) {
-    val context = LocalContext.current
     // 화면 의 크기의 반을 swipe 한 경우 처리
     val threshold = LocalConfiguration.current.screenWidthDp / 3
     val listState = rememberLazyListState()

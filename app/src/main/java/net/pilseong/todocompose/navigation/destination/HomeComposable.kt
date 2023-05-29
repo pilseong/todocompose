@@ -77,8 +77,8 @@ fun NavGraphBuilder.homeComposable(
             onFabClick = {
                 openDialog.value = true
             },
-            onSelectNotebook = {it ->
-                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, it)
+            onSelectNotebook = { index ->
+                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, index)
                 scope.launch {
                     delay(100)
                     navHostController.navigate(Screen.MemoList.route)

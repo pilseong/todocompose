@@ -80,8 +80,8 @@ class TodoRepository @Inject constructor(
 
     @Transaction
     suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
-        tasks.forEach {it
-            todoDAO.addTask(it)
+        tasks.forEach { task ->
+            todoDAO.addTask(task)
         }
     }
 }

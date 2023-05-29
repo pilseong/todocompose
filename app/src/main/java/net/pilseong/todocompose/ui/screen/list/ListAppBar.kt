@@ -176,8 +176,7 @@ fun PreviewDefaultListAppBar() {
         scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
         onSearchIconClicked = { /*TODO*/ },
         onDeleteAllClicked = { /*TODO*/ },
-        onDatePickConfirmed = { start, end ->
-        },
+        onDatePickConfirmed = { _, _ -> },
         onImportClick = { /*TODO*/ },
         onExportClick = { /*TODO*/ }) {
 
