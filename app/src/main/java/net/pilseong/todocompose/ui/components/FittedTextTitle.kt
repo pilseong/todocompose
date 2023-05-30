@@ -15,7 +15,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 
 @Composable
-@OptIn(ExperimentalTextApi::class)
 fun FittedTextTitle(
     onAppBarTitleClick: () -> Unit,
     clickEnabled: Boolean = false,

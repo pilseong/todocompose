@@ -529,7 +529,7 @@ class MemoViewModel @Inject constructor(
             // 우선 순위 변화는 좀 신경을 써야 한다.
             Action.PRIORITY_CHANGE -> {
                 updateAction(action)
-                // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여져야 한다.
+                // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여 져야 한다.
                 if (priority != prioritySortState) {
                     persistPrioritySortState(priority)
                     updateActionPerformed()

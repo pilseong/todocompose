@@ -3,6 +3,7 @@ package net.pilseong.todocompose.ui.screen.home
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -364,7 +365,11 @@ fun NoteContent(
                                         .padding(end = LARGE_PADDING, bottom = LARGE_PADDING)
                                         .combinedClickable(
                                             onClick = {
-                                                onSelectNotebook(notebooks[index].id)
+                                                if (selectedNotebookIds.size > 0) {
+                                                    onSelectNotebookWithLongClick(notebooks[index].id)
+                                                } else {
+                                                    onSelectNotebook(notebooks[index].id)
+                                                }
                                             },
                                             onLongClick = {
                                                 onSelectNotebookWithLongClick(notebooks[index].id)
@@ -404,6 +409,11 @@ fun NoteContent(
                                                         horizontalArrangement = Arrangement.End
                                                     ) {
                                                         Icon(
+                                                            modifier = Modifier.clickable {
+                                                                onSelectNotebookWithLongClick(
+                                                                    notebooks[index].id
+                                                                )
+                                                            },
                                                             imageVector = Icons.Default.CheckBox,
                                                             contentDescription = "selected",
                                                             tint = MaterialTheme.colorScheme.primary

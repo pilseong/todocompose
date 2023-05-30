@@ -48,6 +48,7 @@ class NoteViewModel @Inject constructor(
     fun deleteSelectedNotebooks() {
         viewModelScope.launch(Dispatchers.IO) {
             notebookRepository.deleteMultipleNotebooks(selectedNotebooks)
+            if (selectedNotebooks.contains(notebookIdState)) persistNotebookIdState(-1)
             selectedNotebooks.clear()
         }
     }
@@ -72,6 +73,7 @@ class NoteViewModel @Inject constructor(
                     initialValue = emptyList()
                 )
                 .collect {
+                    Log.i("PHILIP", "getNotebooks inside")
                     notebooks.value = it
                 }
         }
