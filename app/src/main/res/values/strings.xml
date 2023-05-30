@@ -86,5 +86,9 @@
     <string name="note_screen_recent_notebooks">Recent</string>
     <string name="note_screen_list_of_notebooks">Notebook Collection</string>
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
+    <string name="date_picker_title">Pick up a date range</string>
+    <string name="note_select_use_default">Use Default Notebook</string>
+    <string name="close_label">Close</string>
+    <string name="save_label">Save</string>
 
 </resources>

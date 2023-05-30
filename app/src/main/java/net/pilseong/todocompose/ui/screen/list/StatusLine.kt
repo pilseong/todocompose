@@ -67,24 +67,20 @@ fun StatusLine(
     onPrioritySelected: (Priority) -> Unit,
 ) {
     var containerColor = Color.Transparent
-    var priorityText = stringResource(id = R.string.priority_none)
     var priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
     when (prioritySortState) {
         Priority.HIGH -> {
             containerColor = HighPriorityColor
-            priorityText = stringResource(id = R.string.priority_high)
             priorityIcon = painterResource(id = R.drawable.baseline_priority_high_24)
         }
 
         Priority.MEDIUM -> {
             containerColor = MediumPriorityColor
-            priorityText = stringResource(id = R.string.priority_medium)
             priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
         }
 
         Priority.LOW -> {
             containerColor = LowPriorityColor
-            priorityText = stringResource(id = R.string.priority_low)
             priorityIcon = painterResource(id = R.drawable.ic_baseline_low_priority_24)
         }
 
@@ -148,7 +144,7 @@ fun StatusLine(
                         )
                         Spacer(modifier = Modifier.width(SMALL_PADDING))
                         Text(
-                            text = priorityText,
+                            text = stringResource(id = prioritySortState.label),
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
 //                            fontWeight = FontWeight.ExtraBold
                         )

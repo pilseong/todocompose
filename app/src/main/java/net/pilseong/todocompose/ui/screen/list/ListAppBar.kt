@@ -9,10 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
@@ -45,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.FittedTextTitle
+import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
@@ -302,7 +301,7 @@ fun MenuAction(
             text = { Text(text = stringResource(id = R.string.settings_menu_label)) },
             onClick = {
                 expanded = false
-                onDeleteAllClicked()
+//                onDeleteAllClicked()
             })
     }
 }
@@ -412,75 +411,4 @@ fun PreviewSearchAppBar() {
         )
     }
 
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
-@Composable
-fun MultiSelectAppbar(
-    scrollBehavior: TopAppBarScrollBehavior,
-    selectedItemsCount: Int,
-    onDeleteSelectedClicked: () -> Unit,
-    onBackButtonClick: () -> Unit,
-) {
-    TopAppBar(
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            CommonAction(
-                onClicked = {
-                    onBackButtonClick()
-                },
-                icon = Icons.Default.ArrowBack,
-                description = "Arrow backwards Icon"
-            )
-        },
-        title = {
-            Text(
-                text = "$selectedItemsCount",
-//                color = MaterialTheme.colorScheme.topBarContentColor
-            )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
-        ),
-        actions = {
-            MultiSelectAppbarActions(
-                onDeleteSelectedClicked = onDeleteSelectedClicked,
-            )
-        }
-    )
-}
-
-@Composable
-fun MultiSelectAppbarActions(
-    onDeleteSelectedClicked: () -> Unit,
-) {
-    // 다이얼 로그 박스 에 대한 상태
-    var deleteAlertExpanded by remember { mutableStateOf(false) }
-
-    // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
-    DisplayAlertDialog(
-        title = stringResource(id = R.string.delete_selected_task_dialog_title),
-        message = stringResource(id = R.string.delete_seleccted_tasks_dialog_confirmation),
-        openDialog = deleteAlertExpanded,
-        onYesClicked = onDeleteSelectedClicked,
-        onCloseDialog = { deleteAlertExpanded = false }
-    )
-
-    CommonAction(
-        icon = Icons.Default.Delete,
-        onClicked = { deleteAlertExpanded = true },
-        description = "date picker icon"
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-fun PreviewMultiSelectAppbar() {
-    MultiSelectAppbar(
-        scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
-        selectedItemsCount = 1,
-        onBackButtonClick = {},
-        onDeleteSelectedClicked = {}
-    )
 }

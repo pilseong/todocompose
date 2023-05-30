@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,8 +22,6 @@ import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.screen.task.CommonAction
-import net.pilseong.todocompose.ui.theme.topBarContainerColor
-import net.pilseong.todocompose.ui.theme.topBarContentColor
 
 @Composable
 fun SettingsScreen(
@@ -68,6 +65,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsAppBar(
+
 ) {
     TopAppBar(
         navigationIcon = {
@@ -83,13 +81,13 @@ fun SettingsAppBar(
             Text(
                 text = stringResource(id = BottomBarScreen.Settings.title),
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.topBarContentColor
+//                color = MaterialTheme.colorScheme.topBarContentColor
             )
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.topBarContainerColor
-        ),
-        actions = {
-        }
+//        colors = TopAppBarDefaults.topAppBarColors(
+//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//        ),
+//        actions = {
+//        }
     )
 }

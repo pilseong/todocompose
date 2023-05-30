@@ -26,10 +26,12 @@ class NotebookRepository @Inject constructor(
         notebookDAO.addNotebook(notebook)
     }
 
-    suspend fun insertMultipleNotebooks(notebooks: List<Notebook>) {
-        notebooks.forEach{
-            notebookDAO.addNotebook(it)
-        }
+    suspend fun deleteMultipleNotebooks(notebooksIds: List<Int>) {
+        notebookDAO.deleteMultipleNotebooks(notebooksIds)
+    }
+
+    suspend fun insertMultipleNotebooks(notebooksIds: List<Notebook>) {
+        notebookDAO.insertMultipleNotebooks(notebooksIds)
     }
 }
 

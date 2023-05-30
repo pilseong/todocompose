@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +41,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
@@ -257,7 +259,7 @@ fun NotebooksPickerDialog(
                     OutlinedButton(onClick = {
                         onNotebookClick(-1)
                     }) {
-                        Text(text = "Use Default Notebook")
+                        Text(text = stringResource(id = R.string.note_select_use_default))
                     }
                     // Close 버튼
                     Text(
@@ -267,7 +269,7 @@ fun NotebooksPickerDialog(
                                 onCloseClick()
                             }
                             .padding(12.dp),
-                        text = "Close",
+                        text = stringResource(id = R.string.close_label),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )

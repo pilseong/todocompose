@@ -100,9 +100,6 @@ fun TaskItem(
                     end = Offset(0f, y), strokeWidth = borderSize
                 )
             }
-//            tonalElevation = 100000000.dp,
-//            border = BorderStroke(width = 1.dp, MaterialTheme.colorScheme.onPrimaryElevation),
-//            content = {}
         )
         Spacer(modifier = Modifier.width(10.dp))
         Surface(
@@ -121,7 +118,6 @@ fun TaskItem(
                         onLongClickApplied(todoTask.id)
                     }
                 ),
-//            color = Color.Transparent,
             shape = RoundedCornerShape(4.dp),
             tonalElevation = 0.5.dp,
             shadowElevation = 1.dp,

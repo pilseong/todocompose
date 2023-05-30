@@ -34,14 +34,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
@@ -56,7 +55,7 @@ import net.pilseong.todocompose.util.SearchAppBarState
 fun ListScreen(
     toTaskScreen: (List<TodoTask>) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
-    memoViewModel: MemoViewModel,
+    memoViewModel: MemoViewModel = hiltViewModel(),
     onAppBarTitleClick: () -> Unit
 ) {
     /**
@@ -387,12 +386,11 @@ fun AddMemoFab(
 @Composable
 @Preview
 private fun ListScreenPreview() {
-    TodoComposeTheme {
+//    TodoComposeTheme {
         ListScreen(
             toTaskScreen = {},
             onClickBottomNavBar = {},
-            memoViewModel = viewModel(),
             onAppBarTitleClick = {}
         )
-    }
+//    }
 }

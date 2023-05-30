@@ -13,11 +13,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
+import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -30,7 +33,11 @@ fun HomeScreen(
     onClickBottomNavBar: (String) -> Unit,
     onFabClick: () -> Unit,
     onSelectNotebook: (Int) -> Unit,
-    notebooks: List<Notebook>
+    onSelectNotebookWithLongClick: (Int) -> Unit,
+    onBackButtonClick: () -> Unit,
+    notebooks: List<Notebook>,
+    selectedNotebookIds: SnapshotStateList<Int>,
+    onDeleteSelectedClicked: () -> Unit
 ) {
 
 
@@ -41,20 +48,12 @@ fun HomeScreen(
     Scaffold(
 //        modifier = Modifier.verticalScroll(rememberScrollState()),
         topBar = {
-//            Surface(tonalElevation = 1.dp) {
-                TopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    title = {
-                        Text(
-                            text = "",
-//                        color = MaterialTheme.colorScheme.topBarContentColor
-                        )
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-//                    containerColor = MaterialTheme.colorScheme.topBarContainerColor
-                    ),
-                )
-//            }
+            HomeAppBar(
+                scrollBehavior = scrollBehavior,
+                selectedNotebookIds = selectedNotebookIds,
+                onBackButtonClick = onBackButtonClick,
+                onDeleteSelectedClicked = onDeleteSelectedClicked
+            )
         },
         bottomBar = {
             BottomNavBar(
@@ -83,9 +82,41 @@ fun HomeScreen(
         ) {
             NoteContent(
                 notebooks = notebooks,
-                onSelectNotebook = onSelectNotebook
+                selectedNotebookIds = selectedNotebookIds,
+                onSelectNotebook = onSelectNotebook,
+                onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
             )
         }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun HomeAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    selectedNotebookIds: SnapshotStateList<Int>,
+    onDeleteSelectedClicked: () -> Unit,
+    onBackButtonClick: () -> Unit,
+) {
+    if (selectedNotebookIds.size > 0) {
+        MultiSelectAppbar(
+            selectedItemsCount = selectedNotebookIds.size,
+            onDeleteSelectedClicked = onDeleteSelectedClicked,
+            onBackButtonClick = onBackButtonClick
+        )
+    } else {
+        TopAppBar(
+            scrollBehavior = scrollBehavior,
+            title = {
+                Text(
+                    text = "",
+                    //                        color = MaterialTheme.colorScheme.topBarContentColor
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                //                    containerColor = MaterialTheme.colorScheme.topBarContainerColor
+            ),
+        )
     }
 }
 
@@ -97,7 +128,11 @@ fun PreviewHomeScreen() {
             onClickBottomNavBar = {},
             onFabClick = { /*TODO*/ },
             onSelectNotebook = {},
-            notebooks = listOf()
+            onSelectNotebookWithLongClick = {},
+            onBackButtonClick = {},
+            notebooks = listOf(),
+            selectedNotebookIds = SnapshotStateList(),
+            onDeleteSelectedClicked = {}
         )
     }
 }

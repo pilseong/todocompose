@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
@@ -44,11 +45,16 @@ fun PriorityDropDown(
     val angle by animateFloatAsState(
         targetValue = if (expanded) 180F else 0F
     )
+    val focusManager = LocalFocusManager.current
 
     Row(
         modifier = Modifier
             .height(PRIORITY_DROPDOWN_HEIGHT)
-            .clickable { expanded = true },
+            .clickable {
+                expanded = true
+                expanded = true
+                focusManager.clearFocus()
+            },
 //            .border(
 //                width = 1.dp,
 //                color = MaterialTheme.colorScheme.onBackground
@@ -67,7 +73,7 @@ fun PriorityDropDown(
 
         Text(
             modifier = Modifier.weight(1F),
-            text = priority.label,
+            text = stringResource(id = priority.label),
             style = MaterialTheme.typography.titleSmall,
 //            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -77,7 +83,10 @@ fun PriorityDropDown(
             modifier = Modifier
                 .alpha(ALPHA_MEDIUM)
                 .rotate(angle),
-            onClick = { expanded = true }
+            onClick = {
+                expanded = true
+                focusManager.clearFocus()
+            }
         ) {
             Icon(
                 imageVector = Icons.Filled.ArrowDropDown,

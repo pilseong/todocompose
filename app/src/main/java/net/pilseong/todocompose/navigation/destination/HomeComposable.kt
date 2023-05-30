@@ -2,7 +2,6 @@ package net.pilseong.todocompose.navigation.destination
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +15,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -84,7 +85,17 @@ fun NavGraphBuilder.homeComposable(
                     navHostController.navigate(Screen.MemoList.route)
                 }
             },
-            notebooks = noteViewModel.notebooks.collectAsState().value
+            onSelectNotebookWithLongClick = { index ->
+                noteViewModel.appendMultiSelectedNotebook(index)
+            },
+            onBackButtonClick = {
+                noteViewModel.selectedNotebooks.clear()
+            },
+            notebooks = noteViewModel.notebooks.collectAsState().value,
+            selectedNotebookIds = noteViewModel.selectedNotebooks,
+            onDeleteSelectedClicked = {
+                noteViewModel.deleteSelectedNotebooks()
+            }
         )
 
         CreateNotebookDialog(
@@ -171,16 +182,16 @@ fun CreateNotebookDialog(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(horizontal = XLARGE_PADDING)
-                        .padding(vertical = LARGE_PADDING),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(vertical = LARGE_PADDING)
+                        .fillMaxWidth()
                 ) {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(bottom = LARGE_PADDING)
+                            .fillMaxWidth(),
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         TextField(
@@ -196,65 +207,74 @@ fun CreateNotebookDialog(
                             )
                         )
                     }
-                }
-                Card(
-                    modifier = Modifier.padding(horizontal = XLARGE_PADDING),
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-
-                    PriorityDropDown(
-//                modifier = Modifier.fillMaxWidth(0.95F),
-                        priority = priority,
-                        onPrioritySelected = {
-                            onPriorityChange(it)
-                        }
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
-                        .padding(horizontal = XLARGE_PADDING)
-                        .padding(vertical = LARGE_PADDING),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
                     Card(
+                        modifier = Modifier.padding(bottom = LARGE_PADDING),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+
+                        PriorityDropDown(
+                            priority = priority,
+                            onPrioritySelected = {
+                                onPriorityChange(it)
+                            }
+                        )
+                    }
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(),
-                        shape = RoundedCornerShape(4.dp),
+                            .height(160.dp)
+                            .padding(bottom = LARGE_PADDING),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextField(
-                            label = {
-                                Text(
-                                    text = stringResource(id = R.string.new_task_description_placeholder)
-                                )
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent
-                            ),
-                            value = description,
-                            maxLines = 4,
-                            onValueChange = { onDescriptionChange(it) }
-                        )
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(4.dp),
+                        ) {
+                            TextField(
+                                label = {
+                                    Text(
+                                        text = stringResource(id = R.string.new_task_description_placeholder)
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent
+                                ),
+                                value = description,
+                                maxLines = 4,
+                                onValueChange = { onDescriptionChange(it) }
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        // OK 버튼
+                        OutlinedButton(onClick = { onDismissRequest() }) {
+                            Text(text = stringResource(id = R.string.close_label))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedButton(
+                            onClick = { onOKClick() },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.save_label),
+//                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
 
-                // OK 버튼
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = XLARGE_PADDING)
-                        .align(Alignment.End)
-                        .clickable {
-                            onOKClick()
-                        }
-                        .padding(12.dp),
-                    text = "OK",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
             }
         }
     }

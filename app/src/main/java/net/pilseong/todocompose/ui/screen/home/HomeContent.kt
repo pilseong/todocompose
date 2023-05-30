@@ -1,7 +1,9 @@
 package net.pilseong.todocompose.ui.screen.home
 
 import android.content.res.Configuration
-import androidx.compose.foundation.clickable
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,12 +18,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,10 +47,13 @@ import net.pilseong.todocompose.util.getPriorityColor
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteContent(
     notebooks: List<Notebook>,
-    onSelectNotebook: (Int) -> Unit
+    selectedNotebookIds: SnapshotStateList<Int>,
+    onSelectNotebook: (Int) -> Unit,
+    onSelectNotebookWithLongClick: (Int) -> Unit
 ) {
     val configuration = LocalConfiguration.current
 
@@ -244,8 +254,11 @@ fun NoteContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(start = 4.dp),
-                        text = stringResource(id = R.string.note_content_today) + ": ${ZonedDateTime.now().toLocalDate().format(
-                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat)))}",
+                        text = stringResource(id = R.string.note_content_today) + ": ${
+                            ZonedDateTime.now().toLocalDate().format(
+                                DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
+                            )
+                        }",
                         fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
                         fontSize = MaterialTheme.typography.titleSmall.fontSize
                     )
@@ -328,14 +341,35 @@ fun NoteContent(
                         rows = GridCells.Fixed(2),
                         content = {
                             items(notebooks.size) { index ->
+
+                                val selected = remember(selectedNotebookIds.size) {
+                                    Log.i(
+                                        "PHILIP", "[HomeContent] " +
+                                                "index = $index, ${selectedNotebookIds.toList()}, " +
+                                                "size = ${selectedNotebookIds.size}"
+                                    )
+                                    mutableStateOf(
+                                        selectedNotebookIds.contains(
+                                            notebooks[index].id
+                                        )
+                                    )
+                                }
+
+                                Log.i("PHILIP", "[HomeContent] selected : ${selected.value}")
+
                                 Surface(
                                     modifier = Modifier
                                         .width(130.dp)
                                         .height(140.dp)
                                         .padding(end = LARGE_PADDING, bottom = LARGE_PADDING)
-                                        .clickable {
-                                            onSelectNotebook(notebooks[index].id)
-                                        },
+                                        .combinedClickable(
+                                            onClick = {
+                                                onSelectNotebook(notebooks[index].id)
+                                            },
+                                            onLongClick = {
+                                                onSelectNotebookWithLongClick(notebooks[index].id)
+                                            }
+                                        ),
                                     shadowElevation = 6.dp,
                                 ) {
                                     Card(
@@ -358,44 +392,76 @@ fun NoteContent(
                                                     Spacer(modifier = Modifier.width(12.dp))
                                                 }
                                             )
-                                            Column(
-                                                modifier = Modifier.fillMaxSize(),
+                                            Surface(
+                                                color = if (selected.value) MaterialTheme.colorScheme.primaryContainer
+                                                else MaterialTheme.colorScheme.surface,
+                                                tonalElevation = 2.dp
                                             ) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .weight(1F),
-                                                    horizontalArrangement = Arrangement.Center,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = SMALL_PADDING),
-                                                        text = notebooks[index].title
-                                                    )
-                                                }
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .weight(1F),
-                                                    verticalAlignment = Alignment.Bottom,
-                                                    horizontalArrangement = Arrangement.Center
-                                                ) {
-                                                    Row {
+                                                if (selected.value) {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        verticalAlignment = Alignment.Top,
+                                                        horizontalArrangement = Arrangement.End
+                                                    ) {
                                                         Icon(
-                                                            modifier = Modifier.width(18.dp),
-                                                            painter = painterResource(id = R.drawable.ic_create_note_icon),
-                                                            contentDescription = "edit time",
+                                                            imageVector = Icons.Default.CheckBox,
+                                                            contentDescription = "selected",
+                                                            tint = MaterialTheme.colorScheme.primary
                                                         )
+                                                    }
+                                                }
+                                                Column(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                ) {
+
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .weight(1F),
+                                                        horizontalArrangement = Arrangement.Center,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
                                                         Text(
-                                                            modifier = Modifier.padding(bottom = SMALL_PADDING),
-                                                            text = notebooks[index].createdAt.toLocalDate()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        stringResource(id = R.string.note_inside_dateformat)
-                                                                    )
-                                                                ),
-                                                            fontSize = MaterialTheme.typography.bodySmall.fontSize
+                                                            modifier = Modifier.padding(horizontal = SMALL_PADDING),
+                                                            text = notebooks[index].title,
+                                                            color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                                alpha = 0.2f
+                                                            )
+                                                            else MaterialTheme.colorScheme.onSurface
                                                         )
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth(),
+//                                                        .weight(1F),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.Center
+                                                    ) {
+                                                        Row {
+                                                            Icon(
+                                                                modifier = Modifier.width(18.dp),
+                                                                painter = painterResource(id = R.drawable.ic_create_note_icon),
+                                                                contentDescription = "edit time",
+                                                                tint = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                                    alpha = 0.2f
+                                                                )
+                                                                else MaterialTheme.colorScheme.onSurface
+                                                            )
+                                                            Text(
+                                                                modifier = Modifier.padding(bottom = SMALL_PADDING),
+                                                                text = notebooks[index].createdAt.toLocalDate()
+                                                                    .format(
+                                                                        DateTimeFormatter.ofPattern(
+                                                                            stringResource(id = R.string.note_inside_dateformat)
+                                                                        )
+                                                                    ),
+                                                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                                                color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                                    alpha = 0.2f
+                                                                )
+                                                                else MaterialTheme.colorScheme.onSurface
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -420,6 +486,8 @@ fun NoteContentPreview() {
             Notebook(title = "first notebooksss", description = "desc2", priority = Priority.NONE),
             Notebook(title = "test3", description = "desc3", priority = Priority.NONE)
         ),
-        onSelectNotebook = {}
+        onSelectNotebook = {},
+        onSelectNotebookWithLongClick = {},
+        selectedNotebookIds = SnapshotStateList()
     )
 }

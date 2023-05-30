@@ -94,4 +94,8 @@ abstract class TodoDAO {
 
     @Query("DELETE FROM todo_table")
     abstract suspend fun deleteAllTasks()
+
+    @Query("DELETE FROM todo_table WHERE notebook_id = :notebookId")
+    abstract suspend fun deleteTasksByNotebookId(notebookId: Int)
+
 }
