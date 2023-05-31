@@ -20,6 +20,7 @@ import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,12 +57,25 @@ class NoteViewModel @Inject constructor(
     var notebooks = MutableStateFlow<List<Notebook>>(emptyList())
         private set
 
-    var title = mutableStateOf("")
+    val id = mutableStateOf(Int.MIN_VALUE)
 
-    var description = mutableStateOf("")
+    val title = mutableStateOf("")
 
-    var priority = mutableStateOf(Priority.NONE)
+    val description = mutableStateOf("")
 
+    val priority = mutableStateOf(Priority.NONE)
+
+    val createdAt = mutableStateOf(ZonedDateTime.now())
+
+
+    fun setEditProperties() {
+        val notebook = notebooks.value[(selectedNotebooks[0])]
+        id.value = notebook.id
+        title.value = notebook.title
+        description.value = notebook.description
+        priority.value = notebook.priority
+        createdAt.value = notebook.createdAt
+    }
 
     fun getNotebooks() {
         Log.i("PHILIP", "getNotebooks")
@@ -117,7 +131,21 @@ class NoteViewModel @Inject constructor(
                         )
                     )
                 }
-                getNotebooks()
+//                getNotebooks()
+            }
+
+            NoteAction.EDIT -> {
+                viewModelScope.launch {
+                    notebookRepository.updateNotebook(
+                        Notebook(
+                            id = id.value,
+                            title = title.value,
+                            description = description.value,
+                            priority = priority.value,
+                            createdAt = createdAt.value
+                        )
+                    )
+                }
             }
 
             NoteAction.SELECT_NOTEBOOK -> {

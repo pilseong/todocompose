@@ -5,8 +5,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.TodoTask
+import java.time.ZonedDateTime
 
 @Dao
 abstract class NotebookDAO(
@@ -27,6 +30,12 @@ abstract class NotebookDAO(
 
     @Query("DELETE FROM note_table WHERE id = :note_id")
     abstract suspend fun deleteNotebook(note_id: Int)
+
+    @Update
+    abstract suspend fun updateNotebook(notebook: Notebook)
+
+    suspend fun updateNotebookWithTimestamp(notebook: Notebook) =
+        updateNotebook(notebook.copy(updatedAt = ZonedDateTime.now()))
 
     @Transaction
     open suspend fun deleteMultipleNotebooks(notebooksIds: List<Int>) {

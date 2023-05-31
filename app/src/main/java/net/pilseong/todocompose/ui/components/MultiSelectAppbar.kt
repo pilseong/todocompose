@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.components
 
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -28,9 +29,10 @@ fun MultiSelectAppbar(
     scrollBehavior: TopAppBarScrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
     selectedItemsCount: Int,
-    onDeleteSelectedClicked: () -> Unit,
+//    onDeleteSelectedClicked: () -> Unit,
     onBackButtonClick: () -> Unit,
-    tonerElevation: Dp = 2.dp
+    tonerElevation: Dp = 2.dp,
+    actions: @Composable () -> Unit
 ) {
     Surface(
         tonalElevation = tonerElevation
@@ -56,9 +58,7 @@ fun MultiSelectAppbar(
 //            containerColor = MaterialTheme.colorScheme.topBarContainerColor
             ),
             actions = {
-                MultiSelectAppbarActions(
-                    onDeleteSelectedClicked = onDeleteSelectedClicked,
-                )
+                actions()
             }
         )
     }
@@ -66,19 +66,24 @@ fun MultiSelectAppbar(
 
 @Composable
 fun MultiSelectAppbarActions(
+    onDeleteTitle: Int,
+    onDeleteDescription: Int,
     onDeleteSelectedClicked: () -> Unit,
+    actions: @Composable () -> Unit,
 ) {
     // 다이얼 로그 박스 에 대한 상태
     var deleteAlertExpanded by remember { mutableStateOf(false) }
 
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
-        title = stringResource(id = R.string.delete_selected_task_dialog_title),
-        message = stringResource(id = R.string.delete_seleccted_tasks_dialog_confirmation),
+        title = stringResource(id = onDeleteTitle),
+        message = stringResource(id = onDeleteDescription),
         openDialog = deleteAlertExpanded,
         onYesClicked = onDeleteSelectedClicked,
         onCloseDialog = { deleteAlertExpanded = false }
     )
+
+    actions()
 
     CommonAction(
         icon = Icons.Default.Delete,
@@ -95,6 +100,7 @@ fun PreviewMultiSelectAppbar() {
         scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
         selectedItemsCount = 1,
         onBackButtonClick = {},
-        onDeleteSelectedClicked = {}
+        actions = {}
+//        onDeleteSelectedClicked = {}
     )
 }

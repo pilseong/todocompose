@@ -33,5 +33,9 @@ class NotebookRepository @Inject constructor(
     suspend fun insertMultipleNotebooks(notebooksIds: List<Notebook>) {
         notebookDAO.insertMultipleNotebooks(notebooksIds)
     }
+
+    suspend fun updateNotebook(notebook: Notebook) {
+        notebookDAO.updateNotebookWithTimestamp(notebook)
+    }
 }
 

@@ -65,6 +65,8 @@ fun NavGraphBuilder.homeComposable(
         val noteViewModel = hiltViewModel<NoteViewModel>()
         val openDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
+        val dialogTitle =
+            remember { mutableStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         LaunchedEffect(key1 = Unit) {
             noteViewModel.observeNotebookIdChange()
@@ -77,6 +79,7 @@ fun NavGraphBuilder.homeComposable(
             },
             onFabClick = {
                 openDialog.value = true
+                dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
             },
             onSelectNotebook = { index ->
                 noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, index)
@@ -95,10 +98,16 @@ fun NavGraphBuilder.homeComposable(
             selectedNotebookIds = noteViewModel.selectedNotebooks,
             onDeleteSelectedClicked = {
                 noteViewModel.deleteSelectedNotebooks()
+            },
+            onEditClick = {
+                noteViewModel.setEditProperties()
+                dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
+                openDialog.value = true
             }
         )
 
-        CreateNotebookDialog(
+        CreateEditNotebookDialog(
+            dialogTitle = dialogTitle.value,
             visible = openDialog.value,
             title = noteViewModel.title.value,
             description = noteViewModel.description.value,
@@ -114,13 +123,16 @@ fun NavGraphBuilder.homeComposable(
             },
             onDismissRequest = {
                 openDialog.value = false
+                noteViewModel.title.value = ""
+                noteViewModel.description.value = ""
+                noteViewModel.priority.value = Priority.NONE
             },
-            onOKClick = {
-                Log.i("PHILIP", "OK clicked")
-                noteViewModel.handleActions(NoteAction.ADD)
+            onOKClick = { action ->
+                noteViewModel.handleActions(action)
                 openDialog.value = false
                 noteViewModel.title.value = ""
                 noteViewModel.description.value = ""
+                noteViewModel.priority.value = Priority.NONE
             }
         )
     }
@@ -142,7 +154,8 @@ fun CustomAlertDialog(
 }
 
 @Composable
-fun CreateNotebookDialog(
+fun CreateEditNotebookDialog(
+    dialogTitle: Int,
     visible: Boolean,
     title: String,
     priority: Priority,
@@ -151,7 +164,7 @@ fun CreateNotebookDialog(
     onDescriptionChange: (String) -> Unit,
     onPriorityChange: (Priority) -> Unit,
     onDismissRequest: () -> Unit,
-    onOKClick: () -> Unit
+    onOKClick: (NoteAction) -> Unit
 ) {
     if (visible) {
         CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
@@ -176,7 +189,7 @@ fun CreateNotebookDialog(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        text = stringResource(id = R.string.note_screen_create_notebook_dialog_title),
+                        text = stringResource(id = dialogTitle),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
 
                         style = MaterialTheme.typography.bodyLarge
@@ -261,7 +274,7 @@ fun CreateNotebookDialog(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedButton(
-                            onClick = { onOKClick() },
+                            onClick = { onOKClick(NoteAction.ADD) },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
@@ -284,7 +297,8 @@ fun CreateNotebookDialog(
 @Composable
 fun CreateNotebookDialogPreview() {
     MaterialTheme {
-        CreateNotebookDialog(
+        CreateEditNotebookDialog(
+            dialogTitle = R.string.note_screen_create_notebook_dialog_title,
             visible = true,
             title = "꽃밭",
             priority = Priority.HIGH,

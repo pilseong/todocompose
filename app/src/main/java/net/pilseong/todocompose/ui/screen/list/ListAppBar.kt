@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
@@ -44,6 +45,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
+import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.components.SimpleDatePickerDialog
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_FOCUSED
@@ -104,9 +106,15 @@ fun ListAppBar(
                 MultiSelectAppbar(
                     scrollBehavior = scrollBehavior,
                     selectedItemsCount = selectedItemsCount,
-                    onDeleteSelectedClicked = onDeleteSelectedClicked,
                     onBackButtonClick = onBackButtonClick,
-                )
+                ) {
+                    MultiSelectAppbarActions(
+                        onDeleteTitle = R.string.delete_selected_task_dialog_title,
+                        onDeleteDescription = R.string.delete_seleccted_tasks_dialog_confirmation,
+                        onDeleteSelectedClicked = onDeleteSelectedClicked,
+                        actions = {}
+                    )
+                }
             }
         }
 
@@ -129,6 +137,8 @@ fun ListAppBar(
         }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
 @Composable

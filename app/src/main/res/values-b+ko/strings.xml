@@ -31,8 +31,10 @@
     <string name="export_task_dialog_confirmation">내보내기를 실행하시겠습니까?</string>
     <string name="delete_all_task_dialog_title">전체 삭제</string>
     <string name="delete_selected_task_dialog_title">선택 삭제</string>
+    <string name="delete_selected_notebook_dialog_title">선택 노트 삭제</string>
     <string name="delete_all_tasks_dialog_confirmation">모든 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
     <string name="delete_seleccted_tasks_dialog_confirmation">선택된 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
+    <string name="delete_seleccted_notebooks_dialog_confirmation">선택된 노트를 삭제하시겠습니까? 복구가 불가능합니다.</string>
     <string name="export_all_tasks_dialog_confirmation">모든 메모를 이메일 첨부파일로 생성합니다. 데이터가 많은 경우 시간이 걸릴 수 있습니다.</string>
     <string name="delete_label">삭제 아이콘</string>
     <string name="update_label">엡데이트 아이콘</string>
@@ -86,6 +88,7 @@
     <string name="note_screen_recent_notebooks">최근 사용한 노트북</string>
     <string name="note_screen_list_of_notebooks">노트북 목록</string>
     <string name="note_screen_create_notebook_dialog_title">노트북 만들기</string>
+    <string name="note_screen_edit_notebook_dialog_title">노트북 수정하기</string>
     <string name="date_picker_title">검색 범위를 선택하세요</string>
     <string name="note_select_use_default">기본 노트 사용하기</string>
     <string name="close_label">닫기</string>

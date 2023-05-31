@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -18,10 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
+import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
+import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -37,7 +41,8 @@ fun HomeScreen(
     onBackButtonClick: () -> Unit,
     notebooks: List<Notebook>,
     selectedNotebookIds: SnapshotStateList<Int>,
-    onDeleteSelectedClicked: () -> Unit
+    onDeleteSelectedClicked: () -> Unit,
+    onEditClick: () -> Unit,
 ) {
 
 
@@ -52,7 +57,8 @@ fun HomeScreen(
                 scrollBehavior = scrollBehavior,
                 selectedNotebookIds = selectedNotebookIds,
                 onBackButtonClick = onBackButtonClick,
-                onDeleteSelectedClicked = onDeleteSelectedClicked
+                onDeleteSelectedClicked = onDeleteSelectedClicked,
+                onEditClick = onEditClick,
             )
         },
         bottomBar = {
@@ -97,28 +103,44 @@ private fun HomeAppBar(
     selectedNotebookIds: SnapshotStateList<Int>,
     onDeleteSelectedClicked: () -> Unit,
     onBackButtonClick: () -> Unit,
+    onEditClick: () -> Unit
 ) {
     if (selectedNotebookIds.size > 0) {
         MultiSelectAppbar(
             selectedItemsCount = selectedNotebookIds.size,
-            onDeleteSelectedClicked = onDeleteSelectedClicked,
             onBackButtonClick = onBackButtonClick
-        )
-    } else {
-        TopAppBar(
-            scrollBehavior = scrollBehavior,
-            title = {
-                Text(
-                    text = "",
-                    //                        color = MaterialTheme.colorScheme.topBarContentColor
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                //                    containerColor = MaterialTheme.colorScheme.topBarContainerColor
-            ),
-        )
+        ) {
+            MultiSelectAppbarActions(
+                onDeleteTitle = R.string.delete_selected_notebook_dialog_title,
+                onDeleteDescription = R.string.delete_seleccted_notebooks_dialog_confirmation,
+                onDeleteSelectedClicked = onDeleteSelectedClicked,
+            ) {
+                if (selectedNotebookIds.size == 1) {
+                    CommonAction(
+                        icon = Icons.Default.EditNote,
+                        onClicked = onEditClick,
+                        description = "Edit notebook information"
+                    )
+                }
+            }
+        }
     }
+//    } else {
+//        TopAppBar(
+//            scrollBehavior = scrollBehavior,
+//            title = {
+//                Text(
+//                    text = "",
+//                    //                        color = MaterialTheme.colorScheme.topBarContentColor
+//                )
+//            },
+//            colors = TopAppBarDefaults.topAppBarColors(
+//                //                    containerColor = MaterialTheme.colorScheme.topBarContainerColor
+//            ),
+//        )
+//    }
 }
+
 
 @Preview
 @Composable
@@ -132,7 +154,8 @@ fun PreviewHomeScreen() {
             onBackButtonClick = {},
             notebooks = listOf(),
             selectedNotebookIds = SnapshotStateList(),
-            onDeleteSelectedClicked = {}
+            onDeleteSelectedClicked = {},
+            onEditClick = {},
         )
     }
 }

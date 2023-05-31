@@ -30,9 +30,11 @@
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
     <string name="export_task_dialog_confirmation">Are you sure to export all memos?</string>
     <string name="delete_all_task_dialog_title">Remove All Notes</string>
-    <string name="delete_selected_task_dialog_title">Remove Selected Notes</string>
+    <string name="delete_selected_task_dialog_title">Remove Selected Memos</string>
+    <string name="delete_selected_notebook_dialog_title">Remove Selected Notebook(s)</string>
     <string name="delete_all_tasks_dialog_confirmation">Are you sure to remove all Memos? This cannot be revoked</string>
-    <string name="delete_seleccted_tasks_dialog_confirmation">Are you sure to remove all selected notes? This cannot be revoked</string>
+    <string name="delete_seleccted_tasks_dialog_confirmation">Are you sure to remove all selected memos? This cannot be revoked</string>
+    <string name="delete_seleccted_notebooks_dialog_confirmation">Are you sure to remove all selected notebooks? This cannot be revoked</string>
     <string name="export_all_tasks_dialog_confirmation">Are you sure to export all Memos through Email? It might take some time</string>
     <string name="delete_label">Delete</string>
     <string name="update_label">Update</string>
@@ -86,6 +88,7 @@
     <string name="note_screen_recent_notebooks">Recent</string>
     <string name="note_screen_list_of_notebooks">Notebook Collection</string>
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
+    <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
     <string name="date_picker_title">Pick up a date range</string>
     <string name="note_select_use_default">Use Default Notebook</string>
     <string name="close_label">Close</string>
