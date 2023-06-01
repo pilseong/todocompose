@@ -37,6 +37,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,7 +46,10 @@ import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.LowPriorityColor
+import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.util.getPriorityColor
@@ -339,7 +343,7 @@ fun NoteContent(
                     modifier = Modifier
 //                        .clip(RoundedCornerShape(4.dp))
 //                .padding(horizontal = SMALL_PADDING)
-                        .height(300.dp)
+                        .height(340.dp)
                         .fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surface,
                 ) {
@@ -477,34 +481,19 @@ fun NoteContent(
                                     if (selected.value) {
                                         Row(
                                             modifier = Modifier.fillMaxSize(),
-                                            verticalAlignment = Alignment.Top,
-                                            horizontalArrangement = Arrangement.End
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier.clickable {
-                                                    onSelectNotebookWithLongClick(
-                                                        notebooks[index].id
-                                                    )
-                                                },
-                                                imageVector = Icons.Default.CheckBox,
-                                                contentDescription = "selected",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        Row(
-                                            modifier = Modifier.fillMaxSize(),
-                                            verticalAlignment = Alignment.CenterVertically,
+//                                            verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Center
                                         ) {
                                             Icon(
                                                 modifier = Modifier
+                                                    .padding(top = 20.dp)
                                                     .clickable {
                                                         onInfoClick(notebooks[index].id)
                                                     }
                                                     .size(30.dp),
                                                 imageVector = Icons.Default.Info,
                                                 contentDescription = "selected",
-                                                tint = MaterialTheme.colorScheme.background
+                                                tint = Color.White
                                             )
                                         }
                                     }

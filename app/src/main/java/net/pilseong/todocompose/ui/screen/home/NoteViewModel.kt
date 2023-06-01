@@ -68,9 +68,9 @@ class NoteViewModel @Inject constructor(
     val createdAt = mutableStateOf(ZonedDateTime.now())
 
 
-    fun setEditProperties() {
+    fun setEditProperties(targetId: Int) {
         val notebook = notebooks.value.find { notebook ->
-            notebook.id == selectedNotebooks[0]
+            notebook.id == targetId
         }
 
         notebook?.let { it ->
