@@ -11,7 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
@@ -69,7 +69,12 @@ fun ListAppBar(
     onAppBarTitleClick: () -> Unit,
     selectedItemsCount: Int,
     onDeleteSelectedClicked: () -> Unit,
-    onBackButtonClick: () -> Unit
+    onBackButtonClick: () -> Unit,
+    onSearchIconClicked: () -> Unit,
+    onCloseClicked: () -> Unit,
+    onTextChange: (String) -> Unit,
+    onSearchClicked: () -> Unit,
+    onMoveMemoClicked: () -> Unit,
 ) {
     Log.i("PHILIP", "selectedItems $selectedItemsCount")
     when (searchAppBarState) {
@@ -78,11 +83,7 @@ fun ListAppBar(
                 DefaultListAppBar(
                     scrollBehavior = scrollBehavior,
                     appbarTitle = appbarTitle,
-                    onSearchIconClicked = {
-                        // 초기 로딩 을 위한 데이터 검색
-                        memoViewModel.refreshAllTasks()
-                        memoViewModel.searchAppBarState.value = SearchAppBarState.OPEN
-                    },
+                    onSearchIconClicked = onSearchIconClicked,
                     onDeleteAllClicked = {
                         Log.i("PHILIP", "onDeleteAllClicked")
                         memoViewModel.handleActions(Action.DELETE_ALL)
@@ -112,7 +113,13 @@ fun ListAppBar(
                         onDeleteTitle = R.string.delete_selected_task_dialog_title,
                         onDeleteDescription = R.string.delete_seleccted_tasks_dialog_confirmation,
                         onDeleteSelectedClicked = onDeleteSelectedClicked,
-                        actions = {}
+                        actions = {
+                            CommonAction(
+                                icon = Icons.Default.DriveFileMove,
+                                onClicked = onMoveMemoClicked,
+                                description = "Move to other box"
+                            )
+                        }
                     )
                 }
             }
@@ -121,23 +128,13 @@ fun ListAppBar(
         else -> {
             SearchAppBar(
                 text = searchText,
-                onCloseClicked = {
-                    memoViewModel.onCloseSearchBar()
-                },
-                onSearchClicked = {
-                    memoViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
-                    memoViewModel.refreshAllTasks()
-                },
-                onTextChange = { text ->
-                    memoViewModel.searchAppBarState.value = SearchAppBarState.TRIGGERED
-                    memoViewModel.searchTextString = text
-                    memoViewModel.refreshAllTasks()
-                }
+                onCloseClicked = onCloseClicked,
+                onSearchClicked = onSearchClicked,
+                onTextChange = onTextChange
             )
         }
     }
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
@@ -311,7 +308,6 @@ fun MenuAction(
             text = { Text(text = stringResource(id = R.string.settings_menu_label)) },
             onClick = {
                 expanded = false
-//                onDeleteAllClicked()
             })
     }
 }
@@ -321,7 +317,7 @@ fun SearchAppBar(
     text: String,
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
-    onSearchClicked: (String) -> Unit
+    onSearchClicked: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -356,7 +352,7 @@ fun SearchAppBar(
                 },
                 leadingIcon = {
                     IconButton(onClick = {
-                        onSearchClicked(text)
+                        onSearchClicked()
                     }) {
                         Icon(
                             imageVector = Icons.Default.Search,
@@ -371,12 +367,7 @@ fun SearchAppBar(
                 },
                 trailingIcon = {
                     IconButton(onClick = {
-                        if (text.isNotEmpty()) {
-                            onTextChange("")
-                        } else {
-                            onTextChange("")
-                            onCloseClicked()
-                        }
+                        onCloseClicked()
                     }) {
                         Icon(
                             imageVector = Icons.Default.Close,
@@ -392,7 +383,7 @@ fun SearchAppBar(
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        onSearchClicked(text)
+                        onSearchClicked()
                     }
                 ),
                 colors = TextFieldDefaults.colors(
@@ -422,3 +413,4 @@ fun PreviewSearchAppBar() {
     }
 
 }
+

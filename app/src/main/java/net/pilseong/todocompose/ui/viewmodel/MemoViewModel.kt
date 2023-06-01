@@ -582,6 +582,10 @@ class MemoViewModel @Inject constructor(
 //        refreshAllTasks()
     }
 
+    fun onOpenSearchBar() {
+        searchAppBarState.value = SearchAppBarState.OPEN
+    }
+
     private fun addTask() {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(

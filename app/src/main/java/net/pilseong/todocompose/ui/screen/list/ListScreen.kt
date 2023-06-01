@@ -56,7 +56,13 @@ fun ListScreen(
     toTaskScreen: (List<TodoTask>) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
     memoViewModel: MemoViewModel = hiltViewModel(),
-    onAppBarTitleClick: () -> Unit
+    onAppBarTitleClick: () -> Unit,
+    onSearchIconClicked: () -> Unit,
+    onCloseClicked: () -> Unit,
+    onTextChange: (String) -> Unit,
+    onSearchClicked: () -> Unit,
+    onDeleteSelectedClicked: () -> Unit,
+    onMoveMemoClicked: () -> Unit,
 ) {
     /**
      * view model 을 통제 하는 코드가 여기서 실행 되고 관리 된다.
@@ -126,7 +132,12 @@ fun ListScreen(
         if (memoViewModel.selectedItems.size != 0) {
             memoViewModel.selectedItems.clear()
         } else {
-            memoViewModel.onCloseSearchBar()
+            if (memoViewModel.searchTextString.isNotEmpty()) {
+                memoViewModel.searchTextString = ""
+                memoViewModel.refreshAllTasks()
+            } else {
+                memoViewModel.onCloseSearchBar()
+            }
         }
     }
 
@@ -161,24 +172,27 @@ fun ListScreen(
         },
         topBar = {
 //            Surface(tonalElevation = 1.dp) {
-                ListAppBar(
-                    scrollBehavior = scrollBehavior,
-                    appbarTitle = memoViewModel.selectedNotebook.value.title,
-                    memoViewModel = memoViewModel,
-                    searchAppBarState = searchAppBarState,
-                    searchText = searchText,
-                    onImportClick = {
-                        intentResultLauncher.launch("*/*")
-                    },
-                    onAppBarTitleClick = onAppBarTitleClick,
-                    selectedItemsCount = memoViewModel.selectedItems.size,
-                    onDeleteSelectedClicked = {
-                        memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
-                    },
-                    onBackButtonClick = {
-                        memoViewModel.selectedItems.clear()
-                    }
-                )
+            ListAppBar(
+                scrollBehavior = scrollBehavior,
+                appbarTitle = memoViewModel.selectedNotebook.value.title,
+                memoViewModel = memoViewModel,
+                searchAppBarState = searchAppBarState,
+                searchText = searchText,
+                onImportClick = {
+                    intentResultLauncher.launch("*/*")
+                },
+                onAppBarTitleClick = onAppBarTitleClick,
+                selectedItemsCount = memoViewModel.selectedItems.size,
+                onDeleteSelectedClicked = onDeleteSelectedClicked,
+                onBackButtonClick = {
+                    memoViewModel.selectedItems.clear()
+                },
+                onSearchIconClicked = onSearchIconClicked,
+                onCloseClicked = onCloseClicked,
+                onTextChange = onTextChange,
+                onSearchClicked = onSearchClicked,
+                onMoveMemoClicked = onMoveMemoClicked,
+            )
 //            }
         },
         bottomBar = {
@@ -387,10 +401,16 @@ fun AddMemoFab(
 @Preview
 private fun ListScreenPreview() {
 //    TodoComposeTheme {
-        ListScreen(
-            toTaskScreen = {},
-            onClickBottomNavBar = {},
-            onAppBarTitleClick = {}
-        )
+    ListScreen(
+        toTaskScreen = {},
+        onClickBottomNavBar = {},
+        onAppBarTitleClick = {},
+        onSearchIconClicked = {},
+        onCloseClicked = {},
+        onTextChange = {},
+        onSearchClicked = {},
+        onDeleteSelectedClicked = {},
+        onMoveMemoClicked = {}
+    )
 //    }
 }

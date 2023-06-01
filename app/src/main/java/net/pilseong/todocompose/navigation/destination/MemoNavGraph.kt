@@ -39,6 +39,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import net.pilseong.todocompose.R
@@ -54,6 +55,7 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
+import net.pilseong.todocompose.util.SearchAppBarState
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
@@ -90,6 +92,7 @@ fun NavGraphBuilder.memoNavGraph(
             }
 
             val openDialog = remember { mutableStateOf(false) }
+            val dialogTitle = remember { mutableStateOf("Choose Notebook") }
 
 
             Log.i(
@@ -119,11 +122,41 @@ fun NavGraphBuilder.memoNavGraph(
                 memoViewModel = memoViewModel,
                 onAppBarTitleClick = {
                     memoViewModel.getNotebooks()
+                    dialogTitle.value = "Choose Notebook"
+                    openDialog.value = true
+                },
+                onSearchIconClicked = {
+                    // 초기 로딩 을 위한 데이터 검색
+                    memoViewModel.onOpenSearchBar()
+                },
+                onCloseClicked = {
+                    if (memoViewModel.searchTextString.isNotEmpty()) {
+                        memoViewModel.searchTextString = ""
+                        memoViewModel.refreshAllTasks()
+                    } else {
+                        memoViewModel.onCloseSearchBar()
+                    }
+                },
+                onSearchClicked = {
+                    memoViewModel.refreshAllTasks()
+                },
+                onTextChange = { text ->
+                    memoViewModel.searchTextString = text
+                    memoViewModel.refreshAllTasks()
+                },
+                onDeleteSelectedClicked = {
+                    memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
+                },
+                onMoveMemoClicked = {
+                    Log.i("PHILIP", "onMoveMemoClicked")
+                    memoViewModel.getNotebooks()
+                    dialogTitle.value = "Move to"
                     openDialog.value = true
                 }
             )
 
             NotebooksPickerDialog(
+                dialogTitle = dialogTitle.value,
                 visible = openDialog.value,
                 onDismissRequest = {
                     openDialog.value = false
@@ -158,6 +191,7 @@ fun NavGraphBuilder.memoNavGraph(
 
 @Composable
 fun NotebooksPickerDialog(
+    dialogTitle: String = "",
     visible: Boolean,
     notebooks: List<Notebook>,
     onDismissRequest: () -> Unit,
@@ -190,7 +224,7 @@ fun NotebooksPickerDialog(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        text = "Choose Notebook",
+                        text = dialogTitle,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
 
                         style = MaterialTheme.typography.bodyLarge
