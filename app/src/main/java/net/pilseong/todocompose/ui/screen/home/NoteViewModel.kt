@@ -69,12 +69,17 @@ class NoteViewModel @Inject constructor(
 
 
     fun setEditProperties() {
-        val notebook = notebooks.value[(selectedNotebooks[0])]
-        id.value = notebook.id
-        title.value = notebook.title
-        description.value = notebook.description
-        priority.value = notebook.priority
-        createdAt.value = notebook.createdAt
+        val notebook = notebooks.value.find { notebook ->
+            notebook.id == selectedNotebooks[0]
+        }
+
+        notebook?.let { it ->
+            id.value = it.id
+            title.value = it.title
+            description.value = it.description
+            priority.value = notebook.priority
+            createdAt.value = notebook.createdAt
+        }
     }
 
     fun getNotebooks() {
@@ -131,21 +136,10 @@ class NoteViewModel @Inject constructor(
                         )
                     )
                 }
-//                getNotebooks()
             }
 
             NoteAction.EDIT -> {
-                viewModelScope.launch {
-                    notebookRepository.updateNotebook(
-                        Notebook(
-                            id = id.value,
-                            title = title.value,
-                            description = description.value,
-                            priority = priority.value,
-                            createdAt = createdAt.value
-                        )
-                    )
-                }
+                editNotebook()
             }
 
             NoteAction.SELECT_NOTEBOOK -> {
@@ -155,10 +149,28 @@ class NoteViewModel @Inject constructor(
                     }
                 }
             }
-            NoteAction.DELETE -> TODO()
+
+            NoteAction.DELETE -> {
+                deleteSelectedNotebooks()
+            }
             NoteAction.DELETE_ALL -> TODO()
             NoteAction.UNDO -> TODO()
             NoteAction.NO_ACTION -> TODO()
+        }
+    }
+
+    private fun editNotebook() {
+        viewModelScope.launch {
+            notebookRepository.updateNotebook(
+                Notebook(
+                    id = id.value,
+                    title = title.value,
+                    description = description.value,
+                    priority = priority.value,
+                    createdAt = createdAt.value
+                )
+            )
+            selectedNotebooks.clear()
         }
     }
 

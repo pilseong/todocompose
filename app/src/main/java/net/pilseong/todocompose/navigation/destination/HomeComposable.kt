@@ -1,7 +1,7 @@
 package net.pilseong.todocompose.navigation.destination
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,14 +15,17 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +49,7 @@ import androidx.navigation.compose.composable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.PriorityDropDown
@@ -54,6 +59,8 @@ import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.util.MetricsUtil
+import java.time.format.DateTimeFormatter
 
 fun NavGraphBuilder.homeComposable(
     navHostController: NavHostController,
@@ -64,10 +71,12 @@ fun NavGraphBuilder.homeComposable(
     ) {
         val noteViewModel = hiltViewModel<NoteViewModel>()
         val openDialog = remember { mutableStateOf(false) }
+        val infoDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
         val dialogTitle =
             remember { mutableStateOf(R.string.note_screen_create_notebook_dialog_title) }
-
+        val action = remember { mutableStateOf(NoteAction.ADD) }
+        val indexSelected = remember { mutableStateOf(-1) }
         LaunchedEffect(key1 = Unit) {
             noteViewModel.observeNotebookIdChange()
             noteViewModel.getNotebooks()
@@ -78,8 +87,9 @@ fun NavGraphBuilder.homeComposable(
                 navHostController.navigate(route)
             },
             onFabClick = {
-                openDialog.value = true
+                action.value = NoteAction.ADD
                 dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
+                openDialog.value = true
             },
             onSelectNotebook = { index ->
                 noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, index)
@@ -101,8 +111,13 @@ fun NavGraphBuilder.homeComposable(
             },
             onEditClick = {
                 noteViewModel.setEditProperties()
+                action.value = NoteAction.EDIT
                 dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
                 openDialog.value = true
+            },
+            onInfoClick = { id ->
+                indexSelected.value = id
+                infoDialog.value = true
             }
         )
 
@@ -127,13 +142,26 @@ fun NavGraphBuilder.homeComposable(
                 noteViewModel.description.value = ""
                 noteViewModel.priority.value = Priority.NONE
             },
-            onOKClick = { action ->
-                noteViewModel.handleActions(action)
+            onOKClick = {
+                noteViewModel.handleActions(action.value)
                 openDialog.value = false
                 noteViewModel.title.value = ""
                 noteViewModel.description.value = ""
                 noteViewModel.priority.value = Priority.NONE
             }
+        )
+
+        InfoDialog(
+            visible = infoDialog.value,
+            notebook = noteViewModel.notebooks.collectAsState().value.find { it.id == indexSelected.value },
+            onDismissRequest = {
+                infoDialog.value = false
+            }
+//            notebook = Notebook.instance(
+//                title = "제목 테스트",
+//                description = "설명 줄줄이 달아서 있겠지 한 줄 이상도 가능 몇 줄도 가능하지",
+//                priority = Priority.HIGH,
+//            )
         )
     }
 }
@@ -154,6 +182,247 @@ fun CustomAlertDialog(
 }
 
 @Composable
+fun InfoDialog(
+    visible: Boolean,
+    notebook: Notebook?,
+    onDismissRequest: () -> Unit
+) {
+    if (visible) {
+        CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
+            Surface(
+                modifier = Modifier,
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(MaterialTheme.colorScheme.surface),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(vertical = LARGE_PADDING)
+                            .padding(horizontal = XLARGE_PADDING),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "notebook info icon"
+                        )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            text = "Notebook Info",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(
+                        Modifier
+                            .height(1.dp)
+                            .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                            .fillMaxWidth()
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(XLARGE_PADDING),
+                    ) {
+                        val context = LocalContext.current
+                        Row(
+
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val context = LocalContext.current;
+                            val width = remember { mutableStateOf(0.dp) }
+                            Column {
+                                Text(
+                                    text = "제목",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    onTextLayout = { it ->
+                                        width.value = MetricsUtil.convertPixelsToDp(
+                                            it.size.width.toFloat(),
+                                            context
+                                        ).dp
+                                    }
+
+
+                                )
+                                Surface(
+                                    modifier = Modifier
+                                        .padding(start = width.value)
+                                        .fillMaxWidth(),
+                                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(horizontal = SMALL_PADDING),
+                                        text = notebook?.title ?: "",
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(
+                            Modifier
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                val width = remember { mutableStateOf(0.dp) }
+                                Text(
+                                    text = "설명",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    onTextLayout = { it ->
+                                        width.value = MetricsUtil.convertPixelsToDp(
+                                            it.size.width.toFloat(),
+                                            context
+                                        ).dp
+                                    }
+                                )
+                                Surface(
+                                    modifier = Modifier
+                                        .padding(start = width.value)
+                                        .fillMaxWidth(),
+                                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(horizontal = SMALL_PADDING),
+                                        text = notebook?.description ?: "",
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(
+                            Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .height(1.dp)
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "중요도",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = stringResource(
+                                    id = notebook?.priority?.label ?: R.string.priority_none
+                                ),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "수정일",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.updatedAt?.toOffsetDateTime()
+                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "생성일",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.createdAt?.toOffsetDateTime()
+                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewInfoDialog() {
+    InfoDialog(
+        visible = true,
+        notebook = Notebook.instance(),
+        onDismissRequest = {}
+    )
+}
+
+@Composable
 fun CreateEditNotebookDialog(
     dialogTitle: Int,
     visible: Boolean,
@@ -164,7 +433,7 @@ fun CreateEditNotebookDialog(
     onDescriptionChange: (String) -> Unit,
     onPriorityChange: (Priority) -> Unit,
     onDismissRequest: () -> Unit,
-    onOKClick: (NoteAction) -> Unit
+    onOKClick: () -> Unit
 ) {
     if (visible) {
         CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
@@ -274,7 +543,7 @@ fun CreateEditNotebookDialog(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedButton(
-                            onClick = { onOKClick(NoteAction.ADD) },
+                            onClick = { onOKClick() },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )

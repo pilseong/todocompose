@@ -21,8 +21,17 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
     val updatedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
     companion object {
-        fun instance(title: String = ""): Notebook {
-            return Notebook(title = title, description = "", priority = Priority.NONE)
+        fun instance(
+            title: String = "",
+            description: String = "",
+            priority: Priority = Priority.NONE,
+            createdAt: ZonedDateTime = ZonedDateTime.now(),
+            updatedAt: ZonedDateTime = ZonedDateTime.now()
+        ): Notebook {
+            return Notebook(
+                title = title, description = description, priority = priority,
+                createdAt = createdAt, updatedAt = updatedAt
+            )
         }
     }
 }

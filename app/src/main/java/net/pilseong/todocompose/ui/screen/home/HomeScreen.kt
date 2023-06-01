@@ -43,6 +43,7 @@ fun HomeScreen(
     selectedNotebookIds: SnapshotStateList<Int>,
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
+    onInfoClick: (Int) -> Unit,
 ) {
 
 
@@ -91,6 +92,7 @@ fun HomeScreen(
                 selectedNotebookIds = selectedNotebookIds,
                 onSelectNotebook = onSelectNotebook,
                 onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
+                onInfoClick = onInfoClick
             )
         }
     }
@@ -103,7 +105,7 @@ private fun HomeAppBar(
     selectedNotebookIds: SnapshotStateList<Int>,
     onDeleteSelectedClicked: () -> Unit,
     onBackButtonClick: () -> Unit,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
 ) {
     if (selectedNotebookIds.size > 0) {
         MultiSelectAppbar(
@@ -156,6 +158,7 @@ fun PreviewHomeScreen() {
             selectedNotebookIds = SnapshotStateList(),
             onDeleteSelectedClicked = {},
             onEditClick = {},
+            onInfoClick = {}
         )
     }
 }

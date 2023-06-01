@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -66,7 +67,7 @@ fun TaskItem(
     onFavoriteClick: () -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: List<Int>
+    selectedItemsIds: SnapshotStateList<Int>
 ) {
 
     val selected = remember(selectedItemsIds.size) {
@@ -111,7 +112,11 @@ fun TaskItem(
                 }
                 .combinedClickable(
                     onClick = {
-                        toTaskScreen(todoTask.id)
+                        if (selectedItemsIds.size > 0) {
+                            onLongClickApplied(todoTask.id)
+                        } else {
+                            toTaskScreen(todoTask.id)
+                        }
                     },
                     onLongClick = {
                         selected.value = !selected.value
@@ -256,7 +261,7 @@ fun TaskItemPreview() {
             onFavoriteClick = {},
             onLongClickReleased = {},
             onLongClickApplied = {},
-            selectedItemsIds = emptyList()
+            selectedItemsIds = SnapshotStateList()
         )
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -81,7 +82,7 @@ fun ListContent(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: List<Int>
+    selectedItemsIds: SnapshotStateList<Int>
 ) {
 
     if (tasks.loadState.refresh is LoadState.NotLoading) {
@@ -116,7 +117,7 @@ fun DisplayTasks(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: List<Int>
+    selectedItemsIds: SnapshotStateList<Int>
 ) {
 //    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
@@ -149,7 +150,7 @@ fun LazyItemList(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: List<Int>
+    selectedItemsIds: SnapshotStateList<Int>
 ) {
     // 화면 의 크기의 반을 swipe 한 경우 처리
     val threshold = LocalConfiguration.current.screenWidthDp / 3
@@ -530,7 +531,7 @@ fun ListContentPreview() {
             onFavoriteClick = {},
             onLongClickReleased = {},
             onLongClickApplied = {},
-            selectedItemsIds = emptyList()
+            selectedItemsIds = SnapshotStateList()
         )
     }
 }

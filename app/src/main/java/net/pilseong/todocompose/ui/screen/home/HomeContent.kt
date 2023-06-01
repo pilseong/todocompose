@@ -2,6 +2,7 @@ package net.pilseong.todocompose.ui.screen.home
 
 import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -15,17 +16,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,7 +58,8 @@ fun NoteContent(
     notebooks: List<Notebook>,
     selectedNotebookIds: SnapshotStateList<Int>,
     onSelectNotebook: (Int) -> Unit,
-    onSelectNotebookWithLongClick: (Int) -> Unit
+    onSelectNotebookWithLongClick: (Int) -> Unit,
+    onInfoClick: (Int) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
 
@@ -375,7 +380,15 @@ fun NoteContent(
                                                 onSelectNotebookWithLongClick(notebooks[index].id)
                                             }
                                         ),
-                                    shadowElevation = 6.dp,
+                                    shadowElevation = 2.dp,
+                                    border = if (selected.value) BorderStroke(
+                                        0.5.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    else BorderStroke(
+                                        0.dp,
+                                        MaterialTheme.colorScheme.surface
+                                    )
                                 ) {
                                     Card(
                                         shape = RoundedCornerShape(
@@ -384,7 +397,6 @@ fun NoteContent(
                                             bottomStart = 0.dp,
                                             bottomEnd = 4.dp
                                         )
-//                                        shape = RoundedCornerShape(4.dp),
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxSize()
@@ -398,28 +410,13 @@ fun NoteContent(
                                                 }
                                             )
                                             Surface(
-                                                color = if (selected.value) MaterialTheme.colorScheme.primaryContainer
-                                                else MaterialTheme.colorScheme.surface,
-                                                tonalElevation = 2.dp
+                                                color = if (selected.value) {
+                                                    MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                                        10000.dp
+                                                    )
+                                                } else MaterialTheme.colorScheme.surface,
+                                                tonalElevation = if (selected.value) 12.dp else 2.dp,
                                             ) {
-                                                if (selected.value) {
-                                                    Row(
-                                                        modifier = Modifier.fillMaxSize(),
-                                                        verticalAlignment = Alignment.Top,
-                                                        horizontalArrangement = Arrangement.End
-                                                    ) {
-                                                        Icon(
-                                                            modifier = Modifier.clickable {
-                                                                onSelectNotebookWithLongClick(
-                                                                    notebooks[index].id
-                                                                )
-                                                            },
-                                                            imageVector = Icons.Default.CheckBox,
-                                                            contentDescription = "selected",
-                                                            tint = MaterialTheme.colorScheme.primary
-                                                        )
-                                                    }
-                                                }
                                                 Column(
                                                     modifier = Modifier.fillMaxSize(),
                                                 ) {
@@ -477,6 +474,40 @@ fun NoteContent(
                                             }
                                         }
                                     }
+                                    if (selected.value) {
+                                        Row(
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalAlignment = Alignment.Top,
+                                            horizontalArrangement = Arrangement.End
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier.clickable {
+                                                    onSelectNotebookWithLongClick(
+                                                        notebooks[index].id
+                                                    )
+                                                },
+                                                imageVector = Icons.Default.CheckBox,
+                                                contentDescription = "selected",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .clickable {
+                                                        onInfoClick(notebooks[index].id)
+                                                    }
+                                                    .size(30.dp),
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = "selected",
+                                                tint = MaterialTheme.colorScheme.background
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -498,6 +529,7 @@ fun NoteContentPreview() {
         ),
         onSelectNotebook = {},
         onSelectNotebookWithLongClick = {},
-        selectedNotebookIds = SnapshotStateList()
+        selectedNotebookIds = SnapshotStateList(),
+        onInfoClick = {},
     )
 }
