@@ -22,9 +22,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgeDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -44,22 +46,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
-import net.pilseong.todocompose.ui.theme.LowPriorityColor
-import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.util.getPriorityColor
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NoteContent(
-    notebooks: List<Notebook>,
+    notebooks: List<NotebookWithCount>,
     selectedNotebookIds: SnapshotStateList<Int>,
     onSelectNotebook: (Int) -> Unit,
     onSelectNotebookWithLongClick: (Int) -> Unit,
@@ -478,6 +477,24 @@ fun NoteContent(
                                             }
                                         }
                                     }
+                                    Surface(
+                                        modifier = Modifier.fillMaxSize(),
+                                        color = Color.Transparent
+                                    ) {
+                                        Row(horizontalArrangement = Arrangement.End) {
+                                            Badge(
+                                                modifier = Modifier
+                                                    .clickable {
+                                                        onInfoClick(notebooks[index].id)
+                                                    },
+                                                containerColor = if (selected.value) BadgeDefaults.containerColor
+                                                    .copy(alpha = 0.2f)
+                                                else BadgeDefaults.containerColor
+                                            ) {
+                                                Text(text = notebooks[index].memoCount.toString())
+                                            }
+                                        }
+                                    }
                                     if (selected.value) {
                                         Row(
                                             modifier = Modifier.fillMaxSize(),
@@ -512,9 +529,17 @@ fun NoteContent(
 fun NoteContentPreview() {
     NoteContent(
         listOf(
-            Notebook(title = "My Love Note", description = "desc1", priority = Priority.NONE),
-            Notebook(title = "first notebooksss", description = "desc2", priority = Priority.NONE),
-            Notebook(title = "test3", description = "desc3", priority = Priority.NONE)
+            NotebookWithCount(
+                title = "My Love Note",
+                description = "desc1",
+                priority = Priority.NONE
+            ),
+            NotebookWithCount(
+                title = "first notebooksss",
+                description = "desc2",
+                priority = Priority.NONE
+            ),
+            NotebookWithCount(title = "test3", description = "desc3", priority = Priority.NONE)
         ),
         onSelectNotebook = {},
         onSelectNotebookWithLongClick = {},

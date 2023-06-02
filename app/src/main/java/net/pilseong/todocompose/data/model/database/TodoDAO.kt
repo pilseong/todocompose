@@ -4,8 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import java.time.ZonedDateTime
 
 @Dao
@@ -77,9 +79,6 @@ abstract class TodoDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun addTask(todo: TodoTask)
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    abstract suspend fun insertTask(todo: TodoTask)
-
     suspend fun updateTaskWithTimestamp(todo: TodoTask) =
         updateTask(todo.copy(updatedAt = ZonedDateTime.now()))
 
@@ -98,4 +97,29 @@ abstract class TodoDAO {
     @Query("DELETE FROM todo_table WHERE notebook_id = :notebookId")
     abstract suspend fun deleteTasksByNotebookId(notebookId: Int)
 
+
+    @Transaction
+    open suspend fun deleteSelectedTasks(notesIds: List<Int>) {
+        notesIds.forEach { id ->
+            deleteTask(id)
+        }
+    }
+
+    @Transaction
+    open suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
+        tasks.forEach { task ->
+            addTask(task)
+        }
+    }
+
+    @Query("UPDATE todo_table SET notebook_id = :notebookId, updated_at = :updatedAt WHERE id = :taskId")
+    abstract suspend fun updateNotebookId(taskId: Int, notebookId: Int, updatedAt: Long)
+
+    @Transaction
+    open suspend fun updateMultipleNotebookIds(todosIds: List<Int>, destinationNotebookId: Int) {
+        todosIds.forEach { id ->
+            updateNotebookId(id, destinationNotebookId, ZonedDateTypeConverter.fromZonedDateTime(
+                ZonedDateTime.now()))
+        }
+    }
 }

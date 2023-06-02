@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.DataStoreRepository
@@ -227,7 +228,7 @@ class MemoViewModel @Inject constructor(
     var dateEnabled by mutableStateOf(false)
     var notebookIdState by mutableStateOf(Int.MIN_VALUE)
 
-    var notebooks = MutableStateFlow<List<Notebook>>(emptyList())
+    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observePrioritySortState() {
@@ -474,7 +475,7 @@ class MemoViewModel @Inject constructor(
         startDate: Long? = null,
         endDate: Long? = null,
         favorite: Boolean = false,
-        notebookId: Int = -1
+        notebookId: Int = -1,
     ) {
         Log.i(
             "PHILIP",
@@ -509,6 +510,12 @@ class MemoViewModel @Inject constructor(
 
             Action.UNDO -> {
                 undoTask()
+                updateActionPerformed()
+            }
+
+            Action.MOVE_TO -> {
+                updateAction(action)
+                moveToTask(notebookId)
                 updateActionPerformed()
             }
 
@@ -548,7 +555,7 @@ class MemoViewModel @Inject constructor(
 
             Action.SORT_DATE_CHANGE -> {
                 updateAction(action)
-                // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여져야 한다.
+                // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여 져야 한다.
                 if (sortDateEnabled != dateEnabled) {
                     snackBarDateEnabled = sortDateEnabled
                     persistDateEnabledState(sortDateEnabled)
@@ -567,6 +574,7 @@ class MemoViewModel @Inject constructor(
             Action.NOTEBOOK_CHANGE -> {
                 updateAction(action)
                 persistNotebookIdState(notebookId)
+                updateActionPerformed()
             }
 
             Action.NO_ACTION -> {
@@ -604,6 +612,19 @@ class MemoViewModel @Inject constructor(
             refreshAllTasks()
         }
         this.action = Action.ADD
+    }
+
+    private fun moveToTask(destinationNoteId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.i(
+                "PHILIP",
+                "[MemoViewModel] moveToTask performed with ${selectedItems.toList()} to notebook id with $destinationNoteId "
+            )
+
+            todoRepository.moveMultipleMemos(selectedItems.toList(), destinationNoteId)
+            selectedItems.clear()
+            refreshAllTasks()
+        }
     }
 
     private fun undoTask() {

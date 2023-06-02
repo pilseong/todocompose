@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,18 +19,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material3.Badge
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,11 +44,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.screen.list.ListScreen
@@ -55,7 +59,6 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
-import net.pilseong.todocompose.util.SearchAppBarState
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
@@ -77,6 +80,9 @@ fun NavGraphBuilder.memoNavGraph(
                 }
             )
         ) { backStackEntry ->
+
+            // 같은 store owner가 소유하는 viewmodel을 사용한다. store owner은 상위 NavGraph이므로
+            // activity가 죽지 않는 이상 계속 동일한 view model 객체를 사용하게 된다.
             val memoViewModel = hiltViewModel<MemoViewModel>(
                 viewModelStoreOwner = viewModelStoreOwner
             )
@@ -88,11 +94,17 @@ fun NavGraphBuilder.memoNavGraph(
             // action 은 stat e가 아니기 때문에 memolist 로 새로 진입한 경우 snackbar 는 그려 주어야 할지 판단할 수 없다.
             val route = navHostController.previousBackStackEntry?.destination?.route
             if (route != null && route != Screen.MemoDetail.route) {
-                memoViewModel.updateAction(Action.NO_ACTION)
+                // 노트북을 변경하거나 노트북을 이동할 경우 MemoNavGraph가 실행이 된다. 이 경우 이전에 home에서 온 경우에도 이전 것이 남아 있어
+                // 중복적으로 NO_ACTION이 실행되게 되는데 이것을 막기 위해서 사용하였다.
+                LaunchedEffect(key1 = route) {
+                    Log.i("PHILIP", "[MemoNavGraph] NO_ACTION called $route")
+                    memoViewModel.updateAction(Action.NO_ACTION)
+                }
             }
 
             val openDialog = remember { mutableStateOf(false) }
             val dialogTitle = remember { mutableStateOf("Choose Notebook") }
+            val action = remember { mutableStateOf(Action.NOTEBOOK_CHANGE) }
 
 
             Log.i(
@@ -108,6 +120,8 @@ fun NavGraphBuilder.memoNavGraph(
                 memoViewModel.observeDateEnabledState()
                 memoViewModel.observeFavoriteState()
                 memoViewModel.observeNotebookIdChange()
+
+                memoViewModel.getNotebooks()
             }
 
 
@@ -121,7 +135,7 @@ fun NavGraphBuilder.memoNavGraph(
                 onClickBottomNavBar = onClickBottomNavBar,
                 memoViewModel = memoViewModel,
                 onAppBarTitleClick = {
-                    memoViewModel.getNotebooks()
+                    action.value = Action.NOTEBOOK_CHANGE
                     dialogTitle.value = "Choose Notebook"
                     openDialog.value = true
                 },
@@ -149,7 +163,7 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onMoveMemoClicked = {
                     Log.i("PHILIP", "onMoveMemoClicked")
-                    memoViewModel.getNotebooks()
+                    action.value = Action.MOVE_TO
                     dialogTitle.value = "Move to"
                     openDialog.value = true
                 }
@@ -165,9 +179,9 @@ fun NavGraphBuilder.memoNavGraph(
                 onCloseClick = {
                     openDialog.value = false
                 },
-                onNotebookClick = {
-                    Log.i("PHILIP", "[MemoNavGraph] onNotebookClick $it")
-                    memoViewModel.handleActions(Action.NOTEBOOK_CHANGE, notebookId = it)
+                onNotebookClick = { id ->
+                    Log.i("PHILIP", "[MemoNavGraph] onNotebookClick $id")
+                    memoViewModel.handleActions(action.value, notebookId = id)
                     openDialog.value = false
                 }
             )
@@ -189,11 +203,12 @@ fun NavGraphBuilder.memoNavGraph(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotebooksPickerDialog(
     dialogTitle: String = "",
     visible: Boolean,
-    notebooks: List<Notebook>,
+    notebooks: List<NotebookWithCount>,
     onDismissRequest: () -> Unit,
     onCloseClick: () -> Unit,
     onNotebookClick: (Int) -> Unit
@@ -279,6 +294,16 @@ fun NotebooksPickerDialog(
                                         else it.title
                                     )
                                 }
+                                Surface(
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = Color.Transparent
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.End) {
+                                        Badge {
+                                            Text(text = it.memoCount.toString())
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -322,19 +347,21 @@ fun NotebooksPickerDialogPreview() {
             onCloseClick = {},
             onDismissRequest = {},
             notebooks = listOf(
-                Notebook(
+                NotebookWithCount(
                     id = 1,
                     title = "My Love Note",
                     description = "desc1",
                     priority = Priority.NONE
                 ),
-                Notebook(
+                NotebookWithCount(
                     id = 2,
                     title = "first notebooksss",
                     description = "desc2",
                     priority = Priority.NONE
                 ),
-                Notebook(id = 3, title = "test3", description = "desc3", priority = Priority.NONE)
+                NotebookWithCount(
+                    id = 3, title = "test3", description = "desc3", priority = Priority.NONE
+                )
             ),
             onNotebookClick = {
 

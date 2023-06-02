@@ -171,7 +171,6 @@ fun ListScreen(
             )
         },
         topBar = {
-//            Surface(tonalElevation = 1.dp) {
             ListAppBar(
                 scrollBehavior = scrollBehavior,
                 appbarTitle = memoViewModel.selectedNotebook.value.title,
@@ -193,7 +192,6 @@ fun ListScreen(
                 onSearchClicked = onSearchClicked,
                 onMoveMemoClicked = onMoveMemoClicked,
             )
-//            }
         },
         bottomBar = {
             BottomNavBar(
@@ -349,6 +347,9 @@ private fun DisplaySnackBar(
 
         Action.NOTEBOOK_CHANGE ->
             stringResource(id = R.string.snackbar_changed_notebook_message)
+
+        Action.MOVE_TO -> 
+            stringResource(id = R.string.snackbar_move_to_message)
 
         else -> {
             ""

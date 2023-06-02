@@ -14,5 +14,6 @@ enum class Action {
     FAVORITE_UPDATE,
     NOTEBOOK_CHANGE,
     DELETE_SELECTED_ITEMS,
+    MOVE_TO,
     NO_ACTION
 }

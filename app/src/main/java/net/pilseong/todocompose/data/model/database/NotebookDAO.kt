@@ -8,7 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import java.time.ZonedDateTime
 
 @Dao
@@ -51,10 +51,13 @@ abstract class NotebookDAO(
     }
 
     @Transaction
-    open suspend fun insertMultipleNotebooks(notebooksIds: List<Notebook>) {
-        notebooksIds.forEach{
-            addNotebook(it)
+    open suspend fun insertMultipleNotebooks(notebooks: List<Notebook>) {
+        notebooks.forEach{ notebook ->
+            addNotebook(notebook)
         }
     }
-
+    @Query("SELECT id, title, description, priority, created_at, updated_at, " +
+            "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +
+            "FROM note_table ORDER BY created_at DESC")
+    abstract fun getNotebooksWithCount(): Flow<List<NotebookWithCount>>
 }

@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.components
 
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -19,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 
 

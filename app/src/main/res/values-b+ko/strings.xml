@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">노트북</string>
+    <string name="app_name">아이디어노트</string>
     <string name="add_button_icon">추가 더하기 아이콘</string>
     <string name="empty_list_content_label">메모가 없습니다.</string>
     <string name="search_bar_visible_action_icon">검색 기능 보이게 하는 검색 아이콘</string>
@@ -63,6 +63,7 @@
     <string name="snackbar_message_date_range_applied">범위 필터가 적용되었습니다.</string>
     <string name="snackbar_message_date_range_cancelled">범위 필터가 해제되었습니다.</string>
     <string name="snackbar_favorite_change_message">중요메모만 검색합니다.</string>
+    <string name="snackbar_move_to_message">정상적으로 이동되었습니다.</string>
     <string name="snackbar_selected_items_deleted_message">선택된 메모가 삭제되었습니다.</string>
     <string name="snackbar_changed_notebook_message">선택한 노트북으로 변경되었습니다.</string>
     <string name="status_line_date_range_text">검색일 %1$s 부터 %2$s 까지</string>

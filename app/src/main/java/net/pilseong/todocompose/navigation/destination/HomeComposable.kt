@@ -55,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.PriorityDropDown
@@ -81,6 +82,8 @@ fun NavGraphBuilder.homeComposable(
         val scope = rememberCoroutineScope()
         val dialogTitle =
             remember { mutableStateOf(R.string.note_screen_create_notebook_dialog_title) }
+
+        // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         val action = remember { mutableStateOf(NoteAction.ADD) }
         val indexSelected = remember { mutableStateOf(-1) }
         LaunchedEffect(key1 = Unit) {
@@ -124,6 +127,7 @@ fun NavGraphBuilder.homeComposable(
             onInfoClick = { id ->
                 indexSelected.value = id
                 infoDialog.value = true
+
             }
         )
 
@@ -193,7 +197,7 @@ fun CustomAlertDialog(
 fun InfoDialog(
     modifier: Modifier = Modifier.wrapContentHeight(),
     visible: Boolean,
-    notebook: Notebook?,
+    notebook: NotebookWithCount?,
     onDismissRequest: () -> Unit,
     onEditClick: (Int) -> Unit,
 ) {
@@ -464,7 +468,7 @@ fun InfoDialog(
 fun PreviewInfoDialog() {
     InfoDialog(
         visible = true,
-        notebook = Notebook.instance(title = "askldflkasdjfkja;ls dkjf;alksd jfl;kjsdf;lkjaklddsk jf;laksdjf;lakjsd;lf"),
+        notebook = NotebookWithCount.instance(title = "askldflkasdjfkja;ls dkjf;alksd jfl;kjsdf;lkjaklddsk jf;laksdjf;lakjsd;lf"),
         onDismissRequest = {},
         onEditClick = {
 

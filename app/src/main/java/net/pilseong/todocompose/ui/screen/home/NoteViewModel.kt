@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
@@ -54,7 +55,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    var notebooks = MutableStateFlow<List<Notebook>>(emptyList())
+    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
         private set
 
     val id = mutableStateOf(Int.MIN_VALUE)

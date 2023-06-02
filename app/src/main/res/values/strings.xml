@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Notebooks</string>
+    <string name="app_name">Idea Note</string>
     <string name="add_button_icon">Add Memo Button Icon</string>
     <string name="empty_list_content_label">NO MEMO FOUND</string>
     <string name="search_bar_visible_action_icon">Search Bar Show</string>
@@ -63,6 +63,7 @@
     <string name="snackbar_message_date_range_applied">Date range filter applied</string>
     <string name="snackbar_message_date_range_cancelled">Date range filter removed</string>
     <string name="snackbar_favorite_change_message">Favorite notes filtered</string>
+    <string name="snackbar_move_to_message">Memo(s) moved successfully</string>
     <string name="snackbar_selected_items_deleted_message">Selected notes deleted</string>
     <string name="snackbar_changed_notebook_message">Selected notebook applied</string>
     <string name="status_line_date_range_text">Date from %1$s to %2$s</string>

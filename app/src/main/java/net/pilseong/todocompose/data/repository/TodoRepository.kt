@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.room.Transaction
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Priority
@@ -67,21 +66,19 @@ class TodoRepository @Inject constructor(
         todoDAO.deleteAllTasks()
     }
 
-    @Transaction
     suspend fun deleteSelectedTasks(notesIds: List<Int>) {
-        notesIds.forEach {
-            todoDAO.deleteTask(it)
-        }
+        todoDAO.deleteSelectedTasks(notesIds)
     }
 
     suspend fun updateFavorite(todoTask: TodoTask) {
         todoDAO.updateFavorite(todoTask)
     }
 
-    @Transaction
     suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
-        tasks.forEach { task ->
-            todoDAO.addTask(task)
-        }
+        todoDAO.insertMultipleMemos(tasks)
+    }
+
+    suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
+        todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
     }
 }

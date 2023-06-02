@@ -3,6 +3,7 @@ package net.pilseong.todocompose.data.repository;
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.database.NotebookDAO
 import javax.inject.Inject
 
@@ -10,8 +11,12 @@ import javax.inject.Inject
 class NotebookRepository @Inject constructor(
         private val notebookDAO: NotebookDAO
 ) {
-    fun getNotebooks(): Flow<List<Notebook>> {
-        return notebookDAO.getNotebooks()
+//    fun getNotebooks(): Flow<List<Notebook>> {
+//        return notebookDAO.getNotebooks()
+//    }
+
+    fun getNotebooks(): Flow<List<NotebookWithCount>> {
+        return notebookDAO.getNotebooksWithCount()
     }
 
     suspend fun getAllNotebooks(): List<Notebook> {

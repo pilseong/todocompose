@@ -18,6 +18,8 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     val priority: Priority,
     @ColumnInfo(name = "favorite", defaultValue = "false")
     val favorite: Boolean = false,
+    @ColumnInfo(name = "progression", defaultValue = "0")
+    val progression: Int = 0,
     @ColumnInfo(name = "created_at")
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
