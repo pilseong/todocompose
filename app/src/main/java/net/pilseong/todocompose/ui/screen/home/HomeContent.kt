@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgeDefaults
@@ -40,16 +41,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
 import net.pilseong.todocompose.util.getPriorityColor
 import java.time.ZonedDateTime
@@ -63,6 +68,7 @@ fun NoteContent(
     onSelectNotebook: (Int) -> Unit,
     onSelectNotebookWithLongClick: (Int) -> Unit,
     onInfoClick: (Int) -> Unit,
+    currentNotebook: NotebookWithCount
 ) {
     val configuration = LocalConfiguration.current
 
@@ -241,60 +247,242 @@ fun NoteContent(
 
         else -> {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .padding(top = LARGE_PADDING)
+                    .fillMaxSize()
             ) {
-                Row(
-                    modifier = Modifier
+                Surface(
+//                    color = DarkGreenBackground,
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(
+                            horizontal = XLARGE_PADDING,
+                            vertical = LARGE_PADDING
+                        ),
+                    ) {
+                        Row(
+                            modifier = Modifier
 //                        .padding(top = 24.dp)
-                        .fillMaxWidth(),
+                                .fillMaxWidth(),
 //                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.note_screen_recent_notebooks),
-                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                    )
-                }
-                Row(
-                    modifier = Modifier
-//                .padding(vertical = SMALL_PADDING)
-                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        modifier = Modifier.padding(start = 4.dp),
-                        text = stringResource(id = R.string.note_content_today) + ": ${
-                            ZonedDateTime.now().toLocalDate().format(
-                                DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.note_screen_recent_notebooks),
+//                                color = headlineYellow,
+                                color = Color(
+                                    ColorUtils.blendARGB(
+                                        MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        Color.White.toArgb(),
+                                        0.2f
+                                    )
+                                ).copy(0.9f),
+                                fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
+                                fontSize = MaterialTheme.typography.headlineMedium.fontSize
                             )
-                        }",
-                        fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
-                        fontSize = MaterialTheme.typography.titleSmall.fontSize
-                    )
+                        }
+                        Row(
+                            modifier = Modifier
+//                .padding(vertical = SMALL_PADDING)
+                                .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(start = 4.dp),
+//                                color = headlineYellow,
+                                color = Color(
+                                    ColorUtils.blendARGB(
+                                        MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        Color.White.toArgb(),
+                                        0.2f
+                                    )
+                                ).copy(0.9f),
+                                text = stringResource(id = R.string.note_content_today) + ": ${
+                                    ZonedDateTime.now().toLocalDate().format(
+                                        DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
+                                    )
+                                }",
+                                fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
+                                fontSize = MaterialTheme.typography.titleSmall.fontSize
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(LARGE_PADDING))
+//                Spacer(modifier = Modifier.height(LARGE_PADDING))
                 Surface(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-
+                        .padding(
+                            start = XLARGE_PADDING,
+                            end = XLARGE_PADDING,
+                            bottom = XLARGE_PADDING
+                        )
+//                        .clip(RoundedCornerShape(4.dp))
                         .fillMaxWidth(),
+//                    color = booksBackground,
+//                    border = BorderStroke(0.5.dp, DarkGreenBackground),
+                    shape = RoundedCornerShape(4.dp),
+                    tonalElevation = 4.dp,
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Row(
 //                        horizontalArrangement = Arrangement.spacedBy(SMALL_PADDING),
-                        modifier = Modifier.padding(LARGE_PADDING)
+                        modifier = Modifier.padding(SMALL_PADDING)
                     ) {
                         Surface(
                             modifier = Modifier
-                                .width(120.dp)
-                                .height(140.dp)
-                                .padding(end = LARGE_PADDING),
-                            shadowElevation = 6.dp
+                                .width(125.dp)
+                                .height(160.dp)
+                                .padding(end = SMALL_PADDING, bottom = SMALL_PADDING)
+                                .combinedClickable(
+                                    onClick = {
+                                    },
+                                    onLongClick = {
+                                    }
+                                ),
+                            shadowElevation = 6.dp,
+                            shape = RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 6.dp,
+                                bottomStart = 0.dp,
+                                bottomEnd = 6.dp
+                            ),
+                            border = BorderStroke(
+                                0.dp,
+                                MaterialTheme.colorScheme.surface
+                            )
                         ) {
                             Card(
-                                shape = RoundedCornerShape(4.dp)
+                                shape = RoundedCornerShape(
+                                    topStart = 0.dp,
+                                    topEnd = 6.dp,
+                                    bottomStart = 0.dp,
+                                    bottomEnd = 6.dp
+                                )
                             ) {
-                                Text(text = "First")
+                                Row(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Surface(
+                                        modifier = Modifier.clickable {
+                                            onSelectNotebook(currentNotebook.id)
+                                        },
+                                        color = MaterialTheme.colorScheme.primary,
+                                        tonalElevation = 2.dp,
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                        ) {
+                                            Surface(
+                                                color = Color(
+                                                    ColorUtils.blendARGB(
+                                                        MaterialTheme.colorScheme.primary.toArgb(),
+                                                        Color.Black.toArgb(),
+                                                        0.5f
+                                                    )
+                                                ),
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .padding(SMALL_PADDING)
+                                                        .fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Badge {
+                                                        Icon(
+                                                            modifier = Modifier.size(8.dp),
+                                                            imageVector = Icons.Default.Check,
+                                                            contentDescription = "Checked Icon",
+                                                        )
+                                                    }
+                                                    Text(
+                                                        modifier = Modifier.padding(horizontal = 2.dp),
+                                                        text = "Current",
+                                                        color = Color(
+                                                            ColorUtils.blendARGB(
+                                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
+                                                                Color.Black.toArgb(),
+                                                                0.1f
+                                                            )
+                                                        ).copy(0.9f),
+                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize
+                                                    )
+                                                    Column(modifier = Modifier.weight(1F),
+                                                    horizontalAlignment = Alignment.End) {
+                                                    Badge() {
+                                                        Text(text = currentNotebook.memoCount.toString())
+                                                    }
+                                                    }
+                                                }
+                                            }
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .weight(1F),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    modifier = Modifier.padding(horizontal = SMALL_PADDING),
+                                                    text = currentNotebook.title,
+                                                    color = Color(
+                                                        ColorUtils.blendARGB(
+                                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
+                                                            Color.Black.toArgb(),
+                                                            0.2f
+                                                        )
+                                                    ).copy(0.9f)
+//                                                                Color.White.copy(alpha = 0.9f)
+                                                )
+                                            }
+                                            Surface(
+                                                color = Color(
+                                                    ColorUtils.blendARGB(
+                                                        MaterialTheme.colorScheme.primary.toArgb(),
+                                                        Color.Black.toArgb(),
+                                                        0.3f
+                                                    )
+                                                ),
+                                                tonalElevation = 2.dp,
+                                            ) {
+                                                Column(
+                                                    modifier = Modifier
+                                                        .padding(
+                                                            horizontal = SMALL_PADDING,
+                                                            vertical = 4.dp
+                                                        )
+                                                        .fillMaxWidth(),
+                                                    verticalArrangement = Arrangement.Center,
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    Text(
+                                                        text = "Last Access",
+                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+//                                                        fontWeight = FontWeight.Light
+                                                    )
+                                                    Text(
+                                                        text = ZonedDateTime.now().toLocalDate()
+                                                            .format(
+                                                                DateTimeFormatter.ofPattern(
+                                                                    stringResource(id = R.string.note_inside_dateformat)
+                                                                )
+                                                            ),
+                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+//                                                        fontWeight = FontWeight.Light,
+                                                        color = Color(
+                                                            ColorUtils.blendARGB(
+                                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
+                                                                Color.Black.toArgb(),
+                                                                0.1f
+                                                            )
+                                                        ),
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         Surface(
@@ -325,29 +513,50 @@ fun NoteContent(
                         }
                     }
                 }
-                Row(
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
+                Surface(
+//                    modifier = Modifier.padding(top = 24.dp),
+//                    color = DarkGreenBackground
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.note_screen_list_of_notebooks),
-                        fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
-                    )
+                    Row(
+                        modifier = Modifier
+                            .padding(LARGE_PADDING)
+                            .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.note_screen_list_of_notebooks),
+                            color = Color(
+                                ColorUtils.blendARGB(
+                                    MaterialTheme.colorScheme.onSurface.toArgb(),
+                                    Color.White.toArgb(),
+                                    0.2f
+                                )
+                            ).copy(0.9f),
+                            fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(LARGE_PADDING))
+//                Spacer(modifier = Modifier.height(LARGE_PADDING))
                 Surface(
                     modifier = Modifier
 //                        .clip(RoundedCornerShape(4.dp))
-//                .padding(horizontal = SMALL_PADDING)
+                        .padding(start = XLARGE_PADDING, end = XLARGE_PADDING)
                         .height(340.dp)
                         .fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+//                    border = BorderStroke(0.5.dp, DarkGreenBackground),
                     color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 4.dp
                 ) {
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(
+                            top = SMALL_PADDING,
+                            start = SMALL_PADDING,
+                            end = SMALL_PADDING
+                        ),
                         content = {
                             items(notebooks.size) { index ->
 
@@ -368,9 +577,9 @@ fun NoteContent(
 
                                 Surface(
                                     modifier = Modifier
-                                        .width(130.dp)
-                                        .height(140.dp)
-                                        .padding(end = LARGE_PADDING, bottom = LARGE_PADDING)
+                                        .width(125.dp)
+                                        .height(160.dp)
+                                        .padding(end = SMALL_PADDING, bottom = LARGE_PADDING)
                                         .combinedClickable(
                                             onClick = {
                                                 if (selectedNotebookIds.size > 0) {
@@ -383,7 +592,13 @@ fun NoteContent(
                                                 onSelectNotebookWithLongClick(notebooks[index].id)
                                             }
                                         ),
-                                    shadowElevation = 2.dp,
+                                    shadowElevation = if (selected.value) 0.dp else 6.dp,
+                                    shape = RoundedCornerShape(
+                                        topStart = 0.dp,
+                                        topEnd = 6.dp,
+                                        bottomStart = 0.dp,
+                                        bottomEnd = 6.dp
+                                    ),
                                     border = if (selected.value) BorderStroke(
                                         0.5.dp,
                                         color = MaterialTheme.colorScheme.primary
@@ -396,32 +611,37 @@ fun NoteContent(
                                     Card(
                                         shape = RoundedCornerShape(
                                             topStart = 0.dp,
-                                            topEnd = 4.dp,
+                                            topEnd = 6.dp,
                                             bottomStart = 0.dp,
-                                            bottomEnd = 4.dp
+                                            bottomEnd = 6.dp
                                         )
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxSize()
                                         ) {
-                                            Surface(
-                                                modifier = Modifier
-                                                    .fillMaxHeight(),
-                                                color = getPriorityColor(notebooks[index].priority),
-                                                content = {
-                                                    Spacer(modifier = Modifier.width(12.dp))
-                                                }
-                                            )
+//                                            Surface(
+//                                                modifier = Modifier
+//                                                    .fillMaxHeight(),
+//                                                color = getPriorityColor(notebooks[index].priority),
+//                                                content = {
+//                                                    Spacer(modifier = Modifier.width(12.dp))
+//                                                }
+//                                            )
                                             Surface(
                                                 color = if (selected.value) {
                                                     MaterialTheme.colorScheme.surfaceColorAtElevation(
                                                         10000.dp
                                                     )
-                                                } else MaterialTheme.colorScheme.surface,
+                                                } else
+                                                    getPriorityColor(notebooks[index].priority).copy(
+                                                        alpha = 0.4f
+                                                    ),
+//                                                    MaterialTheme.colorScheme.surface,
                                                 tonalElevation = if (selected.value) 12.dp else 2.dp,
                                             ) {
                                                 Column(
-                                                    modifier = Modifier.fillMaxSize(),
+                                                    modifier = Modifier
+                                                        .fillMaxSize(),
                                                 ) {
 
                                                     Row(
@@ -437,28 +657,58 @@ fun NoteContent(
                                                             color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                                 alpha = 0.2f
                                                             )
-                                                            else MaterialTheme.colorScheme.onSurface
+//                                                            else MaterialTheme.colorScheme.onSurface
+                                                            else
+                                                                Color(
+                                                                    ColorUtils.blendARGB(
+                                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
+                                                                        Color.Black.toArgb(),
+                                                                        0.9f
+                                                                    )
+                                                                ).copy(0.9f)
+//                                                                Color.White.copy(alpha = 0.9f)
                                                         )
                                                     }
-                                                    Row(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth(),
-//                                                        .weight(1F),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.Center
+                                                    Surface(
+                                                        color = if (selected.value) {
+                                                            MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                                                10000.dp
+                                                            )
+                                                        } else
+                                                            Color(
+                                                                ColorUtils.blendARGB(
+                                                                    getPriorityColor(notebooks[index].priority).toArgb(),
+                                                                    Color.Black.toArgb(),
+                                                                    0.5f
+                                                                )
+                                                            ),
+//                                                    MaterialTheme.colorScheme.surface,
+                                                        tonalElevation = if (selected.value) 12.dp else 2.dp,
                                                     ) {
-                                                        Row {
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth(),
+//                                                        .weight(1F),
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.Center
+                                                        ) {
+//                                                            Row {
                                                             Icon(
-                                                                modifier = Modifier.width(18.dp),
+                                                                modifier = Modifier
+                                                                    .width(14.dp)
+                                                                    .padding(top = 3.dp),
                                                                 painter = painterResource(id = R.drawable.ic_create_note_icon),
                                                                 contentDescription = "edit time",
                                                                 tint = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                                     alpha = 0.2f
                                                                 )
-                                                                else MaterialTheme.colorScheme.onSurface
+//                                                                    else MaterialTheme.colorScheme.onSurface
+                                                                else Color.White.copy(alpha = 0.7f)
                                                             )
                                                             Text(
-                                                                modifier = Modifier.padding(bottom = SMALL_PADDING),
+                                                                modifier = Modifier.padding(
+                                                                    vertical = SMALL_PADDING
+                                                                ),
                                                                 text = notebooks[index].createdAt.toLocalDate()
                                                                     .format(
                                                                         DateTimeFormatter.ofPattern(
@@ -466,12 +716,15 @@ fun NoteContent(
                                                                         )
                                                                     ),
                                                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                                                fontWeight = FontWeight.Light,
                                                                 color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                                     alpha = 0.2f
                                                                 )
-                                                                else MaterialTheme.colorScheme.onSurface
+//                                                                    else MaterialTheme.colorScheme.onSurface
+                                                                else Color.White.copy(alpha = 0.7f)
                                                             )
                                                         }
+//                                                        }
                                                     }
                                                 }
                                             }
@@ -545,5 +798,6 @@ fun NoteContentPreview() {
         onSelectNotebookWithLongClick = {},
         selectedNotebookIds = SnapshotStateList(),
         onInfoClick = {},
+        currentNotebook = NotebookWithCount.instance()
     )
 }

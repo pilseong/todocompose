@@ -16,15 +16,18 @@ data class NotebookWithCount(
 ) {
     companion object {
         fun instance(
+            id: Int = Int.MIN_VALUE,
             title: String = "",
             description: String = "",
             priority: Priority = Priority.NONE,
             createdAt: ZonedDateTime = ZonedDateTime.now(),
-            updatedAt: ZonedDateTime = ZonedDateTime.now()
+            updatedAt: ZonedDateTime = ZonedDateTime.now(),
+            memoCount: Int = 0,
         ): NotebookWithCount {
             return NotebookWithCount(
+                id = id,
                 title = title, description = description, priority = priority,
-                createdAt = createdAt, updatedAt = updatedAt, memoCount = 0,
+                createdAt = createdAt, updatedAt = updatedAt, memoCount = memoCount,
             )
         }
     }

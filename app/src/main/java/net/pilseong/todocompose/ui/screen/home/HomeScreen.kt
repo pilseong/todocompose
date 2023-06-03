@@ -10,11 +10,13 @@ import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
@@ -25,6 +27,7 @@ import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.LightGreenBackground
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.util.Constants
@@ -38,6 +41,7 @@ fun HomeScreen(
     onSelectNotebookWithLongClick: (Int) -> Unit,
     onBackButtonClick: () -> Unit,
     notebooks: List<NotebookWithCount>,
+    currentNotebook: NotebookWithCount,
     selectedNotebookIds: SnapshotStateList<Int>,
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
@@ -78,20 +82,29 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .padding(
-                    top = paddingValues.calculateTopPadding() + LARGE_PADDING,
-                    start = XLARGE_PADDING,
-                    end = XLARGE_PADDING,
-                    bottom = SMALL_PADDING
+                    top = paddingValues.calculateTopPadding()
                 )
+//                .padding(
+//                    top = paddingValues.calculateTopPadding() + LARGE_PADDING,
+//                    start = XLARGE_PADDING,
+//                    end = XLARGE_PADDING,
+//                    bottom = SMALL_PADDING
+//                )
                 .fillMaxSize(),
         ) {
-            NoteContent(
-                notebooks = notebooks,
-                selectedNotebookIds = selectedNotebookIds,
-                onSelectNotebook = onSelectNotebook,
-                onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
-                onInfoClick = onInfoClick
-            )
+            Surface(
+//                color = LightGreenBackground
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                NoteContent(
+                    notebooks = notebooks,
+                    selectedNotebookIds = selectedNotebookIds,
+                    onSelectNotebook = onSelectNotebook,
+                    onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
+                    onInfoClick = onInfoClick,
+                    currentNotebook = currentNotebook,
+                )
+            }
         }
     }
 }
@@ -153,6 +166,7 @@ fun PreviewHomeScreen() {
             onSelectNotebookWithLongClick = {},
             onBackButtonClick = {},
             notebooks = listOf(),
+            currentNotebook = NotebookWithCount.instance(),
             selectedNotebookIds = SnapshotStateList(),
             onDeleteSelectedClicked = {},
             onEditClick = {},

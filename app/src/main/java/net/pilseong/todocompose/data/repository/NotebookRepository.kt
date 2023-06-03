@@ -27,6 +27,10 @@ class NotebookRepository @Inject constructor(
         return notebookDAO.getNotebook(id)
     }
 
+    suspend fun getNotebookWithCount(id: Int): NotebookWithCount {
+        return notebookDAO.getNotebookWithCount(id)
+    }
+
     suspend fun addNotebook(notebook: Notebook) {
         notebookDAO.addNotebook(notebook)
     }

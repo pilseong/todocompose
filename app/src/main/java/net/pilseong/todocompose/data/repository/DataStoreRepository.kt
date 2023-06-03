@@ -21,6 +21,8 @@ import net.pilseong.todocompose.util.Constants.NOTEBOOK_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.ORDER_ENABLED_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.PREFERENCE_NAME
 import net.pilseong.todocompose.util.Constants.PRIORITY_PREFERENCE_KEY
+import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY
+import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY
 import java.io.IOException
 import javax.inject.Inject
 
@@ -37,6 +39,8 @@ class DataStoreRepository @Inject constructor(
         val orderEnabledState = stringPreferencesKey(name = ORDER_ENABLED_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
         val notebookIdState = intPreferencesKey(name = NOTEBOOK_ID_PREFERENCE_KEY)
+        val recentNoteFirst = intPreferencesKey(name = RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY)
+        val recentNoteSecond = intPreferencesKey(name = RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY)
     }
 
     // data store 에 priority 정보를 저장 한다.
@@ -161,6 +165,56 @@ class DataStoreRepository @Inject constructor(
                 "[DataStoreRepository]readSelectedNotebookId ${preferences[PreferenceKeys.notebookIdState]}"
             )
             preferences[PreferenceKeys.notebookIdState] ?: -1
+        }
+
+
+    suspend fun persistFirstRecentNotebookId(notebookId: Int) {
+        // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
+        context.dataStore.edit { preferences ->
+            Log.i("PHILIP", "[DataStoreRepository]persistFirstRecentNotebookId $notebookId")
+            preferences[PreferenceKeys.recentNoteFirst] = notebookId
+        }
+    }
+
+    val readFirstRecentNotebookId: Flow<Int?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            Log.i(
+                "PHILIP",
+                "[DataStoreRepository]readFirstRecentNotebookId ${preferences[PreferenceKeys.recentNoteFirst]}"
+            )
+            preferences[PreferenceKeys.recentNoteFirst] ?: null
+        }
+
+
+    suspend fun persistSecondRecentNotebookId(notebookId: Int) {
+        // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
+        context.dataStore.edit { preferences ->
+            Log.i("PHILIP", "[DataStoreRepository]persistSecondRecentNotebookId $notebookId")
+            preferences[PreferenceKeys.recentNoteSecond] = notebookId
+        }
+    }
+
+    val readSecondRecentNotebookId: Flow<Int?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            Log.i(
+                "PHILIP",
+                "[DataStoreRepository]readSecondRecentNotebookId ${preferences[PreferenceKeys.recentNoteSecond]}"
+            )
+            preferences[PreferenceKeys.recentNoteSecond] ?: null
         }
 
 }

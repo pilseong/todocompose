@@ -16,11 +16,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
+import net.pilseong.todocompose.data.repository.TodoRepository
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
@@ -28,6 +30,7 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val notebookRepository: NotebookRepository,
+    private val memoRepository: TodoRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     var notebookIdState by mutableStateOf(-1)
@@ -41,10 +44,6 @@ class NoteViewModel @Inject constructor(
         } else {
             selectedNotebooks.add(id)
         }
-    }
-
-    fun removeMultiSelectedNotebook(id: Int) {
-        selectedNotebooks.remove(id)
     }
 
     fun deleteSelectedNotebooks() {
@@ -66,7 +65,16 @@ class NoteViewModel @Inject constructor(
 
     val priority = mutableStateOf(Priority.NONE)
 
-    val createdAt = mutableStateOf(ZonedDateTime.now())
+    private val createdAt = mutableStateOf(ZonedDateTime.now())
+
+    val currentNotebook = mutableStateOf(NotebookWithCount.instance())
+    val firstRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
+    val secondRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
+
+    private var firstFetch = true
+
+    val firstRecentNotebookId = mutableStateOf<Int?>(null)
+    val secondRecentNotebookId = mutableStateOf<Int?>(null)
 
 
     fun setEditProperties(targetId: Int) {
@@ -93,23 +101,103 @@ class NoteViewModel @Inject constructor(
                     initialValue = emptyList()
                 )
                 .collect {
-                    Log.i("PHILIP", "getNotebooks inside")
+                    Log.i("PHILIP", "getNotebooks inside $it")
                     notebooks.value = it
+                }
+        }
+    }
+
+    fun observeFirstRecentNotebookIdChange() {
+        Log.i("PHILIP", "[NoteViewModel] observeFirstRecentNotebookIdChange() executed")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.readFirstRecentNotebookId
+                .map { it }
+                .collect { state ->
+                    if (state != firstRecentNotebookId.value || firstFetch) {
+                        firstRecentNotebookId.value = state
+                        if (firstFetch) firstFetch = false
+                        if (state != null) {
+                            if (state >= 0) {
+                                firstRecentNotebook.value =
+                                    notebookRepository.getNotebookWithCount(state)
+                            } else {
+                                val countsOfMemos = memoRepository.getMemoCount(-1)
+                                firstRecentNotebook.value = NotebookWithCount.instance(
+                                    id = -1,
+                                    title = context.resources.getString(R.string.default_note_title),
+                                    memoCount = countsOfMemos.total
+                                )
+                            }
+                        } else {
+                            firstRecentNotebook.value = null
+                        }
+                        Log.i(
+                            "PHILIP",
+                            "[NoteViewModel] observeRecentFirstNotebookIdChange() executed with ${firstRecentNotebookId.value} and firstNote ${firstRecentNotebook.value}"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun observeSecondRecentNotebookIdChange() {
+        Log.i("PHILIP", "[NoteViewModel] observeSecondRecentNotebookIdChange() executed")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.readSecondRecentNotebookId
+                .map { it }
+                .collect { state ->
+                    if (state != secondRecentNotebookId.value || firstFetch) {
+                        if (firstFetch) firstFetch = false
+                        secondRecentNotebookId.value = state
+                        if (state != null) {
+                            if (state >= 0) {
+                                secondRecentNotebook.value =
+                                    notebookRepository.getNotebookWithCount(state)
+                            } else {
+                                val countsOfMemos = memoRepository.getMemoCount(-1)
+                                secondRecentNotebook.value = NotebookWithCount.instance(
+                                    id = -1,
+                                    title = context.resources.getString(R.string.default_note_title),
+                                    memoCount = countsOfMemos.total
+                                )
+                            }
+                        } else {
+                            secondRecentNotebook.value = null
+                        }
+                        Log.i(
+                            "PHILIP",
+                            "[NoteViewModel] observeRecentSecondNotebookIdChange() executed with ${secondRecentNotebookId.value} and secondNote: ${secondRecentNotebook.value}"
+                        )
+                    }
                 }
         }
     }
 
     fun observeNotebookIdChange() {
         Log.i("PHILIP", "[NoteViewModel] observeNotebookIdChange() executed")
+
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.readSelectedNotebookId
                 .map { it }
                 .collect { state ->
-                    if (state != notebookIdState) {
+                    if (state != notebookIdState || firstFetch) {
+                        if (firstFetch) firstFetch = false
                         notebookIdState = state
+                        if (state >= 0) {
+                            currentNotebook.value = notebookRepository.getNotebookWithCount(state)
+                        } else {
+                            val countsOfMemos = memoRepository.getMemoCount(-1)
+                            currentNotebook.value = NotebookWithCount.instance(
+                                id = -1,
+                                title = context.resources.getString(R.string.default_note_title),
+                                memoCount = countsOfMemos.total
+                            )
+                        }
                         Log.i(
                             "PHILIP",
-                            "[NoteViewModel] observeNotebookIdChange() executed with $notebookIdState"
+                            "[NoteViewModel] observeNotebookIdChange() executed with $notebookIdState and currentNote: $currentNotebook"
                         )
                     }
                 }
@@ -154,6 +242,7 @@ class NoteViewModel @Inject constructor(
             NoteAction.DELETE -> {
                 deleteSelectedNotebooks()
             }
+
             NoteAction.DELETE_ALL -> TODO()
             NoteAction.UNDO -> TODO()
             NoteAction.NO_ACTION -> TODO()

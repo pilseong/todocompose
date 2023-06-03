@@ -315,9 +315,11 @@ fun NotebooksPickerDialog(
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    OutlinedButton(onClick = {
-                        onNotebookClick(-1)
-                    }) {
+                    OutlinedButton(
+                        shape = RoundedCornerShape(4.dp),
+                        onClick = {
+                            onNotebookClick(-1)
+                        }) {
                         Text(text = stringResource(id = R.string.note_select_use_default))
                     }
                     // Close 버튼

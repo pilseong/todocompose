@@ -115,6 +115,7 @@ fun NavGraphBuilder.homeComposable(
             },
             notebooks = noteViewModel.notebooks.collectAsState().value,
             selectedNotebookIds = noteViewModel.selectedNotebooks,
+            currentNotebook = noteViewModel.currentNotebook.value,
             onDeleteSelectedClicked = {
                 noteViewModel.deleteSelectedNotebooks()
             },

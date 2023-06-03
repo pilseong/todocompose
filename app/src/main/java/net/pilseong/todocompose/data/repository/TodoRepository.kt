@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.Flow
+import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.model.database.TodoDAO
@@ -81,4 +82,7 @@ class TodoRepository @Inject constructor(
     suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
         todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
     }
+
+    suspend fun getMemoCount(notebookId: Int): DefaultNoteMemoCount =
+        todoDAO.getMemoCount(notebookId)
 }

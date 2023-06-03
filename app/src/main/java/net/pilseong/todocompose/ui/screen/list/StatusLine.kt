@@ -42,6 +42,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
+import net.pilseong.todocompose.ui.theme.FavoriteYellowColor
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
@@ -268,7 +269,7 @@ fun StatusLine(
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
                         ),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (favoriteOn) FavoriteYellow
+                        containerColor = if (favoriteOn) MaterialTheme.colorScheme.FavoriteYellowColor
                         else Color.Transparent,
 //                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
                     ),

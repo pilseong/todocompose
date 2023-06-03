@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.ui.theme
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +62,7 @@ fun TodoComposeTheme(
             val window = (view.context as Activity).window
 //            // 상태 바를 다크 모드 일 경우 블랙 으로 변경
             window.statusBarColor = colorScheme.surface.toArgb()
-//                if (darkTheme) Color.BLACK else colorScheme.primary.toArgb()
+//                if (!darkTheme) LightGreenBackground else colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
