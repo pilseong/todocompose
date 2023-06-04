@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,10 +23,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
@@ -72,7 +75,7 @@ class MemoViewModel @Inject constructor(
     var sortFavorite by mutableStateOf(false)
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
-    var index by mutableStateOf(0)
+    var index by mutableIntStateOf(0)
         private set
 
     // list screen 에 있는 search bar 의 표시 상태를 저장 하는 변수
@@ -88,14 +91,15 @@ class MemoViewModel @Inject constructor(
         private set
 
     var searchTextString by mutableStateOf("")
+    var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
     // 수정 및 신규 메모 작성에 사용할 변수
-    var id by mutableStateOf(NEW_ITEM_ID)
+    var id by mutableIntStateOf(NEW_ITEM_ID)
         private set
     var title by mutableStateOf("")
     var description by mutableStateOf("")
     var priority by mutableStateOf(Priority.LOW)
-    var notebookId by mutableStateOf(-1)
+    var notebookId by mutableIntStateOf(-1)
     private var createdAt = ZonedDateTime.now()
     private var updatedAt = ZonedDateTime.now()
 
@@ -145,6 +149,7 @@ class MemoViewModel @Inject constructor(
 
     val selectedItems = mutableStateListOf<Int>()
 
+
     fun appendMultiSelectedItem(id: Int) {
         if (selectedItems.contains(id)) {
             selectedItems.remove(id)
@@ -157,18 +162,10 @@ class MemoViewModel @Inject constructor(
         selectedItems.remove(id)
     }
 
-    fun getNotebooks() {
-        Log.i("PHILIP", "getNotebooks")
+
+    fun getDefaultNoteCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            notebookRepository.getNotebooks()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = emptyList()
-                )
-                .collect {
-                    notebooks.value = it
-                }
+            defaultNoteMemoCount = todoRepository.getMemoCount(-1)
         }
     }
 
@@ -226,9 +223,18 @@ class MemoViewModel @Inject constructor(
     var prioritySortState by mutableStateOf(Priority.NONE)
     var orderEnabled by mutableStateOf(false)
     var dateEnabled by mutableStateOf(false)
-    var notebookIdState by mutableStateOf(Int.MIN_VALUE)
+    var notebookIdState by mutableIntStateOf(Int.MIN_VALUE)
+    private var firstRecentNotebookId by mutableStateOf<Int?>(null)
+    private var secondRecentNotebookId by mutableStateOf<Int?>(null)
 
-    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
+
+    //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
+    var notebooks: StateFlow<List<NotebookWithCount>> = notebookRepository.getNotebooks()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = emptyList()
+        )
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observePrioritySortState() {
@@ -321,43 +327,6 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    fun observeNotebookIdChange() {
-        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed")
-        viewModelScope.launch(Dispatchers.IO) {
-            delay(100)
-            dataStoreRepository.readSelectedNotebookId
-                .map { it }
-                .collect { state ->
-                    if (firstFetch) {
-                        notebookIdState = state
-                        if (readyFlagForFavorite && readyFlagForOrderEnabled && readyFlagForDateEnabled && readyFlagForPriority) {
-                            firstFetch = false
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForNotebookId = true
-                        }
-                    } else {
-                        if (state != notebookIdState) {
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with notebookId: $notebookIdState"
-                            )
-                            notebookIdState = state
-                            refreshAllTasks()
-                        }
-                    }
-                    getNotebook(state)
-                }
-        }
-    }
-
-    private fun getNotebook(id: Int) {
-        // -1 이면 기본 노트 선택 title 이 설정되어야 하기 때문에 titile 를 지정해 준다.
-        if (id == -1) selectedNotebook.value =
-                Notebook.instance(context.resources.getString(R.string.default_note_title))
-        else selectedNotebook.value = notebookRepository.getNotebook(id);
-    }
-
     fun observeFavoriteState() {
         Log.i("PHILIP", "[MemoViewModel] observeFavoriteState() executed")
         viewModelScope.launch(Dispatchers.IO) {
@@ -388,6 +357,68 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+    fun observeNotebookIdChange() {
+        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed")
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(100)
+            dataStoreRepository.readSelectedNotebookId
+                .map { it }
+                .collect { state ->
+                    if (firstFetch) {
+                        notebookIdState = state
+                        if (readyFlagForFavorite && readyFlagForOrderEnabled && readyFlagForDateEnabled && readyFlagForPriority) {
+                            firstFetch = false
+                            refreshAllTasks()
+                        } else {
+                            readyFlagForNotebookId = true
+                        }
+                    } else {
+                        if (state != notebookIdState) {
+                            Log.i(
+                                "PHILIP",
+                                "[MemoViewModel] refreshAllTasks() executed with notebookId: $notebookIdState"
+                            )
+                            notebookIdState = state
+                            refreshAllTasks()
+                        }
+                    }
+                    getNotebook(state)
+                }
+        }
+    }
+
+    fun observeFirstRecentNotebookIdChange() {
+        Log.i("PHILIP", "[MemoViewModel] observeFirstRecentNotebookIdChange() executed")
+
+        viewModelScope.launch {
+            dataStoreRepository.readFirstRecentNotebookId
+                .map { it }
+                .collect { state ->
+                    if (state != firstRecentNotebookId) firstRecentNotebookId = state
+                }
+        }
+    }
+
+    fun observeSecondRecentNotebookIdChange() {
+        Log.i("PHILIP", "[MemoViewModel] observeSecondRecentNotebookIdChange() executed")
+
+        viewModelScope.launch {
+            dataStoreRepository.readSecondRecentNotebookId
+                .map { it }
+                .collect { state ->
+                    if (state != secondRecentNotebookId) secondRecentNotebookId = state
+                }
+        }
+    }
+
+    private fun getNotebook(id: Int) {
+        // -1 이면 기본 노트 선택 title 이 설정되어야 하기 때문에 titile 를 지정해 준다.
+        if (id == -1) selectedNotebook.value =
+            Notebook.instance(context.resources.getString(R.string.default_note_title))
+        else selectedNotebook.value = notebookRepository.getNotebook(id)
+    }
+
+
     // for saving priority sort state
     private fun persistPrioritySortState(priority: Priority) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -416,14 +447,25 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun persistNotebookIdState(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.persistSelectedNotebookId(id)
-            updateActionPerformed()
+        if (notebookIdState != id) {
+            viewModelScope.launch {
+                if (firstRecentNotebookId == null) {
+                    persistFirstRecentNotebookIdState(notebookIdState)
+                } else {
+                    persistSecondRecentNotebookIdState(firstRecentNotebookId!!)
+                    persistFirstRecentNotebookIdState(notebookIdState)
+                }
+                dataStoreRepository.persistSelectedNotebookId(id)
+                updateActionPerformed()
+            }
         }
+//        viewModelScope.launch(Dispatchers.IO) {
+//            dataStoreRepository.persistSelectedNotebookId(id)
+//        }
     }
 
     // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
-    // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
+// 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
     var action = Action.NO_ACTION
         private set
 
@@ -629,7 +671,10 @@ class MemoViewModel @Inject constructor(
 
     private fun undoTask() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.i("PHILIP", "[MemoViewModel] undoTask - undo with $title, $description, $priority, $notebookId, $createdAt")
+            Log.i(
+                "PHILIP",
+                "[MemoViewModel] undoTask - undo with $title, $description, $priority, $notebookId, $createdAt"
+            )
             todoRepository.addTask(
                 TodoTask(
                     0,
@@ -769,4 +814,17 @@ class MemoViewModel @Inject constructor(
             Log.i("PHILIP", "No Intent matcher found")
         }
     }
+
+    private fun persistFirstRecentNotebookIdState(notebookId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistFirstRecentNotebookId(notebookId)
+        }
+    }
+
+    private fun persistSecondRecentNotebookIdState(notebookId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistSecondRecentNotebookId(notebookId)
+        }
+    }
+
 }

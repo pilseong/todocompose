@@ -73,8 +73,8 @@ class NoteViewModel @Inject constructor(
 
     private var firstFetch = true
 
-    val firstRecentNotebookId = mutableStateOf<Int?>(null)
-    val secondRecentNotebookId = mutableStateOf<Int?>(null)
+    private val firstRecentNotebookId = mutableStateOf<Int?>(null)
+    private val secondRecentNotebookId = mutableStateOf<Int?>(null)
 
 
     fun setEditProperties(targetId: Int) {
@@ -114,9 +114,8 @@ class NoteViewModel @Inject constructor(
             dataStoreRepository.readFirstRecentNotebookId
                 .map { it }
                 .collect { state ->
-                    if (state != firstRecentNotebookId.value || firstFetch) {
+                    if (state != firstRecentNotebookId.value) {
                         firstRecentNotebookId.value = state
-                        if (firstFetch) firstFetch = false
                         if (state != null) {
                             if (state >= 0) {
                                 firstRecentNotebook.value =
@@ -148,8 +147,7 @@ class NoteViewModel @Inject constructor(
             dataStoreRepository.readSecondRecentNotebookId
                 .map { it }
                 .collect { state ->
-                    if (state != secondRecentNotebookId.value || firstFetch) {
-                        if (firstFetch) firstFetch = false
+                    if (state != secondRecentNotebookId.value) {
                         secondRecentNotebookId.value = state
                         if (state != null) {
                             if (state >= 0) {
@@ -234,6 +232,12 @@ class NoteViewModel @Inject constructor(
             NoteAction.SELECT_NOTEBOOK -> {
                 if (notebookIdState != notebookId) {
                     viewModelScope.launch {
+                        if (firstRecentNotebookId.value == null) {
+                            persistFirstRecentNotebookIdState(notebookIdState)
+                        } else {
+                            persistSecondRecentNotebookIdState(firstRecentNotebookId.value!!)
+                            persistFirstRecentNotebookIdState(notebookIdState)
+                        }
                         persistNotebookIdState(notebookId = notebookId)
                     }
                 }
@@ -267,6 +271,18 @@ class NoteViewModel @Inject constructor(
     private fun persistNotebookIdState(notebookId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.persistSelectedNotebookId(notebookId)
+        }
+    }
+
+    private fun persistFirstRecentNotebookIdState(notebookId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistFirstRecentNotebookId(notebookId)
+        }
+    }
+
+    private fun persistSecondRecentNotebookIdState(notebookId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.persistSecondRecentNotebookId(notebookId)
         }
     }
 }

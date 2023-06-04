@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
@@ -51,10 +53,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
@@ -88,6 +88,8 @@ fun NavGraphBuilder.homeComposable(
         val indexSelected = remember { mutableStateOf(-1) }
         LaunchedEffect(key1 = Unit) {
             noteViewModel.observeNotebookIdChange()
+            noteViewModel.observeFirstRecentNotebookIdChange()
+            noteViewModel.observeSecondRecentNotebookIdChange()
             noteViewModel.getNotebooks()
         }
 
@@ -103,7 +105,7 @@ fun NavGraphBuilder.homeComposable(
             onSelectNotebook = { index ->
                 noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, index)
                 scope.launch {
-                    delay(100)
+//                    delay(100)
                     navHostController.navigate(Screen.MemoList.route)
                 }
             },
@@ -129,7 +131,9 @@ fun NavGraphBuilder.homeComposable(
                 indexSelected.value = id
                 infoDialog.value = true
 
-            }
+            },
+            firstRecentNotebook = noteViewModel.firstRecentNotebook.value,
+            secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
         )
 
         CreateEditNotebookDialog(
@@ -283,7 +287,8 @@ fun InfoDialog(
                             .fillMaxWidth()
                             .wrapContentHeight()
                             .background(MaterialTheme.colorScheme.surface)
-                            .padding(XLARGE_PADDING),
+                            .padding(XLARGE_PADDING)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         val context = LocalContext.current
                         Row(
@@ -294,7 +299,7 @@ fun InfoDialog(
                             val width = remember { mutableStateOf(0.dp) }
                             Column {
                                 Text(
-                                    text = "제목",
+                                    text = stringResource(id = R.string.info_title),
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
@@ -312,14 +317,16 @@ fun InfoDialog(
                                         .fillMaxWidth(),
                                     color = MaterialTheme.colorScheme.surface
                                 ) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(horizontal = SMALL_PADDING)
-                                            .wrapContentHeight(),
-                                        text = notebook?.title ?: "",
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            modifier = Modifier
+                                                .padding(horizontal = SMALL_PADDING)
+                                                .wrapContentHeight(),
+                                            text = notebook?.title ?: "",
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -340,7 +347,7 @@ fun InfoDialog(
                             Column {
                                 val width = remember { mutableStateOf(0.dp) }
                                 Text(
-                                    text = "설명",
+                                    text = stringResource(id = R.string.info_description),
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
@@ -357,14 +364,16 @@ fun InfoDialog(
                                         .fillMaxWidth(),
                                     color = MaterialTheme.colorScheme.surface
                                 ) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(horizontal = SMALL_PADDING)
-                                            .wrapContentHeight(),
-                                        text = notebook?.description ?: "",
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            modifier = Modifier
+                                                .padding(horizontal = SMALL_PADDING)
+                                                .wrapContentHeight(),
+                                            text = notebook?.description ?: "",
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -383,7 +392,7 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "중요도",
+                                text = stringResource(id = R.string.info_priority),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
@@ -411,7 +420,34 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "수정일",
+                                text = stringResource(id = R.string.info_created_at),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.createdAt?.toOffsetDateTime()
+                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .padding(bottom = MEDIUM_PADDING)
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.info_updated_at),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
@@ -438,13 +474,13 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "생성일",
+                                text = stringResource(id = R.string.info_accessed_at),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = notebook?.createdAt?.toOffsetDateTime()
+                                text = notebook?.accessedAt?.toOffsetDateTime()
                                     ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium

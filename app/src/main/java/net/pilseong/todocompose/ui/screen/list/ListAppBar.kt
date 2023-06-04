@@ -62,6 +62,7 @@ import net.pilseong.todocompose.util.SearchAppBarState
 fun ListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     appbarTitle: String,
+    notebookColor: Color,
     memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
     searchText: String,
@@ -83,6 +84,7 @@ fun ListAppBar(
                 DefaultListAppBar(
                     scrollBehavior = scrollBehavior,
                     appbarTitle = appbarTitle,
+                    notebookColor = notebookColor,
                     onSearchIconClicked = onSearchIconClicked,
                     onDeleteAllClicked = {
                         Log.i("PHILIP", "onDeleteAllClicked")
@@ -142,6 +144,7 @@ fun ListAppBar(
 fun DefaultListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     appbarTitle: String = "Default",
+    notebookColor: Color = MaterialTheme.colorScheme.surface,
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
@@ -159,7 +162,7 @@ fun DefaultListAppBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+            containerColor = notebookColor.copy(alpha = 0.5F)
         ),
         actions = {
             ListAppBarActions(

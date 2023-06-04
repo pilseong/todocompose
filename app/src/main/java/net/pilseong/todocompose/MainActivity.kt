@@ -1,6 +1,7 @@
 package net.pilseong.todocompose
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Surface
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
                 // dark mode에서는 더 이상 이슈가 생기지 않지만
                 // light 모드 에서는 배경색으로 인한 flikering이 여전히 존재
                 Surface {
+                    Log.i("PHILIP", "MainActivity")
                     MainNavGraph(
                         startDestination = BottomBarScreen.Home.route,
                         navHostController = navHostController

@@ -18,7 +18,9 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
     @ColumnInfo(name = "created_at")
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
-    val updatedAt: ZonedDateTime = ZonedDateTime.now()
+    val updatedAt: ZonedDateTime = ZonedDateTime.now(),
+    @ColumnInfo(name = "accessed_at")
+    val accessedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
     companion object {
         fun instance(
@@ -26,11 +28,12 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
             description: String = "",
             priority: Priority = Priority.NONE,
             createdAt: ZonedDateTime = ZonedDateTime.now(),
-            updatedAt: ZonedDateTime = ZonedDateTime.now()
+            updatedAt: ZonedDateTime = ZonedDateTime.now(),
+            accessedAt: ZonedDateTime = ZonedDateTime.now(),
         ): Notebook {
             return Notebook(
                 title = title, description = description, priority = priority,
-                createdAt = createdAt, updatedAt = updatedAt
+                createdAt = createdAt, updatedAt = updatedAt, accessedAt = accessedAt
             )
         }
     }

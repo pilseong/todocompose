@@ -174,6 +174,7 @@ fun ListScreen(
             ListAppBar(
                 scrollBehavior = scrollBehavior,
                 appbarTitle = memoViewModel.selectedNotebook.value.title,
+                notebookColor = memoViewModel.selectedNotebook.value.priority.color,
                 memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,

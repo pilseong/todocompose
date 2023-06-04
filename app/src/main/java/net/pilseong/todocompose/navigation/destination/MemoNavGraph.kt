@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,6 +49,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
@@ -120,8 +123,8 @@ fun NavGraphBuilder.memoNavGraph(
                 memoViewModel.observeDateEnabledState()
                 memoViewModel.observeFavoriteState()
                 memoViewModel.observeNotebookIdChange()
-
-                memoViewModel.getNotebooks()
+                memoViewModel.observeFirstRecentNotebookIdChange()
+                memoViewModel.observeSecondRecentNotebookIdChange()
             }
 
 
@@ -135,6 +138,7 @@ fun NavGraphBuilder.memoNavGraph(
                 onClickBottomNavBar = onClickBottomNavBar,
                 memoViewModel = memoViewModel,
                 onAppBarTitleClick = {
+                    memoViewModel.getDefaultNoteCount()
                     action.value = Action.NOTEBOOK_CHANGE
                     dialogTitle.value = "Choose Notebook"
                     openDialog.value = true
@@ -163,6 +167,7 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onMoveMemoClicked = {
                     Log.i("PHILIP", "onMoveMemoClicked")
+                    memoViewModel.getDefaultNoteCount()
                     action.value = Action.MOVE_TO
                     dialogTitle.value = "Move to"
                     openDialog.value = true
@@ -176,6 +181,7 @@ fun NavGraphBuilder.memoNavGraph(
                     openDialog.value = false
                 },
                 notebooks = memoViewModel.notebooks.collectAsState().value,
+                defaultNoteMemoCount = memoViewModel.defaultNoteMemoCount,
                 onCloseClick = {
                     openDialog.value = false
                 },
@@ -195,10 +201,23 @@ fun NavGraphBuilder.memoNavGraph(
                 viewModelStoreOwner = viewModelStoreOwner
             )
 
-            TaskScreen(
-                memoViewModel = memoViewModel,
-                toListScreen = toListScreen
+            Log.i(
+                "PHILIP",
+                "[memoNavGraph] TaskScreen called"
             )
+
+            // activity가 destory 되고 다시 생성된 경우는 List 화면으로 forwarding
+            if (memoViewModel.firstFetch) {
+                Log.i("PHILIP", "[MemoNavGraph] memoViewModel value ${memoViewModel.toString()}")
+                navHostController.navigate(Screen.MemoList.route)
+            } else {
+
+                TaskScreen(
+                    memoViewModel = memoViewModel,
+                    toListScreen = toListScreen
+                )
+            }
+
         }
     }
 }
@@ -209,6 +228,7 @@ fun NotebooksPickerDialog(
     dialogTitle: String = "",
     visible: Boolean,
     notebooks: List<NotebookWithCount>,
+    defaultNoteMemoCount: DefaultNoteMemoCount,
     onDismissRequest: () -> Unit,
     onCloseClick: () -> Unit,
     onNotebookClick: (Int) -> Unit
@@ -276,7 +296,6 @@ fun NotebooksPickerDialog(
                                 shape = RoundedCornerShape(4.dp),
                                 color = it.priority.color.copy(alpha = 0.4F),
                                 tonalElevation = 6.dp,
-//                                shadowElevation = 1.dp
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -311,25 +330,35 @@ fun NotebooksPickerDialog(
 
                 Row(
                     modifier = Modifier
-                        .padding(start = LARGE_PADDING, bottom = LARGE_PADDING)
+                        .padding(XLARGE_PADDING)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    OutlinedButton(
-                        shape = RoundedCornerShape(4.dp),
-                        onClick = {
-                            onNotebookClick(-1)
-                        }) {
-                        Text(text = stringResource(id = R.string.note_select_use_default))
+                    Surface(modifier = Modifier.width(IntrinsicSize.Max)) {
+                        OutlinedButton(
+                            shape = RoundedCornerShape(4.dp),
+                            onClick = {
+                                onNotebookClick(-1)
+                            }) {
+                            Text(text = stringResource(id = R.string.note_select_use_default))
+
+                        }
+                        Row(horizontalArrangement = Arrangement.End) {
+                            Badge {
+                                Text(text = defaultNoteMemoCount.total.toString())
+                            }
+                        }
                     }
                     // Close 버튼
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = XLARGE_PADDING)
+                            .weight(1F)
+                            .fillMaxWidth()
                             .clickable {
                                 onCloseClick()
                             }
                             .padding(12.dp),
+                        textAlign = TextAlign.End,
                         text = stringResource(id = R.string.close_label),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -339,6 +368,7 @@ fun NotebooksPickerDialog(
         }
     }
 }
+
 
 @Preview
 @Composable
@@ -365,6 +395,7 @@ fun NotebooksPickerDialogPreview() {
                     id = 3, title = "test3", description = "desc3", priority = Priority.NONE
                 )
             ),
+            defaultNoteMemoCount = DefaultNoteMemoCount(0, 0, 0, 0, 0),
             onNotebookClick = {
 
             }

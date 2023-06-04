@@ -87,6 +87,7 @@
     <string name="note_inside_dateformat">LLL, dd, yy</string>
     <string name="default_note_title">Default Notebook</string>
     <string name="note_screen_recent_notebooks">Recent</string>
+    <string name="note_screen_recent_notebooks_label">Recent</string>
     <string name="note_screen_list_of_notebooks">Notebook Collection</string>
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
     <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
@@ -94,5 +95,11 @@
     <string name="note_select_use_default">Use Default Notebook</string>
     <string name="close_label">Close</string>
     <string name="save_label">Save</string>
+    <string name="info_created_at">Created At</string>
+    <string name="info_updated_at">Updated At</string>
+    <string name="info_accessed_at">Accessed At</string>
+    <string name="info_priority">Priority</string>
+    <string name="info_description">About</string>
+    <string name="info_title">Title</string>
 
 </resources>

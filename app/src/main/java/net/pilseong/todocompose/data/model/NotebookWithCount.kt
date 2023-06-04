@@ -12,6 +12,8 @@ data class NotebookWithCount(
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
+    @ColumnInfo(name = "accessed_at", defaultValue = "0")
+    val accessedAt: ZonedDateTime = ZonedDateTime.now(),
     val memoCount: Int = 0
 ) {
     companion object {
@@ -22,12 +24,14 @@ data class NotebookWithCount(
             priority: Priority = Priority.NONE,
             createdAt: ZonedDateTime = ZonedDateTime.now(),
             updatedAt: ZonedDateTime = ZonedDateTime.now(),
+            accessedAt: ZonedDateTime = ZonedDateTime.now(),
             memoCount: Int = 0,
         ): NotebookWithCount {
             return NotebookWithCount(
                 id = id,
                 title = title, description = description, priority = priority,
-                createdAt = createdAt, updatedAt = updatedAt, memoCount = memoCount,
+                createdAt = createdAt, updatedAt = updatedAt, accessedAt = accessedAt,
+                memoCount = memoCount,
             )
         }
     }

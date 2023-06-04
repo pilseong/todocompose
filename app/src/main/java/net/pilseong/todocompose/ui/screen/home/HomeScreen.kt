@@ -16,20 +16,14 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
-import net.pilseong.todocompose.ui.theme.LightGreenBackground
-import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.util.Constants
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +36,8 @@ fun HomeScreen(
     onBackButtonClick: () -> Unit,
     notebooks: List<NotebookWithCount>,
     currentNotebook: NotebookWithCount,
+    firstRecentNotebook: NotebookWithCount?,
+    secondRecentNotebook: NotebookWithCount?,
     selectedNotebookIds: SnapshotStateList<Int>,
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
@@ -103,6 +99,8 @@ fun HomeScreen(
                     onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
                     onInfoClick = onInfoClick,
                     currentNotebook = currentNotebook,
+                    firstRecentNotebook = firstRecentNotebook,
+                    secondRecentNotebook = secondRecentNotebook,
                 )
             }
         }
@@ -170,7 +168,9 @@ fun PreviewHomeScreen() {
             selectedNotebookIds = SnapshotStateList(),
             onDeleteSelectedClicked = {},
             onEditClick = {},
-            onInfoClick = {}
+            onInfoClick = {},
+            firstRecentNotebook = NotebookWithCount.instance(),
+            secondRecentNotebook = NotebookWithCount.instance(),
         )
     }
 }

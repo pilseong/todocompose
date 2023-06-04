@@ -53,6 +53,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.topBarContainerColor
@@ -68,7 +69,9 @@ fun NoteContent(
     onSelectNotebook: (Int) -> Unit,
     onSelectNotebookWithLongClick: (Int) -> Unit,
     onInfoClick: (Int) -> Unit,
-    currentNotebook: NotebookWithCount
+    currentNotebook: NotebookWithCount,
+    firstRecentNotebook: NotebookWithCount?,
+    secondRecentNotebook: NotebookWithCount?,
 ) {
     val configuration = LocalConfiguration.current
 
@@ -251,8 +254,8 @@ fun NoteContent(
                     .padding(top = LARGE_PADDING)
                     .fillMaxSize()
             ) {
+                // 타이틀 + 날짜
                 Surface(
-//                    color = DarkGreenBackground,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
                     Column(
@@ -261,15 +264,14 @@ fun NoteContent(
                             vertical = LARGE_PADDING
                         ),
                     ) {
+
+                        // 헤드 타이틀
                         Row(
                             modifier = Modifier
-//                        .padding(top = 24.dp)
                                 .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 text = stringResource(id = R.string.note_screen_recent_notebooks),
-//                                color = headlineYellow,
                                 color = Color(
                                     ColorUtils.blendARGB(
                                         MaterialTheme.colorScheme.onSurface.toArgb(),
@@ -281,11 +283,11 @@ fun NoteContent(
                                 fontSize = MaterialTheme.typography.headlineMedium.fontSize
                             )
                         }
+
+                        // 오늘 날짜
                         Row(
                             modifier = Modifier
-//                .padding(vertical = SMALL_PADDING)
                                 .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 modifier = Modifier.padding(start = 4.dp),
@@ -308,221 +310,69 @@ fun NoteContent(
                         }
                     }
                 }
-//                Spacer(modifier = Modifier.height(LARGE_PADDING))
-                Surface(
+
+                val recentNotebookSpace = ((LocalConfiguration.current.screenWidthDp - (2*16) - 115 - (2*6))
+                - (3 * 6)) / 2
+                // 자주 사용하는 노트북 섹션
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(
                             start = XLARGE_PADDING,
                             end = XLARGE_PADDING,
                             bottom = XLARGE_PADDING
-                        )
-//                        .clip(RoundedCornerShape(4.dp))
-                        .fillMaxWidth(),
-//                    color = booksBackground,
-//                    border = BorderStroke(0.5.dp, DarkGreenBackground),
-                    shape = RoundedCornerShape(4.dp),
-                    tonalElevation = 4.dp,
-                    color = MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-//                        horizontalArrangement = Arrangement.spacedBy(SMALL_PADDING),
-                        modifier = Modifier.padding(SMALL_PADDING)
+                        ),
+
                     ) {
-                        Surface(
-                            modifier = Modifier
-                                .width(125.dp)
-                                .height(160.dp)
-                                .padding(end = SMALL_PADDING, bottom = SMALL_PADDING)
-                                .combinedClickable(
-                                    onClick = {
-                                    },
-                                    onLongClick = {
-                                    }
-                                ),
-                            shadowElevation = 6.dp,
-                            shape = RoundedCornerShape(
-                                topStart = 0.dp,
-                                topEnd = 6.dp,
-                                bottomStart = 0.dp,
-                                bottomEnd = 6.dp
-                            ),
-                            border = BorderStroke(
-                                0.dp,
-                                MaterialTheme.colorScheme.surface
-                            )
+                    Surface(
+                        modifier = Modifier.padding(end = MEDIUM_PADDING),
+                        shape = RoundedCornerShape(4.dp),
+                        tonalElevation = 6.dp,
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(SMALL_PADDING)
                         ) {
-                            Card(
-                                shape = RoundedCornerShape(
-                                    topStart = 0.dp,
-                                    topEnd = 6.dp,
-                                    bottomStart = 0.dp,
-                                    bottomEnd = 6.dp
+                            CurrentNotebook(onSelectNotebook, currentNotebook)
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        tonalElevation = 6.dp,
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(SMALL_PADDING)
+                        ) {
+                            if (firstRecentNotebook != null)
+                                RecentNotebook(
+                                    width = recentNotebookSpace,
+                                    onSelectNotebook,
+                                    firstRecentNotebook
                                 )
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Surface(
-                                        modifier = Modifier.clickable {
-                                            onSelectNotebook(currentNotebook.id)
-                                        },
-                                        color = MaterialTheme.colorScheme.primary,
-                                        tonalElevation = 2.dp,
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                        ) {
-                                            Surface(
-                                                color = Color(
-                                                    ColorUtils.blendARGB(
-                                                        MaterialTheme.colorScheme.primary.toArgb(),
-                                                        Color.Black.toArgb(),
-                                                        0.5f
-                                                    )
-                                                ),
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .padding(SMALL_PADDING)
-                                                        .fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.Center,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Badge {
-                                                        Icon(
-                                                            modifier = Modifier.size(8.dp),
-                                                            imageVector = Icons.Default.Check,
-                                                            contentDescription = "Checked Icon",
-                                                        )
-                                                    }
-                                                    Text(
-                                                        modifier = Modifier.padding(horizontal = 2.dp),
-                                                        text = "Current",
-                                                        color = Color(
-                                                            ColorUtils.blendARGB(
-                                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                                Color.Black.toArgb(),
-                                                                0.1f
-                                                            )
-                                                        ).copy(0.9f),
-                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize
-                                                    )
-                                                    Column(modifier = Modifier.weight(1F),
-                                                    horizontalAlignment = Alignment.End) {
-                                                    Badge() {
-                                                        Text(text = currentNotebook.memoCount.toString())
-                                                    }
-                                                    }
-                                                }
-                                            }
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .weight(1F),
-                                                horizontalArrangement = Arrangement.Center,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    modifier = Modifier.padding(horizontal = SMALL_PADDING),
-                                                    text = currentNotebook.title,
-                                                    color = Color(
-                                                        ColorUtils.blendARGB(
-                                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                            Color.Black.toArgb(),
-                                                            0.2f
-                                                        )
-                                                    ).copy(0.9f)
-//                                                                Color.White.copy(alpha = 0.9f)
-                                                )
-                                            }
-                                            Surface(
-                                                color = Color(
-                                                    ColorUtils.blendARGB(
-                                                        MaterialTheme.colorScheme.primary.toArgb(),
-                                                        Color.Black.toArgb(),
-                                                        0.3f
-                                                    )
-                                                ),
-                                                tonalElevation = 2.dp,
-                                            ) {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .padding(
-                                                            horizontal = SMALL_PADDING,
-                                                            vertical = 4.dp
-                                                        )
-                                                        .fillMaxWidth(),
-                                                    verticalArrangement = Arrangement.Center,
-                                                    horizontalAlignment = Alignment.CenterHorizontally
-                                                ) {
-                                                    Text(
-                                                        text = "Last Access",
-                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
-//                                                        fontWeight = FontWeight.Light
-                                                    )
-                                                    Text(
-                                                        text = ZonedDateTime.now().toLocalDate()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    stringResource(id = R.string.note_inside_dateformat)
-                                                                )
-                                                            ),
-                                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
-//                                                        fontWeight = FontWeight.Light,
-                                                        color = Color(
-                                                            ColorUtils.blendARGB(
-                                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                                Color.Black.toArgb(),
-                                                                0.1f
-                                                            )
-                                                        ),
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Surface(
-                            modifier = Modifier
-                                .width(120.dp)
-                                .height(140.dp)
-                                .padding(end = LARGE_PADDING),
-                            shadowElevation = 6.dp
-                        ) {
-                            Card(
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(text = "Second")
-                            }
-                        }
-                        Surface(
-                            modifier = Modifier
-                                .width(120.dp)
-                                .height(140.dp)
-                                .padding(end = LARGE_PADDING),
-                            shadowElevation = 6.dp
-                        ) {
-                            Card(
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(text = "Third")
-                            }
+                            else
+                                EmptyNotebook(recentNotebookSpace)
+
+                            if (secondRecentNotebook != null)
+                                RecentNotebook(
+                                    width = recentNotebookSpace,
+                                    onSelectNotebook,
+                                    secondRecentNotebook)
+                            else
+                                EmptyNotebook(recentNotebookSpace)
                         }
                     }
                 }
+
+                // 중간 타이틀
                 Surface(
-//                    modifier = Modifier.padding(top = 24.dp),
-//                    color = DarkGreenBackground
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Row(
                         modifier = Modifier
                             .padding(LARGE_PADDING)
                             .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = stringResource(id = R.string.note_screen_list_of_notebooks),
@@ -798,6 +648,8 @@ fun NoteContentPreview() {
         onSelectNotebookWithLongClick = {},
         selectedNotebookIds = SnapshotStateList(),
         onInfoClick = {},
-        currentNotebook = NotebookWithCount.instance()
+        currentNotebook = NotebookWithCount.instance(),
+        firstRecentNotebook = NotebookWithCount.instance(),
+        secondRecentNotebook = NotebookWithCount.instance(),
     )
 }
