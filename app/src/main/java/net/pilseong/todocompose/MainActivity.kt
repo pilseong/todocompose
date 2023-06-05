@@ -32,4 +32,26 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i("PHILIP", "[MainActivity]onPause is called")
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("PHILIP", "[MainActivity]onStop is called")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.i("PHILIP", "[MainActivity]onRestart is called")
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        Log.i("PHILIP", "[MainActivity]onResume is called")
+    }
 }

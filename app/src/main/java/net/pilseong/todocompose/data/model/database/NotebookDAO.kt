@@ -24,10 +24,10 @@ abstract class NotebookDAO(
             "FROM note_table WHERE id = :id")
     abstract suspend fun getNotebookWithCount(id: Int): NotebookWithCount
 
-    @Query("SELECT * FROM note_table ORDER BY created_at DESC")
+    @Query("SELECT * FROM note_table ORDER BY updated_at DESC")
     abstract fun getNotebooks(): Flow<List<Notebook>>
 
-    @Query("SELECT * FROM note_table")
+    @Query("SELECT * FROM note_table ORDER BY accessed_at DESC")
     abstract suspend fun getAllNotebooks(): List<Notebook>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -63,6 +63,6 @@ abstract class NotebookDAO(
     }
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
             "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +
-            "FROM note_table ORDER BY created_at DESC")
+            "FROM note_table ORDER BY updated_at DESC")
     abstract fun getNotebooksWithCount(): Flow<List<NotebookWithCount>>
 }

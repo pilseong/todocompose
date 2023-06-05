@@ -30,7 +30,12 @@ class TodoRepository @Inject constructor(
         startDate: Long? = null,
         endDate: Long? = null,
         isFavoriteOn: Boolean = false,
-        notebookId: Int = -1
+        notebookId: Int = -1,
+        stateClosed: Boolean = true,
+        stateOnit: Boolean = true,
+        stateSuspended: Boolean = true,
+        stateOpen: Boolean = true,
+        stateNone: Boolean = true,
     ): Flow<PagingData<TodoTask>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
         return Pager(
@@ -44,7 +49,12 @@ class TodoRepository @Inject constructor(
                     startDate = startDate,
                     endDate = endDate,
                     isFavoriteOn = isFavoriteOn,
-                    notebookId = notebookId
+                    notebookId = notebookId,
+                    stateClosed = stateClosed,
+                    stateOnit = stateOnit,
+                    stateSuspended = stateSuspended,
+                    stateOpen = stateOpen,
+                    stateNone = stateNone,
                 )
             }
         ).flow
@@ -59,6 +69,11 @@ class TodoRepository @Inject constructor(
         todoDAO.updateTaskWithTimestamp(todoTask)
     }
 
+    suspend fun updateTaskWithoutUpdatedAt(todoTask: TodoTask) {
+        todoDAO.updateTask(todoTask)
+    }
+
+
     suspend fun deleteTask(todoId: Int) {
         todoDAO.deleteTask(todoId)
     }
@@ -69,10 +84,6 @@ class TodoRepository @Inject constructor(
 
     suspend fun deleteSelectedTasks(notesIds: List<Int>) {
         todoDAO.deleteSelectedTasks(notesIds)
-    }
-
-    suspend fun updateFavorite(todoTask: TodoTask) {
-        todoDAO.updateFavorite(todoTask)
     }
 
     suspend fun insertMultipleMemos(tasks: List<TodoTask>) {

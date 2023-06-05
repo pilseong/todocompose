@@ -38,9 +38,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
-import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
@@ -56,6 +56,11 @@ fun ListScreen(
     toTaskScreen: (List<TodoTask>) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
     memoViewModel: MemoViewModel = hiltViewModel(),
+    stateClosed: Boolean = true,
+    stateOnit: Boolean = true,
+    stateSuspended: Boolean = true,
+    stateOpen: Boolean = true,
+    stateNone: Boolean = true,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onCloseClicked: () -> Unit,
@@ -63,6 +68,8 @@ fun ListScreen(
     onSearchClicked: () -> Unit,
     onDeleteSelectedClicked: () -> Unit,
     onMoveMemoClicked: () -> Unit,
+    onStateSelected: (State) -> Unit,
+    onStateChange: (TodoTask, State) -> Unit,
 ) {
     /**
      * view model 을 통제 하는 코드가 여기서 실행 되고 관리 된다.
@@ -175,7 +182,6 @@ fun ListScreen(
                 scrollBehavior = scrollBehavior,
                 appbarTitle = memoViewModel.selectedNotebook.value.title,
                 notebookColor = memoViewModel.selectedNotebook.value.priority.color,
-                memoViewModel = memoViewModel,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,
                 onImportClick = {
@@ -192,6 +198,20 @@ fun ListScreen(
                 onTextChange = onTextChange,
                 onSearchClicked = onSearchClicked,
                 onMoveMemoClicked = onMoveMemoClicked,
+                onDeleteAllClicked = {
+                    Log.i("PHILIP", "onDeleteAllClicked")
+                    memoViewModel.handleActions(Action.DELETE_ALL)
+                },
+                onDateRangePickerConfirmed = { start, end ->
+                    memoViewModel.handleActions(
+                        action = Action.SEARCH_WITH_DATE_RANGE,
+                        startDate = start,
+                        endDate = end
+                    )
+                },
+                onExportClick = {
+                    memoViewModel.exportData()
+                }
             )
         },
         bottomBar = {
@@ -204,7 +224,7 @@ fun ListScreen(
         Column(
             modifier = Modifier
                 .padding(
-                    top = paddingValues.calculateTopPadding() + SMALL_PADDING,
+                    top = paddingValues.calculateTopPadding(),
                     bottom = paddingValues.calculateBottomPadding()
                 )
                 .fillMaxSize(),
@@ -215,6 +235,12 @@ fun ListScreen(
                 dateEnabled = memoViewModel.dateEnabled,
                 startDate = memoViewModel.startDate,
                 endDate = memoViewModel.endDate,
+                favoriteOn = memoViewModel.sortFavorite,
+                stateClosed = stateClosed,
+                stateOnit = stateOnit,
+                stateSuspended = stateSuspended,
+                stateOpen = stateOpen,
+                stateNone = stateNone,
                 onCloseClick = {
                     memoViewModel.handleActions(
                         Action.SEARCH_WITH_DATE_RANGE,
@@ -222,7 +248,6 @@ fun ListScreen(
                         endDate = null
                     )
                 },
-                favoriteOn = memoViewModel.sortFavorite,
                 onFavoriteClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_FAVORITE_CHANGE,
@@ -248,6 +273,7 @@ fun ListScreen(
                         priority = priority
                     )
                 },
+                onStateSelected = onStateSelected
             )
 
             ListContent(
@@ -281,7 +307,8 @@ fun ListScreen(
                 onLongClickApplied = {
                     memoViewModel.appendMultiSelectedItem(it)
                 },
-                selectedItemsIds = memoViewModel.selectedItems
+                selectedItemsIds = memoViewModel.selectedItems,
+                onStateSelected = onStateChange,
             )
         }
     }
@@ -349,7 +376,7 @@ private fun DisplaySnackBar(
         Action.NOTEBOOK_CHANGE ->
             stringResource(id = R.string.snackbar_changed_notebook_message)
 
-        Action.MOVE_TO -> 
+        Action.MOVE_TO ->
             stringResource(id = R.string.snackbar_move_to_message)
 
         else -> {
@@ -412,7 +439,11 @@ private fun ListScreenPreview() {
         onTextChange = {},
         onSearchClicked = {},
         onDeleteSelectedClicked = {},
-        onMoveMemoClicked = {}
+        onMoveMemoClicked = {},
+        onStateSelected = {},
+        onStateChange = { TodoTask, State ->
+
+        }
     )
 //    }
 }

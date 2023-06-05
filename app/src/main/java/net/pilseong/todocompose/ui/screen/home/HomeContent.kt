@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgeDefaults
@@ -327,7 +326,8 @@ fun NoteContent(
                     Surface(
                         modifier = Modifier.padding(end = MEDIUM_PADDING),
                         shape = RoundedCornerShape(4.dp),
-                        tonalElevation = 6.dp,
+                        tonalElevation = 2.dp,
+                        shadowElevation = 2.dp,
                         color = MaterialTheme.colorScheme.surface
                     ) {
                         Row(
@@ -339,7 +339,8 @@ fun NoteContent(
 
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        tonalElevation = 6.dp,
+                        tonalElevation = 2.dp,
+                        shadowElevation = 2.dp,
                         color = MaterialTheme.colorScheme.surface
                     ) {
                         Row(
@@ -398,7 +399,8 @@ fun NoteContent(
                     shape = RoundedCornerShape(4.dp),
 //                    border = BorderStroke(0.5.dp, DarkGreenBackground),
                     color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 4.dp
+                    tonalElevation = 2.dp,
+                    shadowElevation = 2.dp
                 ) {
                     LazyHorizontalGrid(
                         rows = GridCells.Fixed(2),
@@ -559,7 +561,7 @@ fun NoteContent(
                                                                 modifier = Modifier.padding(
                                                                     vertical = SMALL_PADDING
                                                                 ),
-                                                                text = notebooks[index].createdAt.toLocalDate()
+                                                                text = notebooks[index].updatedAt.toLocalDate()
                                                                     .format(
                                                                         DateTimeFormatter.ofPattern(
                                                                             stringResource(id = R.string.note_inside_dateformat)

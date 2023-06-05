@@ -105,8 +105,13 @@ fun NavGraphBuilder.memoNavGraph(
                 }
             }
 
+            val createNotebookStr =
+                stringResource(id = R.string.note_screen_switch_notebook_dialog_title)
+            val moveToNotebookStr =
+                stringResource(id = R.string.note_screen_move_to_notebook_dialog_title)
+
             val openDialog = remember { mutableStateOf(false) }
-            val dialogTitle = remember { mutableStateOf("Choose Notebook") }
+            val dialogTitle = remember { mutableStateOf(createNotebookStr) }
             val action = remember { mutableStateOf(Action.NOTEBOOK_CHANGE) }
 
 
@@ -137,10 +142,15 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onClickBottomNavBar = onClickBottomNavBar,
                 memoViewModel = memoViewModel,
+                stateClosed = memoViewModel.stateClosed,
+                stateOnit = memoViewModel.stateOnit,
+                stateSuspended = memoViewModel.stateSuspended,
+                stateOpen = memoViewModel.stateOpen,
+                stateNone = memoViewModel.stateNone,
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()
                     action.value = Action.NOTEBOOK_CHANGE
-                    dialogTitle.value = "Choose Notebook"
+                    dialogTitle.value = createNotebookStr
                     openDialog.value = true
                 },
                 onSearchIconClicked = {
@@ -169,8 +179,14 @@ fun NavGraphBuilder.memoNavGraph(
                     Log.i("PHILIP", "onMoveMemoClicked")
                     memoViewModel.getDefaultNoteCount()
                     action.value = Action.MOVE_TO
-                    dialogTitle.value = "Move to"
+                    dialogTitle.value = moveToNotebookStr
                     openDialog.value = true
+                },
+                onStateSelected = {state ->
+                    memoViewModel.handleActions(Action.STATE_FILTER_CHANGE, state = state)
+                },
+                onStateChange = { task, state ->
+                    memoViewModel.handleActions(Action.STATE_CHANGE, todoTask = task, state = state)
                 }
             )
 
@@ -253,7 +269,7 @@ fun NotebooksPickerDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ListAlt,
-                        contentDescription = "Choose Notebook"
+                        contentDescription = "list icon"
                     )
                     Spacer(modifier = Modifier.width(SMALL_PADDING))
                     Text(
@@ -273,7 +289,8 @@ fun NotebooksPickerDialog(
                         .fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(4.dp),
-                    tonalElevation = 2.dp
+                    tonalElevation = 2.dp,
+                    shadowElevation = 2.dp,
                 ) {
                     LazyColumn(
                         // contentPadding은 전체를 감싸는 padding

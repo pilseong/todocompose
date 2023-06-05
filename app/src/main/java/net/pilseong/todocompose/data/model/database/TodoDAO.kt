@@ -27,6 +27,27 @@ abstract class TodoDAO {
                 "           WHEN 1 THEN favorite = 1 " +
                 "       END) " +
                 "AND (" +
+                "       CASE :stateClosed " +
+                "           WHEN 1 THEN progression = 'CLOSED'" +
+                "       END " +
+                "OR " +
+                "       CASE :stateOnit " +
+                "           WHEN 1 THEN progression = 'ONIT' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateSuspended " +
+                "           WHEN 1 THEN progression = 'SUSPENDED' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateOpen " +
+                "           WHEN 1 THEN progression = 'OPEN' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateNone " +
+                "           WHEN 1 THEN progression = 'NONE' " +
+                "       END" +
+                ") " +
+                "AND (" +
                 "       CASE :sortCondition " +
                 "           WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
                 "           WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
@@ -65,7 +86,12 @@ abstract class TodoDAO {
         startDate: Long = Long.MIN_VALUE,
         endDate: Long = Long.MAX_VALUE,
         favorite: Boolean = false,
-        notebookId: Int = -1
+        notebookId: Int = -1,
+        stateClosed: Boolean = true,
+        stateOnit: Boolean = true,
+        stateSuspended: Boolean = true,
+        stateOpen: Boolean = true,
+        stateNone: Boolean = true,
     ): List<TodoTask>
 
     @Query("SELECT * FROM todo_table WHERE id = :taskId")
@@ -79,9 +105,6 @@ abstract class TodoDAO {
 
     @Update
     abstract suspend fun updateTask(todo: TodoTask)
-
-    @Update
-    abstract suspend fun updateFavorite(todo: TodoTask)
 
     @Query("DELETE FROM todo_table WHERE id = :todoId")
     abstract suspend fun deleteTask(todoId: Int)

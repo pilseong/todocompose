@@ -32,6 +32,7 @@ import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
@@ -102,6 +103,7 @@ class MemoViewModel @Inject constructor(
     var notebookId by mutableIntStateOf(-1)
     private var createdAt = ZonedDateTime.now()
     private var updatedAt = ZonedDateTime.now()
+    private var state by mutableStateOf(State.NONE)
 
 
     fun updateIndex(index: Int) {
@@ -196,7 +198,12 @@ class MemoViewModel @Inject constructor(
                 notebookId = notebookIdState,
                 startDate = startDate,
                 endDate = endDate,
-                isFavoriteOn = sortFavorite
+                isFavoriteOn = sortFavorite,
+                stateClosed = stateClosed,
+                stateOnit = stateOnit,
+                stateSuspended = stateSuspended,
+                stateOpen = stateOpen,
+                stateNone = stateNone,
             )
                 .stateIn(
                     scope = viewModelScope,
@@ -226,6 +233,12 @@ class MemoViewModel @Inject constructor(
     var notebookIdState by mutableIntStateOf(Int.MIN_VALUE)
     private var firstRecentNotebookId by mutableStateOf<Int?>(null)
     private var secondRecentNotebookId by mutableStateOf<Int?>(null)
+
+    var stateClosed by mutableStateOf(true)
+    var stateOnit by mutableStateOf(true)
+    var stateSuspended by mutableStateOf(true)
+    var stateOpen by mutableStateOf(true)
+    var stateNone by mutableStateOf(true)
 
 
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
@@ -518,6 +531,7 @@ class MemoViewModel @Inject constructor(
         endDate: Long? = null,
         favorite: Boolean = false,
         notebookId: Int = -1,
+        state: State = State.NONE
     ) {
         Log.i(
             "PHILIP",
@@ -619,6 +633,22 @@ class MemoViewModel @Inject constructor(
                 updateActionPerformed()
             }
 
+            Action.STATE_FILTER_CHANGE -> {
+                when (state) {
+                    State.NONE -> stateNone = !stateNone
+                    State.OPEN -> stateOpen = !stateOpen
+                    State.SUSPENDED -> stateSuspended = !stateSuspended
+                    State.ONIT -> stateOnit = !stateOnit
+                    State.CLOSED -> stateClosed = !stateClosed
+                }
+
+                refreshAllTasks()
+            }
+
+            Action.STATE_CHANGE -> {
+                updateState(todoTask, state)
+            }
+
             Action.NO_ACTION -> {
                 this.action = Action.NO_ACTION
             }
@@ -692,11 +722,38 @@ class MemoViewModel @Inject constructor(
 
     private fun updateFavorite(todo: TodoTask) {
         viewModelScope.launch(Dispatchers.IO) {
-            todoRepository.updateFavorite(todo.copy(favorite = !todo.favorite))
+            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(favorite = !todo.favorite))
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
             if (sortFavorite) refreshAllTasks()
         }
     }
+
+    private fun updateState(todo: TodoTask, state: State) {
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(progression = state))
+            // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
+//            when (state) {
+//                State.NONE -> {
+//                    if (!stateNone) refreshAllTasks()
+//                }
+//                State.OPEN -> {
+//                    if (!stateOpen) refreshAllTasks()
+//                }
+//                State.SUSPENDED -> {
+//                    if (!stateSuspended) refreshAllTasks()
+//                }
+//                State.ONIT -> {
+//                    if (!stateOnit) refreshAllTasks()
+//                }
+//                State.CLOSED -> {
+//                    if (!stateClosed) refreshAllTasks()
+//                }
+//            }
+            refreshAllTasks()
+        }
+    }
+
+
 
     private fun updateTask() {
         viewModelScope.launch(Dispatchers.IO) {

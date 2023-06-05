@@ -77,6 +77,11 @@
     <string name="priority_medium">Medium</string>
     <string name="priority_low">Low</string>
     <string name="priority_none">None</string>
+    <string name="status_closed">Closed</string>
+    <string name="status_onit">On it</string>
+    <string name="status_suspended">Suspended</string>
+    <string name="status_open">Open</string>
+    <string name="status_none">None</string>
     <string name="import_menu_label">IMPORT</string>
     <string name="export_menu_label">EXPORT</string>
     <string name="settings_menu_label">SETTINGS</string>
@@ -90,9 +95,11 @@
     <string name="note_screen_recent_notebooks_label">Recent</string>
     <string name="note_screen_list_of_notebooks">Notebook Collection</string>
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
+    <string name="note_screen_switch_notebook_dialog_title">Switch to</string>
+    <string name="note_screen_move_to_notebook_dialog_title">Move to</string>
     <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
     <string name="date_picker_title">Pick up a date range</string>
-    <string name="note_select_use_default">Use Default Notebook</string>
+    <string name="note_select_use_default">Default Notebook</string>
     <string name="close_label">Close</string>
     <string name="save_label">Save</string>
     <string name="info_created_at">Created At</string>

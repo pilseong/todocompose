@@ -53,8 +53,6 @@ import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +61,6 @@ fun ListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     appbarTitle: String,
     notebookColor: Color,
-    memoViewModel: MemoViewModel,
     searchAppBarState: SearchAppBarState,
     searchText: String,
     onImportClick: () -> Unit,
@@ -76,6 +73,9 @@ fun ListAppBar(
     onTextChange: (String) -> Unit,
     onSearchClicked: () -> Unit,
     onMoveMemoClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
+    onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
+    onExportClick: () -> Unit
 ) {
     Log.i("PHILIP", "selectedItems $selectedItemsCount")
     when (searchAppBarState) {
@@ -86,23 +86,12 @@ fun ListAppBar(
                     appbarTitle = appbarTitle,
                     notebookColor = notebookColor,
                     onSearchIconClicked = onSearchIconClicked,
-                    onDeleteAllClicked = {
-                        Log.i("PHILIP", "onDeleteAllClicked")
-                        memoViewModel.handleActions(Action.DELETE_ALL)
-                    },
-                    onDatePickConfirmed = { start, end ->
-                        memoViewModel.handleActions(
-                            action = Action.SEARCH_WITH_DATE_RANGE,
-                            startDate = start,
-                            endDate = end
-                        )
-                    },
+                    onDeleteAllClicked = onDeleteAllClicked,
+                    onDateRangePickerConfirmed = onDateRangePickerConfirmed,
                     onImportClick = {
                         onImportClick()
                     },
-                    onExportClick = {
-                        memoViewModel.exportData()
-                    },
+                    onExportClick = onExportClick,
                     onAppBarTitleClick = onAppBarTitleClick
                 )
             } else {
@@ -147,7 +136,7 @@ fun DefaultListAppBar(
     notebookColor: Color = MaterialTheme.colorScheme.surface,
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
-    onDatePickConfirmed: (Long?, Long?) -> Unit,
+    onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
     onImportClick: () -> Unit,
     onExportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
@@ -168,7 +157,7 @@ fun DefaultListAppBar(
             ListAppBarActions(
                 onSearchClicked = onSearchIconClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
-                onDatePickConfirmed = onDatePickConfirmed,
+                onDatePickConfirmed = onDateRangePickerConfirmed,
                 onImportClick = onImportClick,
                 onExportClick = onExportClick
             )
@@ -185,7 +174,7 @@ fun PreviewDefaultListAppBar() {
         scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
         onSearchIconClicked = { /*TODO*/ },
         onDeleteAllClicked = { /*TODO*/ },
-        onDatePickConfirmed = { _, _ -> },
+        onDateRangePickerConfirmed = { _, _ -> },
         onImportClick = { /*TODO*/ },
         onExportClick = { /*TODO*/ }) {
 

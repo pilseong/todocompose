@@ -15,5 +15,7 @@ enum class Action {
     NOTEBOOK_CHANGE,
     DELETE_SELECTED_ITEMS,
     MOVE_TO,
+    STATE_FILTER_CHANGE,
+    STATE_CHANGE,
     NO_ACTION
 }

@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,9 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Face2
-import androidx.compose.material.icons.filled.Face3
 import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon

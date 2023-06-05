@@ -58,6 +58,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -82,7 +83,8 @@ fun ListContent(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>
+    selectedItemsIds: SnapshotStateList<Int>,
+    onStateSelected: (TodoTask, State) -> Unit,
 ) {
 
     if (tasks.loadState.refresh is LoadState.NotLoading) {
@@ -96,7 +98,8 @@ fun ListContent(
             onFavoriteClick = onFavoriteClick,
             onLongClickReleased = onLongClickReleased,
             onLongClickApplied = onLongClickApplied,
-            selectedItemsIds = selectedItemsIds
+            selectedItemsIds = selectedItemsIds,
+            onStateSelected = onStateSelected,
         )
     } else {
         LoadingContent()
@@ -117,7 +120,8 @@ fun DisplayTasks(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>
+    selectedItemsIds: SnapshotStateList<Int>,
+    onStateSelected: (TodoTask, State) -> Unit,
 ) {
 //    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
@@ -132,7 +136,8 @@ fun DisplayTasks(
             onFavoriteClick = onFavoriteClick,
             onLongClickReleased = onLongClickReleased,
             onLongClickApplied = onLongClickApplied,
-            selectedItemsIds = selectedItemsIds
+            selectedItemsIds = selectedItemsIds,
+            onStateSelected = onStateSelected,
         )
     }
 }
@@ -150,7 +155,8 @@ fun LazyItemList(
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>
+    selectedItemsIds: SnapshotStateList<Int>,
+    onStateSelected: (TodoTask, State) -> Unit,
 ) {
     // 화면 의 크기의 반을 swipe 한 경우 처리
     val threshold = LocalConfiguration.current.screenWidthDp / 3
@@ -261,7 +267,8 @@ fun LazyItemList(
                         },
                         onLongClickReleased = onLongClickReleased,
                         onLongClickApplied = onLongClickApplied,
-                        selectedItemsIds = selectedItemsIds
+                        selectedItemsIds = selectedItemsIds,
+                        onStateSelected = onStateSelected,
                     )
                 },
                 directions = setOf(DismissDirection.StartToEnd)
@@ -531,7 +538,8 @@ fun ListContentPreview() {
             onFavoriteClick = {},
             onLongClickReleased = {},
             onLongClickApplied = {},
-            selectedItemsIds = SnapshotStateList()
+            selectedItemsIds = SnapshotStateList(),
+            onStateSelected = { todotask, state -> }
         )
     }
 }

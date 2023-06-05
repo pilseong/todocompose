@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,10 +41,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.ui.components.StateMenuListItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -67,7 +72,8 @@ fun TaskItem(
     onFavoriteClick: () -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>
+    selectedItemsIds: SnapshotStateList<Int>,
+    onStateSelected: (TodoTask, State) -> Unit,
 ) {
 
     val selected = remember(selectedItemsIds.size) {
@@ -75,8 +81,10 @@ fun TaskItem(
     }
 
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
+    var stateState by remember { mutableStateOf(todoTask.progression) }
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
+    var stateDialogExpanded by remember { mutableStateOf(false) }
 
     val primaryElevation = MaterialTheme.colorScheme.onPrimaryElevation
     Row(modifier = modifier) {
@@ -124,10 +132,12 @@ fun TaskItem(
                     }
                 ),
             shape = RoundedCornerShape(4.dp),
-            tonalElevation = 0.5.dp,
-            shadowElevation = 1.dp,
+            tonalElevation = if (stateState == State.NONE) 0.5.dp else 0.dp,
+            shadowElevation =  if (stateState == State.NONE) 1.dp else 0.dp,
             color = if (selected.value) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surface,
+            else  if (stateState == State.NONE) MaterialTheme.colorScheme.surface
+            else stateState.color.copy(alpha = 0.5F)
+//            else MaterialTheme.colorScheme.surface,
         ) {
             val tintColor = when (todoTask.priority) {
                 Priority.HIGH -> HighPriorityColor
@@ -149,37 +159,55 @@ fun TaskItem(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        modifier = Modifier
-                            .combinedClickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    if (selected.value) {
-                                        selected.value = false
-                                        onLongClickReleased(todoTask.id)
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .weight(1F)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                modifier = Modifier,
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                text = datetime.toLocalTime()
+                                    .format(DateTimeFormatter.ofPattern("HH:mm"))
+                                //                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
+                            )
+                        }
+                        Icon(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = {
+                                        if (selected.value) {
+                                            selected.value = false
+                                            onLongClickReleased(todoTask.id)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        selected.value = !selected.value
+                                        onLongClickApplied(todoTask.id)
                                     }
-                                },
-                                onLongClick = {
-                                    selected.value = !selected.value
-                                    onLongClickApplied(todoTask.id)
-                                }
-                            ),
+                                ),
 //                                .clickable(enabled = selected.value) {
 //                                    selected.value = false
 //                                    onLongClickReleased(todoTask.id)
 //                                },
-                        painter = if (selected.value)
-                            painterResource(id = R.drawable.ic_baseline_check_circle_24)
-                        else
-                            painterResource(id = R.drawable.ic_baseline_circle_24),
-                        contentDescription = if (selected.value) "Checked Circle" else "Circle",
-                        tint = if (selected.value) MaterialTheme.colorScheme.primary else tintColor
-                    )
+                            painter = if (selected.value)
+                                painterResource(id = R.drawable.ic_baseline_check_circle_24)
+                            else
+                                painterResource(id = R.drawable.ic_baseline_circle_24),
+                            contentDescription = if (selected.value) "Checked Circle" else "Circle",
+                            tint = if (selected.value) MaterialTheme.colorScheme.primary else tintColor
+                        )
+                    }
                 }
                 Column(
                     modifier = Modifier
-                        .weight(11f),
+                        .weight(10f),
                 ) {
                     Text(
                         text = todoTask.title,
@@ -200,27 +228,12 @@ fun TaskItem(
                     modifier = Modifier
                         .padding(PaddingValues(end = SMALL_PADDING))
                         .fillMaxHeight()
-                        .weight(2.2f),
+                        .weight(3f),
                     verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Row(
                         modifier = Modifier
                             .weight(1F)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            modifier = Modifier,
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            text = datetime.toLocalTime()
-                                .format(DateTimeFormatter.ofPattern("HH:mm"))
-                            //                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .weight(2F)
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
@@ -238,9 +251,49 @@ fun TaskItem(
                             tint = if (favoriteOn) FavoriteYellow else Color.White
                         )
                     }
+                    Row(
+                        modifier = Modifier
+                            .weight(1F)
+                            .fillMaxWidth()
+                            .clickable {
+                                stateDialogExpanded = !stateDialogExpanded
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(vertical = 2.dp),
+                                    text = stringResource(id = stateState.label),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
+    DropdownMenu(
+        expanded = stateDialogExpanded,
+        onDismissRequest = { stateDialogExpanded = false },
+        offset = DpOffset(300.dp, -20.dp)
+    ) {
+        StateMenuListItems(
+            onStateSelected = { state ->
+                stateState = state
+                onStateSelected(todoTask, state)
+                stateDialogExpanded = false
+            })
     }
 }
 
@@ -254,14 +307,16 @@ fun TaskItemPreview() {
                 1, "필성 힘내!!!",
                 "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                 Priority.HIGH,
-                notebookId = -1
+                notebookId = -1,
+                progression = State.SUSPENDED
             ),
             toTaskScreen = {},
             datetime = ZonedDateTime.now(),
             onFavoriteClick = {},
             onLongClickReleased = {},
             onLongClickApplied = {},
-            selectedItemsIds = SnapshotStateList()
+            selectedItemsIds = SnapshotStateList(),
+            onStateSelected = { task, state -> }
         )
     }
 }

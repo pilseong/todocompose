@@ -17,8 +17,13 @@ class TodoPagingSource(
     private val startDate: Long? = Instant.now().toEpochMilli(),
     private val endDate: Long? = Instant.now().toEpochMilli(),
     private val isFavoriteOn: Boolean = false,
-    private val notebookId: Int = -1
-) : PagingSource<Int, TodoTask>() {
+    private val notebookId: Int = -1,
+    private var stateClosed: Boolean = true,
+    private var stateOnit: Boolean = true,
+    private var stateSuspended: Boolean = true,
+    private var stateOpen: Boolean = true,
+    private var stateNone: Boolean = true,
+): PagingSource<Int, TodoTask>() {
 
     override fun getRefreshKey(state: PagingState<Int, TodoTask>): Int? {
         Log.i("PHILIP", "[TodoPagingSource] state.anchorPosition params ${state.anchorPosition}")
@@ -41,10 +46,15 @@ class TodoPagingSource(
                     query = "%$query%",
                     sortCondition = sortCondition,
                     priority = priority.name,
-                    startDate = if (startDate != null) startDate / 1000 else  0 ,
+                    startDate = if (startDate != null) startDate / 1000 else 0,
                     endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE,
                     favorite = isFavoriteOn,
-                    notebookId = notebookId
+                    notebookId = notebookId,
+                    stateClosed = stateClosed,
+                    stateOnit = stateOnit,
+                    stateSuspended = stateSuspended,
+                    stateOpen = stateOpen,
+                    stateNone = stateNone,
                 )
             Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 
