@@ -18,10 +18,10 @@ class TodoPagingSource(
     private val endDate: Long? = Instant.now().toEpochMilli(),
     private val isFavoriteOn: Boolean = false,
     private val notebookId: Int = -1,
-    private var stateClosed: Boolean = true,
-    private var stateOnit: Boolean = true,
+    private var stateCompleted: Boolean = true,
+    private var stateActive: Boolean = true,
     private var stateSuspended: Boolean = true,
-    private var stateOpen: Boolean = true,
+    private var stateWaiting: Boolean = true,
     private var stateNone: Boolean = true,
 ): PagingSource<Int, TodoTask>() {
 
@@ -50,10 +50,10 @@ class TodoPagingSource(
                     endDate = if (endDate != null) endDate / 1000 else Long.MAX_VALUE,
                     favorite = isFavoriteOn,
                     notebookId = notebookId,
-                    stateClosed = stateClosed,
-                    stateOnit = stateOnit,
+                    stateCompleted = stateCompleted,
+                    stateActive = stateActive,
                     stateSuspended = stateSuspended,
-                    stateOpen = stateOpen,
+                    stateWaiting = stateWaiting,
                     stateNone = stateNone,
                 )
             Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")

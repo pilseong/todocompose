@@ -81,6 +81,8 @@ fun StateItem(
     onclick: () -> Unit,
     text: String
 ) {
+
+    val noneColor = MaterialTheme.colorScheme.surface
     Row(
         modifier = Modifier.wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
@@ -95,7 +97,7 @@ fun StateItem(
                     .offset(0.dp, 0.8.dp)
                     .size(PRIORITY_INDICATOR_SIZE)
             ) {
-                drawCircle(color = state.color)
+                drawCircle(color = if (state != State.NONE) state.color else noneColor)
             }
             Text(
                 modifier = Modifier.padding(start = LARGE_PADDING),
@@ -126,7 +128,7 @@ fun SortItemPreview() {
 fun StateItemPreview() {
     StateItem(text = "오름차순",
         enabled = false,
-        state = State.CLOSED,
+        state = State.COMPLETED,
         onclick = {}
     )
 }
@@ -155,38 +157,38 @@ fun PriorityMenuItems(
 
 @Composable
 fun StateMenuItems(
-    stateClosed: Boolean = true,
-    stateOnit: Boolean = true,
+    stateCompleted: Boolean = true,
+    stateActive: Boolean = true,
     stateSuspended: Boolean = true,
-    stateOpen: Boolean = true,
+    stateWaiting: Boolean = true,
     stateNone: Boolean = true,
     onStateSelected: (State) -> Unit
 ) {
     DropdownMenuItem(
         text = {
-            StateItem(state = State.CLOSED,
-                enabled = stateClosed,
-                text = stringResource(id = State.CLOSED.label),
+            StateItem(state = State.COMPLETED,
+                enabled = stateCompleted,
+                text = stringResource(id = State.COMPLETED.label),
                 onclick = {
-                    onStateSelected(State.CLOSED)
+                    onStateSelected(State.COMPLETED)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.CLOSED)
+            onStateSelected(State.COMPLETED)
         })
     DropdownMenuItem(
         text = {
-            StateItem(state = State.ONIT,
-                enabled = stateOnit,
-                text = stringResource(id = State.ONIT.label),
+            StateItem(state = State.ACTIVE,
+                enabled = stateActive,
+                text = stringResource(id = State.ACTIVE.label),
                 onclick = {
-                    onStateSelected(State.ONIT)
+                    onStateSelected(State.ACTIVE)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.ONIT)
+            onStateSelected(State.ACTIVE)
         })
     DropdownMenuItem(
         text = {
@@ -203,16 +205,16 @@ fun StateMenuItems(
         })
     DropdownMenuItem(
         text = {
-            StateItem(state = State.OPEN,
-                enabled = stateOpen,
-                text = stringResource(id = State.OPEN.label),
+            StateItem(state = State.WAITING,
+                enabled = stateWaiting,
+                text = stringResource(id = State.WAITING.label),
                 onclick = {
-                    onStateSelected(State.OPEN)
+                    onStateSelected(State.WAITING)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.OPEN)
+            onStateSelected(State.WAITING)
         })
     DropdownMenuItem(
         text = {
@@ -236,25 +238,25 @@ fun StateMenuListItems(
 ) {
     DropdownMenuItem(
         text = {
-            StateListItem(state = State.CLOSED,
+            StateListItem(state = State.COMPLETED,
                 onclick = {
-                    onStateSelected(State.CLOSED)
+                    onStateSelected(State.COMPLETED)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.CLOSED)
+            onStateSelected(State.COMPLETED)
         })
     DropdownMenuItem(
         text = {
-            StateListItem(state = State.ONIT,
+            StateListItem(state = State.ACTIVE,
                 onclick = {
-                    onStateSelected(State.ONIT)
+                    onStateSelected(State.ACTIVE)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.ONIT)
+            onStateSelected(State.ACTIVE)
         })
     DropdownMenuItem(
         text = {
@@ -269,14 +271,14 @@ fun StateMenuListItems(
         })
     DropdownMenuItem(
         text = {
-            StateListItem(state = State.OPEN,
+            StateListItem(state = State.WAITING,
                 onclick = {
-                    onStateSelected(State.OPEN)
+                    onStateSelected(State.WAITING)
                 }
             )
         },
         onClick = {
-            onStateSelected(State.OPEN)
+            onStateSelected(State.WAITING)
         })
     DropdownMenuItem(
         text = {
@@ -322,7 +324,7 @@ fun StateListItem(
 @Preview
 fun StateListItemPreview() {
     StateListItem(
-        state = State.CLOSED,
+        state = State.COMPLETED,
         onclick = {}
     )
 }

@@ -199,10 +199,10 @@ class MemoViewModel @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 isFavoriteOn = sortFavorite,
-                stateClosed = stateClosed,
-                stateOnit = stateOnit,
+                stateCompleted = stateCompleted,
+                stateActive = stateActive,
                 stateSuspended = stateSuspended,
-                stateOpen = stateOpen,
+                stateWaiting = stateWaiting,
                 stateNone = stateNone,
             )
                 .stateIn(
@@ -234,10 +234,10 @@ class MemoViewModel @Inject constructor(
     private var firstRecentNotebookId by mutableStateOf<Int?>(null)
     private var secondRecentNotebookId by mutableStateOf<Int?>(null)
 
-    var stateClosed by mutableStateOf(true)
-    var stateOnit by mutableStateOf(true)
+    var stateCompleted by mutableStateOf(true)
+    var stateActive by mutableStateOf(true)
     var stateSuspended by mutableStateOf(true)
-    var stateOpen by mutableStateOf(true)
+    var stateWaiting by mutableStateOf(true)
     var stateNone by mutableStateOf(true)
 
 
@@ -636,10 +636,10 @@ class MemoViewModel @Inject constructor(
             Action.STATE_FILTER_CHANGE -> {
                 when (state) {
                     State.NONE -> stateNone = !stateNone
-                    State.OPEN -> stateOpen = !stateOpen
+                    State.WAITING -> stateWaiting = !stateWaiting
                     State.SUSPENDED -> stateSuspended = !stateSuspended
-                    State.ONIT -> stateOnit = !stateOnit
-                    State.CLOSED -> stateClosed = !stateClosed
+                    State.ACTIVE -> stateActive = !stateActive
+                    State.COMPLETED -> stateCompleted = !stateCompleted
                 }
 
                 refreshAllTasks()
@@ -732,23 +732,23 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             todoRepository.updateTaskWithoutUpdatedAt(todo.copy(progression = state))
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
-//            when (state) {
-//                State.NONE -> {
-//                    if (!stateNone) refreshAllTasks()
-//                }
-//                State.OPEN -> {
-//                    if (!stateOpen) refreshAllTasks()
-//                }
-//                State.SUSPENDED -> {
-//                    if (!stateSuspended) refreshAllTasks()
-//                }
-//                State.ONIT -> {
-//                    if (!stateOnit) refreshAllTasks()
-//                }
-//                State.CLOSED -> {
-//                    if (!stateClosed) refreshAllTasks()
-//                }
-//            }
+            when (state) {
+                State.NONE -> {
+                    if (!stateNone) refreshAllTasks()
+                }
+                State.WAITING -> {
+                    if (!stateWaiting) refreshAllTasks()
+                }
+                State.SUSPENDED -> {
+                    if (!stateSuspended) refreshAllTasks()
+                }
+                State.ACTIVE -> {
+                    if (!stateActive) refreshAllTasks()
+                }
+                State.COMPLETED -> {
+                    if (!stateCompleted) refreshAllTasks()
+                }
+            }
             refreshAllTasks()
         }
     }

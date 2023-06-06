@@ -31,10 +31,10 @@ class TodoRepository @Inject constructor(
         endDate: Long? = null,
         isFavoriteOn: Boolean = false,
         notebookId: Int = -1,
-        stateClosed: Boolean = true,
-        stateOnit: Boolean = true,
+        stateCompleted: Boolean = true,
+        stateActive: Boolean = true,
         stateSuspended: Boolean = true,
-        stateOpen: Boolean = true,
+        stateWaiting: Boolean = true,
         stateNone: Boolean = true,
     ): Flow<PagingData<TodoTask>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
@@ -50,10 +50,10 @@ class TodoRepository @Inject constructor(
                     endDate = endDate,
                     isFavoriteOn = isFavoriteOn,
                     notebookId = notebookId,
-                    stateClosed = stateClosed,
-                    stateOnit = stateOnit,
+                    stateCompleted = stateCompleted,
+                    stateActive = stateActive,
                     stateSuspended = stateSuspended,
-                    stateOpen = stateOpen,
+                    stateWaiting = stateWaiting,
                     stateNone = stateNone,
                 )
             }

@@ -142,10 +142,10 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onClickBottomNavBar = onClickBottomNavBar,
                 memoViewModel = memoViewModel,
-                stateClosed = memoViewModel.stateClosed,
-                stateOnit = memoViewModel.stateOnit,
+                stateCompleted = memoViewModel.stateCompleted,
+                stateActive = memoViewModel.stateActive,
                 stateSuspended = memoViewModel.stateSuspended,
-                stateOpen = memoViewModel.stateOpen,
+                stateWaiting = memoViewModel.stateWaiting,
                 stateNone = memoViewModel.stateNone,
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()

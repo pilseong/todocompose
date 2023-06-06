@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.twotone.Edit
@@ -63,10 +64,10 @@ fun StatusLine(
     startDate: Long?,
     endDate: Long?,
     favoriteOn: Boolean = false,
-    stateClosed: Boolean = true,
-    stateOnit: Boolean = true,
+    stateCompleted: Boolean = true,
+    stateActive: Boolean = true,
     stateSuspended: Boolean = true,
-    stateOpen: Boolean = true,
+    stateWaiting: Boolean = true,
     stateNone: Boolean = true,
     onCloseClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -299,17 +300,7 @@ fun StatusLine(
                                 menuItemSwitch = 1
                                 expanded = true
                             },
-                        border = if (prioritySortState != Priority.NONE)
-                            BorderStroke(color = Color.Transparent, width = 0.dp)
-                        else
-                            BorderStroke(
-                                0.5F.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
-                            ),
                         shape = RoundedCornerShape(4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = containerColor,
-                        ),
                     ) {
                         Row(
                             modifier = Modifier
@@ -320,8 +311,8 @@ fun StatusLine(
                         ) {
                             Icon(
                                 modifier = Modifier.width(12.dp),
-                                painter = priorityIcon,
-                                contentDescription = "arrow"
+                                imageVector = Icons.Default.ChecklistRtl,
+                                contentDescription = "Check list icon"
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
                             Text(
@@ -346,10 +337,10 @@ fun StatusLine(
                 }
                 else if (menuItemSwitch == 1)
                     StateMenuItems(
-                        stateClosed = stateClosed,
-                        stateOnit = stateOnit,
+                        stateCompleted = stateCompleted,
+                        stateActive = stateActive,
                         stateSuspended = stateSuspended,
-                        stateOpen = stateOpen,
+                        stateWaiting = stateWaiting,
                         stateNone = stateNone,
                         onStateSelected = { state ->
                             onStateSelected(state)

@@ -44,6 +44,12 @@ val NonePriorityColor = Color(0xFF9C9C9C)
 val WEEKDAY_COLOR = Color(0xFF5494A8)
 val WEEKEND_COLOR = Color(0xFFDF877A)
 
+val STATE_COMPLETED_COLOR = Color(0xFF003366)
+val STATE_ACTIVE_COLOR = Color(0xFF008000)
+val STATE_SUSPENDED_COLOR = Color(0xFF990000)
+val STATE_WAITING_COLOR = Color(0xFFEED971)
+val STATE_NONE_COLOR = Color(0xFFFFFBFE)
+
 // 색상 추가
 val ColorScheme.topBarContentColor: Color
     @Composable
@@ -79,9 +85,9 @@ val ColorScheme.taskItemContainerColor: Color
 val ColorScheme.taskItemContentColor: Color
     @Composable
     get() = if (isSystemInDarkTheme())
-        Color.LightGray
+        Color.LightGray.copy(alpha = 0.9F)
     else
-        MaterialTheme.colorScheme.onSurface
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9F)
 
 val ColorScheme.onPrimaryElevation: Color
     @Composable

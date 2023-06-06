@@ -27,20 +27,20 @@ abstract class TodoDAO {
                 "           WHEN 1 THEN favorite = 1 " +
                 "       END) " +
                 "AND (" +
-                "       CASE :stateClosed " +
-                "           WHEN 1 THEN progression = 'CLOSED'" +
+                "       CASE :stateCompleted " +
+                "           WHEN 1 THEN progression = 'COMPLETED'" +
                 "       END " +
                 "OR " +
-                "       CASE :stateOnit " +
-                "           WHEN 1 THEN progression = 'ONIT' " +
+                "       CASE :stateActive " +
+                "           WHEN 1 THEN progression = 'ACTIVE' " +
                 "       END " +
                 "OR " +
                 "       CASE :stateSuspended " +
                 "           WHEN 1 THEN progression = 'SUSPENDED' " +
                 "       END " +
                 "OR " +
-                "       CASE :stateOpen " +
-                "           WHEN 1 THEN progression = 'OPEN' " +
+                "       CASE :stateWaiting " +
+                "           WHEN 1 THEN progression = 'WAITING' " +
                 "       END " +
                 "OR " +
                 "       CASE :stateNone " +
@@ -87,10 +87,10 @@ abstract class TodoDAO {
         endDate: Long = Long.MAX_VALUE,
         favorite: Boolean = false,
         notebookId: Int = -1,
-        stateClosed: Boolean = true,
-        stateOnit: Boolean = true,
+        stateCompleted: Boolean = true,
+        stateActive: Boolean = true,
         stateSuspended: Boolean = true,
-        stateOpen: Boolean = true,
+        stateWaiting: Boolean = true,
         stateNone: Boolean = true,
     ): List<TodoTask>
 
