@@ -124,10 +124,10 @@ fun NavGraphBuilder.memoNavGraph(
             if (memoViewModel.firstFetch) {
                 Log.i("PHILIP", "[MemoNavGraph] memoViewModel value ${memoViewModel.toString()}")
                 memoViewModel.observePrioritySortState()
-                memoViewModel.observeOrderEnabledState()
-                memoViewModel.observeDateEnabledState()
+                memoViewModel.observeDateOrderEnabledState()
                 memoViewModel.observeFavoriteState()
                 memoViewModel.observeNotebookIdChange()
+                memoViewModel.observeStateState()
                 memoViewModel.observeFirstRecentNotebookIdChange()
                 memoViewModel.observeSecondRecentNotebookIdChange()
             }
@@ -158,9 +158,10 @@ fun NavGraphBuilder.memoNavGraph(
                     memoViewModel.onOpenSearchBar()
                 },
                 onCloseClicked = {
-                    if (memoViewModel.searchTextString.isNotEmpty()) {
+                    if (memoViewModel.searchTextString.isNotEmpty() ||
+                            memoViewModel.searchRangeAll) {
                         memoViewModel.searchTextString = ""
-                        memoViewModel.refreshAllTasks()
+                        memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
                     } else {
                         memoViewModel.onCloseSearchBar()
                     }

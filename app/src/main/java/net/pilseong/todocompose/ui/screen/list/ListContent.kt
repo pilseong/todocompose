@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,11 +31,11 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,9 +102,10 @@ fun ListContent(
             selectedItemsIds = selectedItemsIds,
             onStateSelected = onStateSelected,
         )
-    } else {
-        LoadingContent()
     }
+//    } else {
+//        LoadingContent()
+//    }
 }
 
 // tasks 가 있는 경우에 표출
@@ -160,6 +162,8 @@ fun LazyItemList(
 ) {
     // 화면 의 크기의 반을 swipe 한 경우 처리
     val threshold = LocalConfiguration.current.screenWidthDp / 3
+
+    // lazyColume의 화면 데이터 사용
     val listState = rememberLazyListState()
     val date: MutableState<String> = remember { mutableStateOf("") }
 
@@ -206,23 +210,43 @@ fun LazyItemList(
 
                 if (dateEnabled) {
                     currentDate = tasks.peek(index)?.createdAt
-                    nextDate = if (index == tasks.itemCount-1) null
+                    nextDate = if (index == tasks.itemCount - 1) null
                     else tasks.peek(index + 1)?.createdAt
                 } else {
                     currentDate = tasks.peek(index)?.updatedAt
-                    nextDate = if (index == tasks.itemCount-1) null
+                    nextDate = if (index == tasks.itemCount - 1) null
                     else tasks.peek(index + 1)?.updatedAt
                 }
 
                 currentDate?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
             }
 
-            val currentItem by rememberUpdatedState(newValue = tasks[index])
+//            val currentItem by rememberUpdatedState(newValue = tasks.peek(index)!!)
+//            var currentItem by remember {
+//                mutableStateOf(tasks.get(index)!!)
+//            }.apply { value =  tasks.get(index)!! }
+//            var currentItem by remember {
+//                mutableStateOf(tasks.peek(index)!!)
+//            }
+
+//            if (currentItem.id == 75) {
+//                Log.i("PHILIP", "id 75 currentItem favortie ${currentItem.title}, ${currentItem.favorite}")
+//            }
+
+            if (tasks.peek(index)!!.id == 75) {
+                Log.i(
+                    "PHILIP",
+                    "id 75 currentItem favortie ${tasks.peek(index)!!.title}, ${tasks.peek(index)!!.favorite}"
+                )
+            }
             val dismissState = rememberDismissState(
                 confirmValueChange = {
                     when (it) {
                         DismissValue.Default -> false
-                        DismissValue.DismissedToEnd -> onSwipeToEdit(index)
+                        DismissValue.DismissedToEnd -> {
+                            onSwipeToEdit(index)
+                        }
+
                         DismissValue.DismissedToStart -> {}
 //                                onSwipeToDelete(
 //                                    Action.DELETE,
@@ -233,6 +257,12 @@ fun LazyItemList(
                 },
                 positionalThreshold = { threshold.dp.toPx() }
             )
+
+            if (dismissState.currentValue != DismissValue.Default) {
+                LaunchedEffect(Unit) {
+                    dismissState.reset()
+                }
+            }
 
             SwipeToDismiss(
                 state = dismissState,
@@ -248,7 +278,8 @@ fun LazyItemList(
                 dismissContent = {
                     TaskItem(
                         modifier = Modifier.animateItemPlacement(),
-                        todoTask = currentItem!!,
+//                        todoTask = currentItem,
+                        todoTask = tasks.peek(index)!!,
                         drawEndEdge = drawEndEdge,
                         toTaskScreen = {
                             toTaskScreen(index)
@@ -260,15 +291,24 @@ fun LazyItemList(
 //                        onDeselectedClick = {
 //
 //                        },
-                        datetime = if (dateEnabled) currentItem!!.createdAt
-                        else currentItem!!.updatedAt,
+                        datetime = if (dateEnabled) tasks.peek(index)!!.createdAt
+                        else tasks.peek(index)!!.updatedAt,
+                        // favorite 을 클릭했을 때 화면에만 반영하기 위해서 snapshot의 상태만 변경한다.
+                        // list가 이동하는 순간 snapshot이 그려지기 때문에 snapshot을 변경해야 한다.
+                        // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
+                        // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
                         onFavoriteClick = {
-                            onFavoriteClick(currentItem!!)
+                            tasks.itemSnapshotList[index]!!.favorite =
+                                !tasks.itemSnapshotList[index]!!.favorite
+                            onFavoriteClick(tasks.itemSnapshotList[index]!!)
                         },
                         onLongClickReleased = onLongClickReleased,
                         onLongClickApplied = onLongClickApplied,
                         selectedItemsIds = selectedItemsIds,
-                        onStateSelected = onStateSelected,
+                        onStateSelected = { todo, state ->
+                            tasks.itemSnapshotList[index]!!.progression = state
+                            onStateSelected(todo, state)
+                        },
                     )
                 },
                 directions = setOf(DismissDirection.StartToEnd)

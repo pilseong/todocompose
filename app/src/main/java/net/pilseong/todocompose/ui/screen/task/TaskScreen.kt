@@ -3,7 +3,6 @@ package net.pilseong.todocompose.ui.screen.task
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -43,9 +42,9 @@ fun TaskScreen(
     val context = LocalContext.current
 
     // 뒤로 가기 버튼에 대한 가로 채기 및 처리
-    BackHandler {
-        toListScreen(null)
-    }
+//    BackHandler {
+//        toListScreen(null)
+//    }
 
     val emptyTitleString = stringResource(id = R.string.empty_title_popup)
     val emptyDescriptionString = stringResource(id = R.string.empty_description_popup)

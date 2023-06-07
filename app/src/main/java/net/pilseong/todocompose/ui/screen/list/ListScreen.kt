@@ -48,6 +48,7 @@ import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.SearchAppBarState
+import net.pilseong.todocompose.util.SortOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -136,12 +137,15 @@ fun ListScreen(
         enabled = memoViewModel.searchAppBarState.value != SearchAppBarState.CLOSE ||
                 memoViewModel.selectedItems.size != 0
     ) {
+        // 선택 해제
         if (memoViewModel.selectedItems.size != 0) {
             memoViewModel.selectedItems.clear()
+
+        // 검색바 조절
         } else {
-            if (memoViewModel.searchTextString.isNotEmpty()) {
+            if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
                 memoViewModel.searchTextString = ""
-                memoViewModel.refreshAllTasks()
+                memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
             } else {
                 memoViewModel.onCloseSearchBar()
             }
@@ -184,6 +188,7 @@ fun ListScreen(
                 notebookColor = memoViewModel.selectedNotebook.value.priority.color,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,
+                searchRangeAll = memoViewModel.searchRangeAll,
                 onImportClick = {
                     intentResultLauncher.launch("*/*")
                 },
@@ -211,7 +216,10 @@ fun ListScreen(
                 },
                 onExportClick = {
                     memoViewModel.exportData()
-                }
+                },
+                onSearchRangeAllClicked = {
+                    memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = it)
+                },
             )
         },
         bottomBar = {
@@ -229,10 +237,11 @@ fun ListScreen(
                 )
                 .fillMaxSize(),
         ) {
+
             StatusLine(
                 prioritySortState = prioritySortState,
-                orderEnabled = memoViewModel.orderEnabled,
-                dateEnabled = memoViewModel.dateEnabled,
+                orderEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
+                dateEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
                 startDate = memoViewModel.startDate,
                 endDate = memoViewModel.endDate,
                 favoriteOn = memoViewModel.sortFavorite,
@@ -257,13 +266,13 @@ fun ListScreen(
                 onOrderEnabledClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_ORDER_CHANGE,
-                        sortOrderEnabled = !memoViewModel.orderEnabled
+                        sortOrderEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC)                         ,
                     )
                 },
                 onDateEnabledClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_DATE_CHANGE,
-                        sortDateEnabled = !memoViewModel.dateEnabled
+                        sortDateEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
                     )
                 },
                 onPrioritySelected = { priority ->
@@ -294,7 +303,7 @@ fun ListScreen(
                     toTaskScreen(tasks.itemSnapshotList.items)
                 },
                 header = true,//memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
-                dateEnabled = memoViewModel.dateEnabled,
+                dateEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
                 onFavoriteClick = { todo ->
                     memoViewModel.handleActions(
                         action = Action.FAVORITE_UPDATE,

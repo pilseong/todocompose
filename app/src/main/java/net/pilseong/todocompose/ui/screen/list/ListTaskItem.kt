@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -76,12 +77,29 @@ fun TaskItem(
     onStateSelected: (TodoTask, State) -> Unit,
 ) {
 
+//    if (currentItem.id == 75) {
+//        Log.i("PHILIP", "id 75 currentItem favortie ${currentItem.title}, ${currentItem.favorite}")
+//    }
+
+    if (todoTask.id == 75) {
+        Log.i("PHILIP", "id 75 TaskItem drawing with ${todoTask.favorite}")
+    }
     val selected = remember(selectedItemsIds.size) {
         mutableStateOf(selectedItemsIds.contains(todoTask.id))
     }
 
+//    val favoriteOn by rememberUpdatedState(todoTask.favorite)
+//    var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
+        .apply {
+            value = todoTask.favorite
+        }
+
     var stateState by remember { mutableStateOf(todoTask.progression) }
+        .apply {
+            value = todoTask.progression
+    }
+
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
     var stateDialogExpanded by remember { mutableStateOf(false) }
@@ -243,8 +261,8 @@ fun TaskItem(
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }
                             ) {
-                                onFavoriteClick()
                                 favoriteOn = !favoriteOn
+                                onFavoriteClick()
                             },
                             imageVector = Icons.Default.Star,
                             contentDescription = stringResource(id = R.string.task_item_star_description),

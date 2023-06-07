@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -120,6 +121,88 @@ fun StatusLine(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+
+                item {
+                    Card(
+                        modifier = Modifier
+                            .clickable {
+                                menuItemSwitch = 1
+                                expanded = true
+                            },
+                        border =
+                            BorderStroke(
+                                0.5F.dp,
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                            ),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SMALL_PADDING),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.width(12.dp),
+                                imageVector = Icons.Default.ChecklistRtl,
+                                contentDescription = "Check list icon"
+                            )
+                            Spacer(modifier = Modifier.width(SMALL_PADDING))
+                            Text(
+                                text = "State",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    // favorite
+                    Card(
+                        modifier = Modifier
+                            .clickable {
+                                onFavoriteClick()
+                            },
+                        shape = RoundedCornerShape(4.dp),
+                        border = if (favoriteOn)
+                            BorderStroke(color = Color.Transparent, width = 0.dp)
+                        else
+                            BorderStroke(
+                                0.5F.dp,
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (favoriteOn) MaterialTheme.colorScheme.FavoriteYellowColor
+                            else Color.Transparent,
+//                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
+                        ),
+                    ) {
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SMALL_PADDING),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.width(12.dp),
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "star"
+                            )
+                            Spacer(modifier = Modifier.width(SMALL_PADDING))
+                            Text(
+                                text = stringResource(id = R.string.badge_favorite_label),
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            )
+                        }
+                    }
+                }
+
                 // 우선 순위 설정
                 item {
                     Card(
@@ -236,7 +319,7 @@ fun StatusLine(
                             Icon(
                                 modifier = Modifier.width(12.dp),
                                 imageVector = if (dateEnabled) Icons.TwoTone.Edit
-                                else Icons.TwoTone.Edit,
+                                else Icons.Default.Update,
                                 contentDescription = "star"
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
@@ -249,85 +332,12 @@ fun StatusLine(
                         }
                     }
                 }
-
-                item {
-                    // favorite
-                    Card(
-                        modifier = Modifier
-                            .clickable {
-                                onFavoriteClick()
-                            },
-                        shape = RoundedCornerShape(4.dp),
-                        border = if (favoriteOn)
-                            BorderStroke(color = Color.Transparent, width = 0.dp)
-                        else
-                            BorderStroke(
-                                0.5F.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
-                            ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (favoriteOn) MaterialTheme.colorScheme.FavoriteYellowColor
-                            else Color.Transparent,
-//                        contentColor = MaterialTheme.colorScheme.topBarContentColor,
-                        ),
-                    ) {
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SMALL_PADDING),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                modifier = Modifier.width(12.dp),
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "star"
-                            )
-                            Spacer(modifier = Modifier.width(SMALL_PADDING))
-                            Text(
-                                text = stringResource(id = R.string.badge_favorite_label),
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            )
-                        }
-                    }
-                }
-
-                item {
-                    Card(
-                        modifier = Modifier
-                            .clickable {
-                                menuItemSwitch = 1
-                                expanded = true
-                            },
-                        shape = RoundedCornerShape(4.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(SMALL_PADDING),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                modifier = Modifier.width(12.dp),
-                                imageVector = Icons.Default.ChecklistRtl,
-                                contentDescription = "Check list icon"
-                            )
-                            Spacer(modifier = Modifier.width(SMALL_PADDING))
-                            Text(
-                                text = "State",
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            )
-                        }
-                    }
-                }
             }
 
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                offset = if (menuItemSwitch == 0) DpOffset(0.dp, 0.dp) else DpOffset(250.dp, 0.dp)
+                offset = if (menuItemSwitch == 0) DpOffset(150.dp, 0.dp) else DpOffset(0.dp, 0.dp)
             ) {
                 if (menuItemSwitch == 0) {
                     PriorityMenuItems { it ->
@@ -359,7 +369,7 @@ fun StatusLine(
                             Instant.ofEpochMilli(startDate),
                             ZoneId.systemDefault()
                         ).format(
-                            DateTimeFormatter.ofPattern("yy/MM/dd")
+                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
                         )
                     else stringResource(id = R.string.status_line_date_range_from_the_first_memo_text)
 
@@ -368,7 +378,7 @@ fun StatusLine(
                             Instant.ofEpochMilli(endDate),
                             ZoneId.systemDefault()
                         ).format(
-                            DateTimeFormatter.ofPattern("yy/MM/dd")
+                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
                         )
                     else stringResource(id = R.string.status_line_date_range_up_to_date_text)
                     Surface(

@@ -17,5 +17,6 @@ enum class Action {
     MOVE_TO,
     STATE_FILTER_CHANGE,
     STATE_CHANGE,
+    SEARCH_RANGE_CHANGE,
     NO_ACTION
 }

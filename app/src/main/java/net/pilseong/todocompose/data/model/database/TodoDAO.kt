@@ -19,7 +19,12 @@ abstract class TodoDAO {
 
     @Query(
         "SELECT * FROM todo_table " +
-                "WHERE " + "notebook_id = :notebookId " +
+                "WHERE 1=1 " +
+                "AND ( " +
+                "       CASE :searchRangeAll " +
+                "           WHEN 0 THEN notebook_id = :notebookId " +
+                "           WHEN 1 THEN 1=1 " +
+                "       END) " +
                 "AND (title LIKE :query OR description LIKE :query) " +
                 "AND (" +
                 "       CASE :favorite " +
@@ -81,6 +86,7 @@ abstract class TodoDAO {
         page: Int,
         pageSize: Int,
         query: String,
+        searchRangeAll: Boolean = false,
         sortCondition: Int = 0,
         priority: String = "HIGH",
         startDate: Long = Long.MIN_VALUE,

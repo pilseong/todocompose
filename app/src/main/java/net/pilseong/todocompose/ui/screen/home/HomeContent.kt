@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgeDefaults
 import androidx.compose.material3.Card
@@ -547,9 +548,10 @@ fun NoteContent(
 //                                                            Row {
                                                             Icon(
                                                                 modifier = Modifier
-                                                                    .width(14.dp)
-                                                                    .padding(top = 3.dp),
-                                                                painter = painterResource(id = R.drawable.ic_create_note_icon),
+                                                                    .width(14.dp),
+//                                                                    .padding(top = 3.dp),
+//                                                                painter = painterResource(id = R.drawable.ic_create_note_icon),
+                                                                imageVector = Icons.Default.Update,
                                                                 contentDescription = "edit time",
                                                                 tint = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                                     alpha = 0.2f

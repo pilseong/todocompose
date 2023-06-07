@@ -105,7 +105,6 @@ fun NavGraphBuilder.homeComposable(
             onSelectNotebook = { index ->
                 noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, index)
                 scope.launch {
-//                    delay(100)
                     navHostController.navigate(Screen.MemoList.route)
                 }
             },

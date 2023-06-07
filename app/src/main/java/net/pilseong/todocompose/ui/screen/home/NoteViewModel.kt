@@ -92,7 +92,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun getNotebooks() {
-        Log.i("PHILIP", "getNotebooks")
+        Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
         viewModelScope.launch(Dispatchers.IO) {
             notebookRepository.getNotebooks()
                 .stateIn(
@@ -101,7 +101,7 @@ class NoteViewModel @Inject constructor(
                     initialValue = emptyList()
                 )
                 .collect {
-                    Log.i("PHILIP", "getNotebooks inside $it")
+                    Log.i("PHILIP", "[NoteViewModel] getNotebooks() inside $it")
                     notebooks.value = it
                 }
         }

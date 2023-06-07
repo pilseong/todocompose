@@ -25,6 +25,7 @@ class TodoRepository @Inject constructor(
 
     fun getTasks(
         query: String,
+        searchRangeAll: Boolean = false,
         sortCondition: Int,
         priority: Priority = Priority.NONE,
         startDate: Long? = null,
@@ -44,6 +45,7 @@ class TodoRepository @Inject constructor(
                 TodoPagingSource(
                     todoDAO = todoDAO,
                     query = query,
+                    searchRangeAll = searchRangeAll,
                     sortCondition = sortCondition,
                     priority = priority,
                     startDate = startDate,
