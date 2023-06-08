@@ -27,6 +27,7 @@ fun MainNavGraph(
     ) {
         homeComposable(
             navHostController = navHostController,
+            viewModelStoreOwner = viewModelStoreOwner,
             route = BottomBarScreen.Home.route
         )
 

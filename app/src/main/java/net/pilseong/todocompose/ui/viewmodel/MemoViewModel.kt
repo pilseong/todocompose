@@ -329,7 +329,7 @@ class MemoViewModel @Inject constructor(
     }
 
     fun observeNotebookIdChange() {
-        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed")
+        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed $dataStoreRepository")
         viewModelScope.launch {
             delay(100)
             dataStoreRepository.readSelectedNotebookId
@@ -341,7 +341,7 @@ class MemoViewModel @Inject constructor(
                             firstFetch = false
                             Log.i(
                                 "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() firstFetch executed with notebookId: $notebookIdState"
+                                "[MemoViewModel] observeNotebookIdChange() $dataStoreRepository refreshAllTasks() firstFetch executed with notebookId: $notebookIdState"
                             )
                             refreshAllTasks()
                         } else {
@@ -351,7 +351,7 @@ class MemoViewModel @Inject constructor(
                         if (selectedNoteId != notebookIdState) {
                             Log.i(
                                 "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with notebookId: $notebookIdState"
+                                "[MemoViewModel] observeNotebookIdChange() $dataStoreRepository refreshAllTasks() executed with notebookId: $notebookIdState"
                             )
                             notebookIdState = selectedNoteId
                             refreshAllTasks()
@@ -482,19 +482,19 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun persistFirstRecentNotebookIdState(notebookId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch{
             dataStoreRepository.persistFirstRecentNotebookId(notebookId)
         }
     }
 
     private fun persistSecondRecentNotebookIdState(notebookId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             dataStoreRepository.persistSecondRecentNotebookId(notebookId)
         }
     }
 
     private fun persistStateState(state: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             dataStoreRepository.persistStateState(state)
         }
     }
@@ -524,6 +524,7 @@ class MemoViewModel @Inject constructor(
         title = task.title
         description = task.description
         priority = task.priority
+        state = task.progression
         notebookId = task.notebookId
         createdAt = task.createdAt
         updatedAt = task.updatedAt
@@ -781,10 +782,11 @@ class MemoViewModel @Inject constructor(
             )
             todoRepository.addTask(
                 TodoTask(
-                    0,
-                    title,
-                    description,
-                    priority,
+                    id = 0,
+                    title = title,
+                    description = description,
+                    priority = priority,
+                    progression = state,
                     notebookId = notebookIdState
                 )
             )
@@ -870,10 +872,11 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             todoRepository.updateTask(
                 TodoTask(
-                    id,
-                    title,
-                    description,
-                    priority,
+                    id = id,
+                    title = title,
+                    description = description,
+                    priority = priority,
+                    progression = state,
                     notebookId = notebookId,
                     createdAt = createdAt
                 )

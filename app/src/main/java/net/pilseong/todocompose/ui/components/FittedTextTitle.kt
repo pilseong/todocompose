@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -11,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 
 @Composable
@@ -57,7 +60,18 @@ fun FittedTextTitle(
         Text(
             text = if (appbarTitle.length == index) appbarTitle
             else appbarTitle.substring(startIndex = 0, endIndex = index - 3) + "...",
+            overflow = TextOverflow.Ellipsis
 //            color = MaterialTheme.colorScheme.topBarContentColor
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewFittedTextTitle() {
+    MaterialTheme {
+        FittedTextTitle(onAppBarTitleClick = { /*TODO*/ },
+            appbarTitle = "메모 테스트 입니다. 테스트 입니다ㅁㄴㅇㄴㄴ")
+    }
+    
 }

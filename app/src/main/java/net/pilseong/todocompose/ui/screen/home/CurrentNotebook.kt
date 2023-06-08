@@ -104,16 +104,16 @@ fun CurrentNotebook(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Badge {
-                                    Icon(
-                                        modifier = Modifier.size(8.dp),
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = "Checked Icon",
-                                    )
-                                }
+//                                Badge {
+//                                    Icon(
+//                                        modifier = Modifier.size(8.dp),
+//                                        imageVector = Icons.Default.Check,
+//                                        contentDescription = "Checked Icon",
+//                                    )
+//                                }
                                 Text(
                                     modifier = Modifier.padding(horizontal = 2.dp),
-                                    text = "Now",
+                                    text = stringResource(id = R.string.current_label),
                                     color = Color(
                                         ColorUtils.blendARGB(
                                             MaterialTheme.colorScheme.onPrimary.toArgb(),

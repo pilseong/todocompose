@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -66,17 +67,23 @@ import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.MetricsUtil
 import java.time.format.DateTimeFormatter
 
 fun NavGraphBuilder.homeComposable(
     navHostController: NavHostController,
+    viewModelStoreOwner: ViewModelStoreOwner,
     route: String
 ) {
     composable(
         route = route,
     ) {
-        val noteViewModel = hiltViewModel<NoteViewModel>()
+//        val noteViewModel = hiltViewModel<NoteViewModel>()
+        val noteViewModel = hiltViewModel<NoteViewModel>(
+            viewModelStoreOwner = viewModelStoreOwner
+        )
+
         val openDialog = remember { mutableStateOf(false) }
         val infoDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
@@ -86,7 +93,9 @@ fun NavGraphBuilder.homeComposable(
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         val action = remember { mutableStateOf(NoteAction.ADD) }
         val indexSelected = remember { mutableStateOf(-1) }
-        LaunchedEffect(key1 = Unit) {
+
+
+        if (noteViewModel.firstFetch) {
             noteViewModel.observeNotebookIdChange()
             noteViewModel.observeFirstRecentNotebookIdChange()
             noteViewModel.observeSecondRecentNotebookIdChange()

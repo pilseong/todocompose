@@ -108,4 +108,7 @@
     <string name="info_priority">중요도</string>
     <string name="info_description">설명</string>
     <string name="info_title">제목</string>
+    <string name="current_label">선택노트</string>
+    <string name="datepicker_start_label">시작일</string>
+    <string name="datepicker_end_label">종료일</string>
 </resources>
