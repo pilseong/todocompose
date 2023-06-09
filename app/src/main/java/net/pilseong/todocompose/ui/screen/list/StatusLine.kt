@@ -237,7 +237,8 @@ fun StatusLine(
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
                             Text(
-                                text = stringResource(id = prioritySortState.label),
+                                text = stringResource(id = if (prioritySortState == Priority.NONE)
+                                    R.string.info_priority else prioritySortState.label),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }

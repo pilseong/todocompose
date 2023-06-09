@@ -42,6 +42,7 @@ import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
+import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.TaskAppBarState
@@ -233,7 +234,7 @@ class MemoViewModel @Inject constructor(
 
 
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
-    var notebooks: StateFlow<List<NotebookWithCount>> = notebookRepository.getNotebooks()
+    var notebooks: StateFlow<List<NotebookWithCount>> = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,

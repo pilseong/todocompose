@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.data.repository;
 
+import android.util.Log
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -7,6 +8,7 @@ import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.database.NotebookDAO
+import net.pilseong.todocompose.util.NoteSortingOption
 import javax.inject.Inject
 
 @ActivityRetainedScoped
@@ -17,8 +19,9 @@ class NotebookRepository @Inject constructor(
 //        return notebookDAO.getNotebooks()
 //    }
 
-    fun getNotebooks(): Flow<List<NotebookWithCount>> {
-        return notebookDAO.getNotebooksWithCount()
+    fun getNotebooks(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>> {
+        Log.i("PHILIP", "[NotebookRepository] getNotebooks with $sortingOption")
+        return notebookDAO.getNotebooksWithCount(sortingOption)
     }
 
     suspend fun getAllNotebooks(): List<Notebook> {

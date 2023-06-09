@@ -9,6 +9,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
+import net.pilseong.todocompose.util.NoteSortingOption
 import java.time.ZonedDateTime
 
 @Dao
@@ -63,6 +64,10 @@ abstract class NotebookDAO(
     }
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
             "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +
-            "FROM note_table ORDER BY updated_at DESC")
-    abstract fun getNotebooksWithCount(): Flow<List<NotebookWithCount>>
+            "FROM note_table " +
+            "ORDER BY " +
+            "CASE WHEN :sortingOption = 'ACCESS_AT' THEN accessed_at END DESC, " +
+            "CASE WHEN :sortingOption = 'UPDATED_AT' THEN updated_at END DESC, " +
+            "CASE WHEN :sortingOption = 'CREATED_AT' THEN created_at END DESC")
+    abstract fun getNotebooksWithCount(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>>
 }

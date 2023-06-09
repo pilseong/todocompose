@@ -7,5 +7,6 @@ enum class NoteAction {
     DELETE_ALL,
     UNDO,
     SELECT_NOTEBOOK,
+    SORT_BY_TIME,
     NO_ACTION
 }

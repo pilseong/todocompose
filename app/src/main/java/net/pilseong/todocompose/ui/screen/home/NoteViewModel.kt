@@ -12,9 +12,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.R
@@ -24,6 +23,7 @@ import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
+import net.pilseong.todocompose.util.NoteSortingOption
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
@@ -37,6 +37,8 @@ class NoteViewModel @Inject constructor(
     var notebookIdState by mutableStateOf(-1)
 
     var selectedNotebooks = mutableStateListOf<Int>()
+
+    var sortingOptionState by mutableStateOf(NoteSortingOption.ACCESS_AT)
 
 
     fun appendMultiSelectedNotebook(id: Int) {
@@ -56,7 +58,6 @@ class NoteViewModel @Inject constructor(
     }
 
     var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
-        private set
 
     val id = mutableStateOf(Int.MIN_VALUE)
 
@@ -73,6 +74,8 @@ class NoteViewModel @Inject constructor(
     val secondRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
 
     var firstFetch = true
+
+    var firstList = true
 
     private val firstRecentNotebookId = mutableStateOf<Int?>(null)
     private val secondRecentNotebookId = mutableStateOf<Int?>(null)
@@ -92,24 +95,19 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun getNotebooks() {
+    private fun getNotebooks() {
         Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
-        viewModelScope.launch(Dispatchers.IO) {
-            notebookRepository.getNotebooks()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.Lazily,
-                    initialValue = emptyList()
-                )
-                .collect {
-                    Log.i("PHILIP", "[NoteViewModel] getNotebooks() inside $it")
+        viewModelScope.launch {
+            notebookRepository.getNotebooks(sortingOptionState)
+                .collectLatest {
+                    Log.i("PHILIP", "[NoteViewModel] getNotebooks() executed $sortingOptionState")
                     notebooks.value = it
                 }
         }
     }
 
     fun observeFirstRecentNotebookIdChange() {
-        Log.i("PHILIP", "[NoteViewModel] observeFirstRecentNotebookIdChange() executed")
+        Log.i("PHILIP", "[NoteViewModel] observeFirstRecentNotebookIdChange() called")
 
         viewModelScope.launch {
             dataStoreRepository.readFirstRecentNotebookId
@@ -146,7 +144,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun observeSecondRecentNotebookIdChange() {
-        Log.i("PHILIP", "[NoteViewModel] observeSecondRecentNotebookIdChange() executed")
+        Log.i("PHILIP", "[NoteViewModel] observeSecondRecentNotebookIdChange() called")
 
         viewModelScope.launch {
             dataStoreRepository.readSecondRecentNotebookId
@@ -183,7 +181,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun observeNotebookIdChange() {
-        Log.i("PHILIP", "[NoteViewModel] observeNotebookIdChange() executed $dataStoreRepository")
+        Log.i("PHILIP", "[NoteViewModel] observeNotebookIdChange() called $dataStoreRepository")
 
         viewModelScope.launch {
             dataStoreRepository.readSelectedNotebookId
@@ -204,7 +202,29 @@ class NoteViewModel @Inject constructor(
                         }
                         Log.i(
                             "PHILIP",
-                            "[NoteViewModel] observeNotebookIdChange() $dataStoreRepository executed with $notebookIdState and currentNote: $currentNotebook"
+                            "[NoteViewModel] observeNotebookIdChange() executed with $notebookIdState and currentNote: $currentNotebook"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun observeNoteSortingState() {
+        Log.i("PHILIP", "[NoteViewModel] observeNoteSortingState() called $dataStoreRepository")
+
+        viewModelScope.launch {
+            dataStoreRepository.readNoteSortingOrderState
+                .map { it }
+                .collect { option ->
+                    if (sortingOptionState.ordinal != option || firstList) {
+                        if (firstList) firstList = false
+                        sortingOptionState = NoteSortingOption.values()[option]
+                        withContext(Dispatchers.IO) {
+                            getNotebooks()
+                        }
+                        Log.i(
+                            "PHILIP",
+                            "[NoteViewModel] observeNoteSortingState executed() $sortingOptionState ${NoteSortingOption.values()[option]}"
                         )
                     }
                 }
@@ -214,6 +234,7 @@ class NoteViewModel @Inject constructor(
 
     fun handleActions(
         action: NoteAction,
+        noteSortingOption: NoteSortingOption = NoteSortingOption.ACCESS_AT,
         notebookId: Int = -1
     ) {
         Log.i(
@@ -248,6 +269,14 @@ class NoteViewModel @Inject constructor(
                             persistFirstRecentNotebookIdState(notebookIdState)
                         }
                         persistNotebookIdState(notebookId = notebookId)
+                    }
+                }
+            }
+
+            NoteAction.SORT_BY_TIME -> {
+                if (sortingOptionState != noteSortingOption) {
+                    viewModelScope.launch {
+                        dataStoreRepository.persistNoteSortingOrderState(noteSortingOption = noteSortingOption)
                     }
                 }
             }

@@ -25,6 +25,7 @@ import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.util.Constants
+import net.pilseong.todocompose.util.NoteSortingOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,13 +40,15 @@ fun HomeScreen(
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,
     selectedNotebookIds: SnapshotStateList<Int>,
+    noteSortingOption: NoteSortingOption,
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
     onInfoClick: (Int) -> Unit,
+    onSortMenuClick: () -> Unit,
 ) {
 
 
-    Log.i("PHILIP", "notebooks $notebooks")
+//    Log.i("PHILIP", "notebooks $notebooks")
 
     val scrollBehavior = exitUntilCollapsedScrollBehavior()
 
@@ -101,6 +104,9 @@ fun HomeScreen(
                     currentNotebook = currentNotebook,
                     firstRecentNotebook = firstRecentNotebook,
                     secondRecentNotebook = secondRecentNotebook,
+                    onEmptyImageClick = onFabClick,
+                    onSortMenuClick = onSortMenuClick,
+                    noteSortingOption = noteSortingOption
                 )
             }
         }
@@ -171,6 +177,8 @@ fun PreviewHomeScreen() {
             onInfoClick = {},
             firstRecentNotebook = NotebookWithCount.instance(),
             secondRecentNotebook = NotebookWithCount.instance(),
+            onSortMenuClick = {},
+            noteSortingOption = NoteSortingOption.ACCESS_AT
         )
     }
 }

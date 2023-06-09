@@ -22,6 +22,7 @@ import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
+import net.pilseong.todocompose.util.NoteSortingOption
 
 @Composable
 fun PriorityItem(
@@ -52,6 +53,27 @@ fun PriorityItemPreview() {
     PriorityItem(priority = Priority.LOW)
 }
 
+@Composable
+fun NoteSortItem(
+    noteSortingOption: NoteSortingOption
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+//            modifier = Modifier.padding(LARGE_PADDING),
+            text = stringResource(id = noteSortingOption.label),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+@Preview
+fun PreviewNoteSortItem() {
+    NoteSortItem(noteSortingOption = NoteSortingOption.ACCESS_AT)
+}
 
 @Composable
 fun SortItem(
@@ -154,6 +176,36 @@ fun PriorityMenuItems(
             onPrioritySelected(Priority.NONE)
         })
 }
+
+@Composable
+fun SortMenuItems(
+    onOptionSelected: (NoteSortingOption) -> Unit
+) {
+    DropdownMenuItem(
+        text = { NoteSortItem(noteSortingOption = NoteSortingOption.ACCESS_AT) },
+        onClick = {
+            onOptionSelected(NoteSortingOption.ACCESS_AT)
+        })
+    DropdownMenuItem(
+        text = { NoteSortItem(noteSortingOption = NoteSortingOption.UPDATED_AT) },
+        onClick = {
+            onOptionSelected(NoteSortingOption.UPDATED_AT)
+        })
+    DropdownMenuItem(
+        text = { NoteSortItem(noteSortingOption = NoteSortingOption.CREATED_AT) },
+        onClick = {
+            onOptionSelected(NoteSortingOption.CREATED_AT)
+        })
+}
+
+@Preview
+@Composable
+fun SortMenuItemsPreview() {
+    MaterialTheme {
+        SortMenuItems(onOptionSelected = {})
+    }
+}
+
 
 @Composable
 fun StateMenuItems(
