@@ -72,11 +72,11 @@ fun BookShelf(
             items(notebooks.size) { index ->
 
                 val selected = remember(selectedNotebookIds.size) {
-                    Log.i(
-                        "PHILIP", "[HomeContent] " +
-                                "index = $index, ${selectedNotebookIds.toList()}, " +
-                                "size = ${selectedNotebookIds.size}"
-                    )
+//                    Log.i(
+//                        "PHILIP", "[HomeContent] " +
+//                                "index = $index, ${selectedNotebookIds.toList()}, " +
+//                                "size = ${selectedNotebookIds.size}"
+//                    )
                     mutableStateOf(
                         selectedNotebookIds.contains(
                             notebooks[index].id
@@ -195,83 +195,84 @@ fun BookShelf(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Center
                                         ) {
-                                            Column() {
-                                            Text(
-                                                text = when (noteSortingOption) {
-                                                    NoteSortingOption.ACCESS_AT -> {
-                                                        notebooks[index].accessedAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    stringResource(id = R.string.note_inside_dateformat)
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(
+                                                    text = when (noteSortingOption) {
+                                                        NoteSortingOption.ACCESS_AT -> {
+                                                            notebooks[index].accessedAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        stringResource(id = R.string.note_inside_dateformat)
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
+                                                        }
 
-                                                    NoteSortingOption.UPDATED_AT -> {
-                                                        notebooks[index].updatedAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    stringResource(id = R.string.note_inside_dateformat)
+                                                        NoteSortingOption.UPDATED_AT -> {
+                                                            notebooks[index].updatedAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        stringResource(id = R.string.note_inside_dateformat)
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
+                                                        }
 
-                                                    NoteSortingOption.CREATED_AT -> {
-                                                        notebooks[index].createdAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    stringResource(id = R.string.note_inside_dateformat)
+                                                        NoteSortingOption.CREATED_AT -> {
+                                                            notebooks[index].createdAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        stringResource(id = R.string.note_inside_dateformat)
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
-                                                },
-                                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                color = Color(
-                                                    ColorUtils.blendARGB(
-                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                        Color.Black.toArgb(),
-                                                        0.1f
+                                                        }
+                                                    },
+                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.2f
                                                     )
-                                                ),
-                                            )
-                                            Text(
-                                                text = when (noteSortingOption) {
-                                                    NoteSortingOption.ACCESS_AT -> {
-                                                        notebooks[index].accessedAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    "HH:mm"
+                                                    else Color.White.copy(alpha = 0.7f)
+//                                                color = Color(
+//                                                    ColorUtils.blendARGB(
+//                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
+//                                                        Color.Black.toArgb(),
+//                                                        0.1f
+//                                                    )
+//                                                ),
+                                                )
+                                                Text(
+                                                    text = when (noteSortingOption) {
+                                                        NoteSortingOption.ACCESS_AT -> {
+                                                            notebooks[index].accessedAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        "HH:mm"
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
+                                                        }
 
-                                                    NoteSortingOption.UPDATED_AT -> {
-                                                        notebooks[index].updatedAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    "HH:mm"
+                                                        NoteSortingOption.UPDATED_AT -> {
+                                                            notebooks[index].updatedAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        "HH:mm"
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
+                                                        }
 
-                                                    NoteSortingOption.CREATED_AT -> {
-                                                        notebooks[index].createdAt.toLocalDateTime()
-                                                            .format(
-                                                                DateTimeFormatter.ofPattern(
-                                                                    "HH:mm"
+                                                        NoteSortingOption.CREATED_AT -> {
+                                                            notebooks[index].createdAt.toLocalDateTime()
+                                                                .format(
+                                                                    DateTimeFormatter.ofPattern(
+                                                                        "HH:mm"
+                                                                    )
                                                                 )
-                                                            )
-                                                    }
-                                                },
-                                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                color = Color(
-                                                    ColorUtils.blendARGB(
-                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                        Color.Black.toArgb(),
-                                                        0.1f
+                                                        }
+                                                    },
+                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.2f
                                                     )
-                                                ),
-                                            )
+                                                    else Color.White.copy(alpha = 0.7f)
+                                                )
                                             }
 
 //                                            Icon(

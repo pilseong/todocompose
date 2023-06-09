@@ -129,14 +129,14 @@ fun NavGraphBuilder.homeComposable(
                 dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
                 openDialog.value = true
             },
-            onSelectNotebook = { index ->
-                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = index)
+            onSelectNotebook = { id ->
+                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = id)
                 scope.launch {
                     navHostController.navigate(Screen.MemoList.route)
                 }
             },
-            onSelectNotebookWithLongClick = { index ->
-                noteViewModel.appendMultiSelectedNotebook(index)
+            onSelectNotebookWithLongClick = { id ->
+                noteViewModel.appendMultiSelectedNotebook(id)
             },
             onBackButtonClick = {
                 noteViewModel.selectedNotebooks.clear()

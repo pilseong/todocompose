@@ -24,6 +24,7 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
 ) {
     companion object {
         fun instance(
+            id: Int = Int.MAX_VALUE,
             title: String = "",
             description: String = "",
             priority: Priority = Priority.NONE,
@@ -32,8 +33,21 @@ data class Notebook @RequiresApi(Build.VERSION_CODES.O) constructor(
             accessedAt: ZonedDateTime = ZonedDateTime.now(),
         ): Notebook {
             return Notebook(
+                id = id,
                 title = title, description = description, priority = priority,
                 createdAt = createdAt, updatedAt = updatedAt, accessedAt = accessedAt
+            )
+        }
+
+        fun getNotebook(notebookWithCount: NotebookWithCount): Notebook {
+            return Notebook.instance(
+                id = notebookWithCount.id,
+                title = notebookWithCount.title,
+                description = notebookWithCount.description,
+                priority = notebookWithCount.priority,
+                createdAt = notebookWithCount.createdAt,
+                updatedAt = notebookWithCount.updatedAt,
+                accessedAt = notebookWithCount.accessedAt,
             )
         }
     }

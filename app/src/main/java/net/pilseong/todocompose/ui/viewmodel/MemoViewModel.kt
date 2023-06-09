@@ -441,7 +441,7 @@ class MemoViewModel @Inject constructor(
     private fun getNotebook(id: Int) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
         if (id == -1) selectedNotebook.value =
-            Notebook.instance(context.resources.getString(R.string.default_note_title))
+            Notebook.instance(title = context.resources.getString(R.string.default_note_title))
         else selectedNotebook.value = notebookRepository.getNotebook(id)
     }
 

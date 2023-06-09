@@ -11,15 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -114,13 +110,7 @@ fun CurrentNotebook(
                                 Text(
                                     modifier = Modifier.padding(horizontal = 2.dp),
                                     text = stringResource(id = R.string.current_label),
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.2f
-                                        )
-                                    ).copy(0.9f),
+                                    color = Color.White,
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
                                 Column(
@@ -174,31 +164,24 @@ fun CurrentNotebook(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "Last Access",
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.1f
-                                        )
-                                    ),
-                                )
-                                Text(
-                                    text = ZonedDateTime.now().toLocalDate()
+                                    text = currentNotebook.accessedAt.toLocalDateTime()
                                         .format(
                                             DateTimeFormatter.ofPattern(
                                                 stringResource(id = R.string.note_inside_dateformat)
                                             )
                                         ),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.1f
-                                        )
-                                    ),
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                                Text(
+                                    text = currentNotebook.accessedAt.toLocalDateTime()
+                                        .format(
+                                            DateTimeFormatter.ofPattern(
+                                                "HH:mm"
+                                            )
+                                        ),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    color = Color.White.copy(alpha = 0.7f)
                                 )
                             }
                         }

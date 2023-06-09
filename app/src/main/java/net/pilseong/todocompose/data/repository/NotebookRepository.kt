@@ -2,9 +2,7 @@ package net.pilseong.todocompose.data.repository;
 
 import android.util.Log
 import dagger.hilt.android.scopes.ActivityRetainedScoped
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.database.NotebookDAO
@@ -13,7 +11,7 @@ import javax.inject.Inject
 
 @ActivityRetainedScoped
 class NotebookRepository @Inject constructor(
-        private val notebookDAO: NotebookDAO
+    private val notebookDAO: NotebookDAO
 ) {
 //    fun getNotebooks(): Flow<List<Notebook>> {
 //        return notebookDAO.getNotebooks()
@@ -50,6 +48,11 @@ class NotebookRepository @Inject constructor(
 
     suspend fun updateNotebook(notebook: Notebook) {
         notebookDAO.updateNotebookWithTimestamp(notebook)
+    }
+
+    suspend fun updateAccessTime(id: Int) {
+        Log.i("PHILIP","[NotebookRepository] updateAccessTime $id")
+        notebookDAO.updateAccessTime(id)
     }
 }
 

@@ -44,6 +44,12 @@ abstract class NotebookDAO(
         updateNotebook(notebook.copy(updatedAt = ZonedDateTime.now()))
 
     @Transaction
+    open suspend fun updateAccessTime(id: Int) {
+        val note = getNotebook(id)
+        updateNotebook(note.copy(accessedAt = ZonedDateTime.now()))
+    }
+
+    @Transaction
     open suspend fun deleteMultipleNotebooks(notebooksIds: List<Int>) {
         val todoDAO = database.getTodoDAO()
 

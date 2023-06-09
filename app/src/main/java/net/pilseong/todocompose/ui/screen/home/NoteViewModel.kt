@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -99,7 +98,7 @@ class NoteViewModel @Inject constructor(
         Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
         viewModelScope.launch {
             notebookRepository.getNotebooks(sortingOptionState)
-                .collectLatest {
+                .collect() {
                     Log.i("PHILIP", "[NoteViewModel] getNotebooks() executed $sortingOptionState")
                     notebooks.value = it
                 }
@@ -186,12 +185,13 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             dataStoreRepository.readSelectedNotebookId
                 .map { it }
-                .collect { state ->
-                    if (state != notebookIdState || firstFetch) {
+                .collect { id ->
+                    if (id != notebookIdState || firstFetch) {
                         if (firstFetch) firstFetch = false
-                        notebookIdState = state
-                        if (state >= 0) {
-                            currentNotebook.value = notebookRepository.getNotebookWithCount(state)
+                        notebookIdState = id
+                        if (id >= 0) {
+                            notebookRepository.updateAccessTime(id)
+                            currentNotebook.value = notebookRepository.getNotebookWithCount(id)
                         } else {
                             val countsOfMemos = memoRepository.getMemoCount(-1)
                             currentNotebook.value = NotebookWithCount.instance(
@@ -204,6 +204,7 @@ class NoteViewModel @Inject constructor(
                             "PHILIP",
                             "[NoteViewModel] observeNotebookIdChange() executed with $notebookIdState and currentNote: $currentNotebook"
                         )
+                        getNotebooks()
                     }
                 }
         }
@@ -239,7 +240,7 @@ class NoteViewModel @Inject constructor(
     ) {
         Log.i(
             "PHILIP",
-            "[NoteViewModel] handleActions performed with $action"
+            "[NoteViewModel] handleActions performed with $action, notebookId $notebookId"
         )
 
         when (action) {

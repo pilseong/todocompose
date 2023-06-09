@@ -95,13 +95,7 @@ fun RecentNotebook(
                                 Text(
 //                                    modifier = Modifier.padding(horizontal = 2.dp),
                                     text = stringResource(id = R.string.note_screen_recent_notebooks_label),
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.9f
-                                        )
-                                    ).copy(0.9f),
+                                    color = Color.White.copy(alpha = 0.7f),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
                                 Column(
@@ -156,36 +150,24 @@ fun RecentNotebook(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = currentNotebook.updatedAt.toLocalDateTime()
+                                    text = currentNotebook.accessedAt.toLocalDateTime()
                                         .format(
                                             DateTimeFormatter.ofPattern(
                                                 stringResource(id = R.string.note_inside_dateformat)
                                             )
                                         ),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.1f
-                                        )
-                                    ),
+                                    color = Color.White.copy(alpha = 0.7f)
                                 )
                                 Text(
-                                    text = currentNotebook.updatedAt.toLocalDateTime()
+                                    text = currentNotebook.accessedAt.toLocalDateTime()
                                         .format(
                                             DateTimeFormatter.ofPattern(
                                                 "HH:mm"
                                             )
                                         ),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color(
-                                        ColorUtils.blendARGB(
-                                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.1f
-                                        )
-                                    ),
+                                    color = Color.White.copy(alpha = 0.7f)
                                 )
                             }
                         }
