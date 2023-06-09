@@ -153,19 +153,15 @@ class NoteViewModel @Inject constructor(
                         secondRecentNotebookId.value = state
                         if (state != null) {
                             if (state >= 0) {
-                                withContext(Dispatchers.IO) {
-                                    secondRecentNotebook.value =
-                                        notebookRepository.getNotebookWithCount(state)
-                                }
+                                secondRecentNotebook.value =
+                                    notebookRepository.getNotebookWithCount(state)
                             } else {
-                                withContext(Dispatchers.IO) {
-                                    val countsOfMemos = memoRepository.getMemoCount(-1)
-                                    secondRecentNotebook.value = NotebookWithCount.instance(
-                                        id = -1,
-                                        title = context.resources.getString(R.string.default_note_title),
-                                        memoCount = countsOfMemos.total
-                                    )
-                                }
+                                val countsOfMemos = memoRepository.getMemoCount(-1)
+                                secondRecentNotebook.value = NotebookWithCount.instance(
+                                    id = -1,
+                                    title = context.resources.getString(R.string.default_note_title),
+                                    memoCount = countsOfMemos.total
+                                )
                             }
                         } else {
                             secondRecentNotebook.value = null
