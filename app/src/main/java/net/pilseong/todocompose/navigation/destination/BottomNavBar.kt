@@ -40,7 +40,7 @@ fun BottomNavBar(
         shadowElevation = 15.dp
     ) {
         NavigationBar(
-            modifier = Modifier.height(56.dp),
+            modifier = Modifier.height(65.dp),
 //            .graphicsLayer {
 //                clip = true
 //                shape = RoundedCornerShape(topStart = 60.dp, topEnd = 60.dp)

@@ -1,28 +1,30 @@
 package net.pilseong.todocompose.ui.screen.task
 
 import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,19 +37,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.screen.list.ColorBackGround
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
-import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.time.format.DateTimeFormatter
 
@@ -168,62 +170,95 @@ private fun ViewerContent(
             Priority.LOW -> stringResource(id = R.string.priority_low)
             Priority.NONE -> stringResource(id = R.string.priority_none)
         }
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        Surface {
+            Column(
+                modifier = Modifier
+                    .padding(start = XLARGE_PADDING, end = XLARGE_PADDING, bottom = SMALL_PADDING)
+                    .fillMaxWidth()
             ) {
-                Canvas(
-                    modifier = Modifier
-                        .padding(horizontal = SMALL_PADDING)
-                        .size(PRIORITY_INDICATOR_SIZE)
+                Row(
                 ) {
-                    drawCircle(color = task.priority.color)
-                }
+                    Column(modifier = Modifier.weight(1.5F)) {
+                        Icon(
+                            Icons.Filled.Info,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(5F)) {
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.info_created_at),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
+                            Text(
+                                text = stringResource(id = R.string.info_updated_at),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
+                            Text(
+                                stringResource(id = R.string.info_priority),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.weight(5F),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Column {
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text =
+                                task.updatedAt.toLocalDateTime()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            stringResource(id = R.string.task_content_dateformat)
+                                        )
+                                    )
+                            )
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text =
+                                task.createdAt.toLocalDateTime()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            stringResource(id = R.string.task_content_dateformat)
+                                        )
+                                    )
+                            )
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text =
+                                stringResource(id = task.priority.label)
+                            )
 
-                Text(
-                    modifier = Modifier.weight(1F),
-                    text = priorityText,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "${stringResource(id = R.string.task_content_updated_at_label)}: ${
-                        task.updatedAt.toLocalDateTime()
-                            .format(
-                                DateTimeFormatter.ofPattern(
-                                    stringResource(id = R.string.task_content_dateformat)
-                                )
-                            )
-                    }",
-                    fontSize = MaterialTheme.typography.titleSmall.fontSize
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = "${stringResource(id = R.string.sort_date_label)}: ${
-                        task.createdAt.toLocalDateTime()
-                            .format(
-                                DateTimeFormatter.ofPattern(
-                                    stringResource(id = R.string.task_content_dateformat)
-                                )
-                            )
-                    }",
-                    fontSize = MaterialTheme.typography.titleSmall.fontSize
-                )
+                        }
+                    }
+                }
+                Row(modifier = Modifier.padding(top = SMALL_PADDING)) {
+                    Column(modifier = Modifier.weight(1.5F)) {
+                        Icon(
+                            Icons.Filled.Title,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(10F)) {
+                        Text(text = task.title)
+                    }
+
+                }
             }
         }
+        Divider()
 
         Divider(
             modifier = Modifier.height(MEDIUM_PADDING),
             color = MaterialTheme.colorScheme.background,
         )
-        Card {
+        Card(
+            shape = RoundedCornerShape(4.dp)
+        ) {
             SelectionContainer {
                 Text(
                     modifier = Modifier
@@ -310,7 +345,16 @@ fun ViewerContentPreview() {
     TodoComposeTheme {
         TaskContent(
             taskIndex = 0,
-            tasks = emptyList(),
+            tasks = listOf(
+                TodoTask(
+                    id = -1,
+                    title = "필성 힘내!!!",
+                    description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    priority = Priority.HIGH,
+                    progression = State.NONE,
+                    notebookId = -1,
+                )
+            ),
             title = "필성 힘내!!!",
             description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
             priority = Priority.HIGH,
@@ -319,7 +363,7 @@ fun ViewerContentPreview() {
             onPriorityChange = {},
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
-            taskAppBarState = TaskAppBarState.EDITOR
+            taskAppBarState = TaskAppBarState.VIEWER
         )
     }
 }

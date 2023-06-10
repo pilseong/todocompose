@@ -85,9 +85,6 @@ fun EditTaskBar(
 //                color = MaterialTheme.colorScheme.topBarContentColor
             )
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
-        ),
         actions = {
             // done action
             CommonAction(
@@ -162,7 +159,7 @@ fun DetailTaskBar(
 //            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-//            containerColor = MaterialTheme.colorScheme.topBarContainerColor
+            containerColor = todoTask.priority.color.copy(alpha = 0.5F)
         ),
         actions = {
             DetailTaskBarActions(

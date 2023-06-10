@@ -1,6 +1,9 @@
 package net.pilseong.todocompose.navigation.destination
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +28,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,12 +53,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import androidx.paging.compose.collectAsLazyPagingItems
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.CustomAlertDialog
+import net.pilseong.todocompose.ui.screen.list.DisplaySnackBar
 import net.pilseong.todocompose.ui.screen.list.ListScreen
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -61,8 +68,11 @@ import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
+import net.pilseong.todocompose.util.SearchAppBarState
+import net.pilseong.todocompose.util.SortOption
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
@@ -106,6 +116,11 @@ fun NavGraphBuilder.memoNavGraph(
                 }
             }
 
+            val intentResultLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                    memoViewModel.handleImport(uri)
+                }
+
             val createNotebookStr =
                 stringResource(id = R.string.note_screen_switch_notebook_dialog_title)
             val moveToNotebookStr =
@@ -114,6 +129,7 @@ fun NavGraphBuilder.memoNavGraph(
             val openDialog = remember { mutableStateOf(false) }
             val dialogTitle = remember { mutableStateOf(createNotebookStr) }
             val action = remember { mutableStateOf(Action.NOTEBOOK_CHANGE) }
+            val snackBarHostState = remember { SnackbarHostState() }
 
 
             Log.i(
@@ -135,10 +151,26 @@ fun NavGraphBuilder.memoNavGraph(
 
 
             ListScreen(
+                snackBarHostState = snackBarHostState,
+                searchAppBarState = memoViewModel.searchAppBarState,
+                searchText = memoViewModel.searchTextString,
+                prioritySortState = memoViewModel.prioritySortState,
+                tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
+                selectedItems = memoViewModel.selectedItems,
+                selectedNotebook = memoViewModel.selectedNotebook.value,
                 toTaskScreen = { snapshot ->
                     memoViewModel.updateSnapshotTasks(snapshot)
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)
+                    toTaskScreen()
+                },
+                onSwipeToEdit = { index, todoTask, snapshot ->
+                    memoViewModel.updateIndex(index)
+                    memoViewModel.setTaskScreenToEditorMode(todoTask)
+                    memoViewModel.updateSnapshotTasks(snapshot)
+                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
+                    memoViewModel.updateAction(Action.NO_ACTION)
+
                     toTaskScreen()
                 },
                 onClickBottomNavBar = onClickBottomNavBar,
@@ -148,6 +180,10 @@ fun NavGraphBuilder.memoNavGraph(
                 stateSuspended = memoViewModel.stateSuspended,
                 stateWaiting = memoViewModel.stateWaiting,
                 stateNone = memoViewModel.stateNone,
+                orderEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
+                dataEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()
                     action.value = Action.NOTEBOOK_CHANGE
@@ -189,7 +225,81 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onStateChange = { task, state ->
                     memoViewModel.handleActions(Action.STATE_CHANGE, todoTask = task, state = state)
-                }
+                },
+                onImportClick = {
+                    intentResultLauncher.launch("*/*")
+                },
+                onFabClicked = { items ->
+                    memoViewModel.updateIndex(Constants.NEW_ITEM_ID)
+                    memoViewModel.setTaskScreenToEditorMode()
+                    memoViewModel.updateSnapshotTasks(items)
+                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
+                    memoViewModel.updateAction(Action.NO_ACTION)
+                    toTaskScreen()
+                },
+                onDeleteAllClicked = {
+                    Log.i("PHILIP", "onDeleteAllClicked")
+                    memoViewModel.handleActions(Action.DELETE_ALL)
+                },
+                onDateRangePickerConfirmed = { start, end ->
+                    memoViewModel.handleActions(
+                        action = Action.SEARCH_WITH_DATE_RANGE,
+                        startDate = start,
+                        endDate = end
+                    )
+                },
+                onExportClick = {
+                    memoViewModel.exportData()
+                },
+                onSearchRangeAllClicked = {
+                    memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = it)
+                },
+                onDateRangeCloseClick = {
+                    memoViewModel.handleActions(
+                        Action.SEARCH_WITH_DATE_RANGE,
+                        startDate = null,
+                        endDate = null
+                    )
+                },
+                onFavoriteSortClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_FAVORITE_CHANGE,
+                        favorite = !memoViewModel.sortFavorite
+                    )
+                },
+                onOrderEnabledClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_ORDER_CHANGE,
+                        sortOrderEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
+                                memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
+                    )
+                },
+                onDateEnabledClick = {
+                    memoViewModel.handleActions(
+                        action = Action.SORT_DATE_CHANGE,
+                        sortDateEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
+                                memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
+                    )
+                },
+                onPrioritySelected = { priority ->
+                    Log.i("PHILIP", "onSortClicked")
+                    memoViewModel.handleActions(
+                        Action.PRIORITY_CHANGE,
+                        priority = priority
+                    )
+                },
+                onFavoriteClick = { todo ->
+                    memoViewModel.handleActions(
+                        action = Action.FAVORITE_UPDATE,
+                        todoTask = todo
+                    )
+                },
+                onLongClickReleased = {
+                    memoViewModel.removeMultiSelectedItem(it)
+                },
+                onLongClickApplied = {
+                    memoViewModel.appendMultiSelectedItem(it)
+                },
             )
 
             NotebooksPickerDialog(
@@ -209,6 +319,54 @@ fun NavGraphBuilder.memoNavGraph(
                     openDialog.value = false
                 }
             )
+
+            // task screen 에서 요청한 처리의 결과를 보여 준다. undo 의 경우는 특별 하게 처리 한다.
+            // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
+            DisplaySnackBar(
+                snackBarHostState = snackBarHostState,
+                action = memoViewModel.action,
+                enabled = memoViewModel.actionPerformed,
+                title = memoViewModel.title,
+                buttonClicked = { selectedAction, result ->
+                    Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
+
+                    if (result == SnackbarResult.ActionPerformed
+                        && selectedAction == Action.DELETE
+                    ) {
+                        Log.i("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
+                        memoViewModel.handleActions(Action.UNDO)
+                    } else {
+                        memoViewModel.updateAction(Action.NO_ACTION)
+                    }
+                },
+                orderEnabled = memoViewModel.snackBarOrderEnabled,
+                dateEnabled = memoViewModel.snackBarDateEnabled,
+                startDate = memoViewModel.startDate,
+                endDate = memoViewModel.endDate,
+                actionAfterPopup = { memoViewModel.updateAction(it) }
+            )
+
+
+            // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
+            BackHandler(
+                enabled = memoViewModel.searchAppBarState != SearchAppBarState.CLOSE ||
+                        memoViewModel.selectedItems.size != 0
+            ) {
+                // 선택 해제
+                if (memoViewModel.selectedItems.size != 0) {
+                    memoViewModel.selectedItems.clear()
+
+                    // 검색바 조절
+                } else {
+                    if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
+                        memoViewModel.searchTextString = ""
+                        memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
+                    } else {
+                        memoViewModel.onCloseSearchBar()
+                    }
+                }
+            }
+
         }
 
 

@@ -1,67 +1,81 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.navigation.destination.BottomNavBar
+import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.util.Action
-import net.pilseong.todocompose.util.Constants.MEMO_LIST
-import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
+import net.pilseong.todocompose.util.Constants.HOME_SCREEN
 import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.util.SortOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
-    toTaskScreen: (List<TodoTask>) -> Unit,
-    onClickBottomNavBar: (String) -> Unit,
     memoViewModel: MemoViewModel = hiltViewModel(),
+    selectedNotebook: Notebook,
+    snackBarHostState: SnackbarHostState,
+    tasks: LazyPagingItems<TodoTask>,
+    searchAppBarState: SearchAppBarState = SearchAppBarState.CLOSE,
+    searchText: String = "",
+    orderEnabled: Boolean = false,
+    dataEnabled: Boolean = false,
+    selectedItems: SnapshotStateList<Int>,
+    prioritySortState: Priority = Priority.NONE,
     stateCompleted: Boolean = true,
     stateActive: Boolean = true,
     stateSuspended: Boolean = true,
     stateWaiting: Boolean = true,
     stateNone: Boolean = true,
+    toTaskScreen: (List<TodoTask>) -> Unit,
+    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
+    onClickBottomNavBar: (String) -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onCloseClicked: () -> Unit,
@@ -71,32 +85,30 @@ fun ListScreen(
     onMoveMemoClicked: () -> Unit,
     onStateSelected: (State) -> Unit,
     onStateChange: (TodoTask, State) -> Unit,
+    onImportClick: () -> Unit,
+    onFabClicked: (List<TodoTask>) -> Unit,
+    onDeleteAllClicked: () -> Unit,
+    onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
+    onExportClick: () -> Unit,
+    onSearchRangeAllClicked: (Boolean) -> Unit,
+    onDateRangeCloseClick: () -> Unit,
+    onFavoriteSortClick: () -> Unit,
+    onOrderEnabledClick: () -> Unit,
+    onDateEnabledClick: () -> Unit,
+    onPrioritySelected: (Priority) -> Unit,
+    onFavoriteClick: (TodoTask) -> Unit,
+    onLongClickReleased: (Int) -> Unit,
+    onLongClickApplied: (Int) -> Unit,
 ) {
-    /**
-     * view model 을 통제 하는 코드가 여기서 실행 되고 관리 된다.
-     */
-    // 검색 기능의 상태를 매핑 그냥 view model 을 사용할 수 있지만 편의를 위한
-    // composable 의 상태를 가지는 변수들
-    val searchAppBarState by memoViewModel.searchAppBarState
-    val searchText: String = memoViewModel.searchTextString
-    val prioritySortState: Priority = memoViewModel.prioritySortState
-
-    val intentResultLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            memoViewModel.handleImport(uri)
-        }
-
-
     // Flow 에 대한 collection 을 처리 하는 파이프 연결 변수들. 이 변수들 은 외부 데이터 베이스 나 외부 API 에 의존 한다.
     // 모든 task 의 상태를 감시 한다. 리스트 는 nav graph 안에서 변동 될 수 있다.
-    val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
 
-    val snackBarHostState = remember { SnackbarHostState() }
+//    val snackBarHostState = remember { SnackbarHostState() }
 
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         canScroll = {
-            memoViewModel.selectedItems.isEmpty()
+            selectedItems.isEmpty()
         },
         state = TopAppBarState(
             initialContentOffset = 0F,
@@ -105,52 +117,6 @@ fun ListScreen(
         )
     )
 
-
-    // task screen 에서 요청한 처리의 결과를 보여 준다. undo 의 경우는 특별 하게 처리 한다.
-    // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
-    DisplaySnackBar(
-        snackBarHostState = snackBarHostState,
-        action = memoViewModel.action,
-        enabled = memoViewModel.actionPerformed,
-        title = memoViewModel.title,
-        buttonClicked = { selectedAction, result ->
-            Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
-
-            if (result == SnackbarResult.ActionPerformed
-                && selectedAction == Action.DELETE
-            ) {
-                Log.i("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
-                memoViewModel.handleActions(Action.UNDO)
-            } else {
-                memoViewModel.updateAction(Action.NO_ACTION)
-            }
-        },
-        orderEnabled = memoViewModel.snackBarOrderEnabled,
-        dateEnabled = memoViewModel.snackBarDateEnabled,
-        startDate = memoViewModel.startDate,
-        endDate = memoViewModel.endDate,
-        actionAfterPopup = { memoViewModel.updateAction(it) }
-    )
-
-    // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
-    BackHandler(
-        enabled = memoViewModel.searchAppBarState.value != SearchAppBarState.CLOSE ||
-                memoViewModel.selectedItems.size != 0
-    ) {
-        // 선택 해제
-        if (memoViewModel.selectedItems.size != 0) {
-            memoViewModel.selectedItems.clear()
-
-        // 검색바 조절
-        } else {
-            if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
-                memoViewModel.searchTextString = ""
-                memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
-            } else {
-                memoViewModel.onCloseSearchBar()
-            }
-        }
-    }
 
     /**
      * view model 을 통제 코드 종료
@@ -171,62 +137,48 @@ fun ListScreen(
                 )
             }
         },
-        floatingActionButton = {
-            AddMemoFab(
-                icon = Icons.Default.Create,
-                onFabClicked = {
-                    memoViewModel.updateIndex(NEW_ITEM_ID)
-                    memoViewModel.setTaskScreenToEditorMode()
-                    toTaskScreen(tasks.itemSnapshotList.items)
-                }
-            )
-        },
+//        floatingActionButton = {
+//            AddMemoFab(
+//                icon = Icons.Default.Create,
+//                onFabClicked = {
+//                    onFabClicked(tasks.itemSnapshotList.items)
+//                }
+//            )
+//        },
         topBar = {
             ListAppBar(
                 scrollBehavior = scrollBehavior,
-                appbarTitle = memoViewModel.selectedNotebook.value.title,
-                notebookColor = memoViewModel.selectedNotebook.value.priority.color,
+                appbarTitle = selectedNotebook.title,
+                notebookColor = selectedNotebook.priority.color,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,
                 searchRangeAll = memoViewModel.searchRangeAll,
-                onImportClick = {
-                    intentResultLauncher.launch("*/*")
-                },
+                onImportClick = onImportClick,
                 onAppBarTitleClick = onAppBarTitleClick,
-                selectedItemsCount = memoViewModel.selectedItems.size,
+                selectedItemsCount = selectedItems.size,
                 onDeleteSelectedClicked = onDeleteSelectedClicked,
                 onBackButtonClick = {
-                    memoViewModel.selectedItems.clear()
+                    selectedItems.clear()
                 },
                 onSearchIconClicked = onSearchIconClicked,
                 onCloseClicked = onCloseClicked,
                 onTextChange = onTextChange,
                 onSearchClicked = onSearchClicked,
                 onMoveMemoClicked = onMoveMemoClicked,
-                onDeleteAllClicked = {
-                    Log.i("PHILIP", "onDeleteAllClicked")
-                    memoViewModel.handleActions(Action.DELETE_ALL)
-                },
-                onDateRangePickerConfirmed = { start, end ->
-                    memoViewModel.handleActions(
-                        action = Action.SEARCH_WITH_DATE_RANGE,
-                        startDate = start,
-                        endDate = end
-                    )
-                },
-                onExportClick = {
-                    memoViewModel.exportData()
-                },
-                onSearchRangeAllClicked = {
-                    memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = it)
-                },
+                onDeleteAllClicked = onDeleteAllClicked,
+                onDateRangePickerConfirmed = onDateRangePickerConfirmed,
+                onExportClick = onExportClick,
+                onSearchRangeAllClicked = onSearchRangeAllClicked,
             )
         },
         bottomBar = {
-            BottomNavBar(
-                onClick = onClickBottomNavBar,
-                currentDestination = MEMO_LIST
-            )
+            BottomActionBarNavigation(onClickBottomNavBar) {
+                onFabClicked(tasks.itemSnapshotList.items)
+            }
+//            BottomNavBar(
+//                onClick = onClickBottomNavBar,
+//                currentDestination = MEMO_LIST
+//            )
         }
     ) { paddingValues ->
         Column(
@@ -240,8 +192,8 @@ fun ListScreen(
 
             StatusLine(
                 prioritySortState = prioritySortState,
-                orderEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
-                dateEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
+                orderEnabled = orderEnabled,
+                dateEnabled = dataEnabled,
                 startDate = memoViewModel.startDate,
                 endDate = memoViewModel.endDate,
                 favoriteOn = memoViewModel.sortFavorite,
@@ -250,38 +202,11 @@ fun ListScreen(
                 stateSuspended = stateSuspended,
                 stateWaiting = stateWaiting,
                 stateNone = stateNone,
-                onCloseClick = {
-                    memoViewModel.handleActions(
-                        Action.SEARCH_WITH_DATE_RANGE,
-                        startDate = null,
-                        endDate = null
-                    )
-                },
-                onFavoriteClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_FAVORITE_CHANGE,
-                        favorite = !memoViewModel.sortFavorite
-                    )
-                },
-                onOrderEnabledClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_ORDER_CHANGE,
-                        sortOrderEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC)                         ,
-                    )
-                },
-                onDateEnabledClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_DATE_CHANGE,
-                        sortDateEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
-                    )
-                },
-                onPrioritySelected = { priority ->
-                    Log.i("PHILIP", "onSortClicked")
-                    memoViewModel.handleActions(
-                        Action.PRIORITY_CHANGE,
-                        priority = priority
-                    )
-                },
+                onCloseClick = onDateRangeCloseClick,
+                onFavoriteClick = onFavoriteSortClick,
+                onOrderEnabledClick = onOrderEnabledClick,
+                onDateEnabledClick = onDateEnabledClick,
+                onPrioritySelected = onPrioritySelected,
                 onStateSelected = onStateSelected
             )
 
@@ -297,133 +222,85 @@ fun ListScreen(
 //                        memoViewModel.updateTaskContent(task)
 //                        memoViewModel.handleActions(action, task.id)
 //                    },
-                onSwipeToEdit = { index ->
-                    memoViewModel.updateIndex(index)
-                    memoViewModel.setTaskScreenToEditorMode(tasks.peek(index)!!)
-                    toTaskScreen(tasks.itemSnapshotList.items)
-                },
-                header = true,//memoViewModel.searchAppBarState.value == SearchAppBarState.CLOSE,
-                dateEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC || memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
-                onFavoriteClick = { todo ->
-                    memoViewModel.handleActions(
-                        action = Action.FAVORITE_UPDATE,
-                        todoTask = todo
-                    )
-                },
-                onLongClickReleased = {
-                    memoViewModel.removeMultiSelectedItem(it)
-                },
-                onLongClickApplied = {
-                    memoViewModel.appendMultiSelectedItem(it)
-                },
-                selectedItemsIds = memoViewModel.selectedItems,
+                onSwipeToEdit = onSwipeToEdit,
+                header = true,
+                dateEnabled = dataEnabled,
+                onFavoriteClick = onFavoriteClick,
+                onLongClickReleased = onLongClickReleased,
+                onLongClickApplied = onLongClickApplied,
+                selectedItemsIds = selectedItems,
                 onStateSelected = onStateChange,
             )
         }
     }
 }
 
-// enabled 가 true 일 경우만 팝업이 뜬다
 @Composable
-private fun DisplaySnackBar(
-    snackBarHostState: SnackbarHostState,
-    action: Action,
-    enabled: ByteArray,
-    title: String,
-    duration: SnackbarDuration = SnackbarDuration.Short,
-    buttonClicked: (Action, SnackbarResult) -> Unit,
-    actionAfterPopup: (Action) -> Unit,
-    orderEnabled: Boolean,
-    dateEnabled: Boolean,
-    startDate: Long?,
-    endDate: Long?,
+private fun BottomActionBarNavigation(
+    onClickBottomNavBar: (String) -> Unit,
+    onFabClicked: () -> Unit,
 ) {
-
-    val message = when (action) {
-        Action.ADD ->
-            title + " " + stringResource(id = R.string.new_task_added_message)
-
-        Action.UPDATE ->
-            title + " " + stringResource(id = R.string.task_updated_message)
-
-        Action.DELETE ->
-            title + " " + stringResource(id = R.string.task_deleted_message)
-
-        Action.DELETE_ALL ->
-            stringResource(id = R.string.all_tasks_deleted_message)
-
-        Action.UNDO ->
-            title + " " + stringResource(id = R.string.all_tasks_restored_message)
-
-        Action.PRIORITY_CHANGE ->
-            stringResource(id = R.string.snackbar_message_priority_change)
-
-        Action.SORT_ORDER_CHANGE ->
-            if (orderEnabled)
-                stringResource(id = R.string.snackbar_message_order_asc_change)
-            else
-                stringResource(id = R.string.snackbar_message_order_desc_change)
-
-        Action.SORT_DATE_CHANGE ->
-            if (dateEnabled)
-                stringResource(id = R.string.snackbar_message_date_created_at_change)
-            else
-                stringResource(id = R.string.snackbar_message_date_updated_at_change)
-
-        Action.SEARCH_WITH_DATE_RANGE ->
-            if (startDate == null && endDate == null)
-                stringResource(id = R.string.snackbar_message_date_range_cancelled)
-            else
-                stringResource(id = R.string.snackbar_message_date_range_applied)
-
-        Action.SORT_FAVORITE_CHANGE ->
-            stringResource(id = R.string.snackbar_favorite_change_message)
-
-        Action.DELETE_SELECTED_ITEMS ->
-            stringResource(id = R.string.snackbar_selected_items_deleted_message)
-
-        Action.NOTEBOOK_CHANGE ->
-            stringResource(id = R.string.snackbar_changed_notebook_message)
-
-        Action.MOVE_TO ->
-            stringResource(id = R.string.snackbar_move_to_message)
-
-        else -> {
-            ""
-        }
-    }
-
-    val label = if (action == Action.DELETE)
-        stringResource(id = R.string.snack_bar_undo_label)
-    else "OK"
-
-    // enabled 는 이벤트 가 발생한 경우를 정확 하게 구분 하기 위한 변수
-    LaunchedEffect(key1 = enabled) {
-        Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
-        if (action != Action.NO_ACTION) {
-            Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
-            actionAfterPopup(Action.NO_ACTION)
-            val snackBarResult = snackBarHostState.showSnackbar(
-                message = message,
-                actionLabel = label,
-                duration = duration
+    BottomAppBar(
+        modifier = Modifier.height(65.dp),
+        actions = {
+            Row(modifier = Modifier.fillMaxWidth(0.80F)) {
+//                Row(modifier = Modifier.weight(1F)) {
+                    IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
+                        onClick = {
+                            onClickBottomNavBar(HOME_SCREEN)
+                        }) {
+                        Icon(Icons.Filled.Home, contentDescription = "Localized description")
+//                    }
+                }
+//                Row(modifier = Modifier.weight(1F)) {
+//                    Spacer(modifier = Modifier.width(18.dp))
+                    IconButton(onClick = { /* doSomething() */ }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Localized description",
+                        )
+                    }
+//                }
+            }
+        },
+        floatingActionButton = {
+            AddMemoFab(
+                icon = Icons.Default.Create,
+                size = 50.dp,
+                paddingEnd = 4.dp,
+                onFabClicked = {
+                    onFabClicked()
+                }
             )
-            buttonClicked(action, snackBarResult)
-        }
-    }
+        },
+        contentPadding = PaddingValues(0.dp)
+    )
 }
+
+@Preview
+@Composable
+fun BottomActionBarNavPreview() {
+    MaterialTheme {
+        BottomActionBarNavigation(onClickBottomNavBar = {}, onFabClicked = {})
+    }
+
+}
+
 
 // Floating Action Button
 @Composable
 fun AddMemoFab(
+    paddingEnd: Dp = 0.dp,
+    size: Dp = 56.dp,
     onFabClicked: () -> Unit,
     icon: ImageVector
 ) {
     FloatingActionButton(
+        modifier = Modifier.size(size),
         onClick = {
             onFabClicked()
         },
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(paddingEnd),
         containerColor = MaterialTheme.colorScheme.fabContainerColor,
         contentColor = MaterialTheme.colorScheme.fabContent
     ) {
@@ -434,12 +311,34 @@ fun AddMemoFab(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@Preview
+@Composable
+fun PreviewAddMenuFab() {
+    MaterialTheme {
+        AddMemoFab(onFabClicked = { /*TODO*/ }, icon = Icons.Default.Create)
+    }
+}
+
 @Composable
 @Preview
 private fun ListScreenPreview() {
-//    TodoComposeTheme {
     ListScreen(
+        selectedItems = SnapshotStateList(),
+        selectedNotebook = Notebook.instance(),
+        tasks = flowOf(
+            PagingData.from<TodoTask>(
+                listOf(
+                    TodoTask(
+                        1,
+                        "필성 힘내!!!",
+                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                        Priority.HIGH,
+                        notebookId = -1
+                    )
+                )
+            )
+        ).collectAsLazyPagingItems(),
+        snackBarHostState = SnackbarHostState(),
         toTaskScreen = {},
         onClickBottomNavBar = {},
         onAppBarTitleClick = {},
@@ -450,9 +349,22 @@ private fun ListScreenPreview() {
         onDeleteSelectedClicked = {},
         onMoveMemoClicked = {},
         onStateSelected = {},
-        onStateChange = { TodoTask, State ->
+        onStateChange = { TodoTask, State -> },
+        onImportClick = {},
+        onFabClicked = {},
+        onDeleteAllClicked = {},
+        onExportClick = {},
+        onSearchRangeAllClicked = {},
+        onDateRangePickerConfirmed = { a, b -> },
+        onDateRangeCloseClick = {},
+        onFavoriteSortClick = {},
+        onOrderEnabledClick = {},
+        onDateEnabledClick = {},
+        onPrioritySelected = {},
+        onFavoriteClick = {},
+        onLongClickReleased = {},
+        onLongClickApplied = {},
+        onSwipeToEdit = { a, todo, todos -> }
 
-        }
     )
-//    }
 }

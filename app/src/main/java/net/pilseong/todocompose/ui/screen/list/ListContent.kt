@@ -78,7 +78,7 @@ fun ListContent(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToEdit: (Int) -> Unit,
+    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
@@ -116,7 +116,7 @@ fun DisplayTasks(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToEdit: (Int) -> Unit,
+    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
@@ -152,7 +152,7 @@ fun LazyItemList(
     tasks: LazyPagingItems<TodoTask>,
     header: Boolean = false,
     dateEnabled: Boolean = false,
-    onSwipeToEdit: (Int) -> Unit,
+    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
@@ -244,7 +244,11 @@ fun LazyItemList(
                     when (it) {
                         DismissValue.Default -> false
                         DismissValue.DismissedToEnd -> {
-                            onSwipeToEdit(index)
+                            onSwipeToEdit(
+                                index,
+                                tasks.peek(index)!!,
+                                tasks.itemSnapshotList.items
+                            )
                         }
 
                         DismissValue.DismissedToStart -> {}
@@ -573,7 +577,7 @@ fun ListContentPreview() {
             ).collectAsLazyPagingItems(),
             toTaskScreen = {},
 //            onSwipeToDelete = { a, b -> },
-            onSwipeToEdit = {},
+            onSwipeToEdit = { a, b, c ->},
 //            screenMode = ScreenMode.NORMAL,
             onFavoriteClick = {},
             onLongClickReleased = {},

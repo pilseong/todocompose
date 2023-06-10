@@ -31,7 +31,6 @@ import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable

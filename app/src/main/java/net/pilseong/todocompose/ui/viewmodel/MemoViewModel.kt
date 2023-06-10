@@ -82,7 +82,7 @@ class MemoViewModel @Inject constructor(
         private set
 
     // list screen 에 있는 search bar 의 표시 상태를 저장 하는 변수
-    val searchAppBarState = mutableStateOf(SearchAppBarState.CLOSE)
+    var searchAppBarState by mutableStateOf(SearchAppBarState.CLOSE)
 
     var taskAppBarState by mutableStateOf(TaskAppBarState.VIEWER)
         private set
@@ -767,12 +767,12 @@ class MemoViewModel @Inject constructor(
     // 검색 app bar 가 닫힐 때 설정된 우선 순위에 따른 결과가 나와야 한다.
     fun onCloseSearchBar() {
         searchTextString = ""
-        searchAppBarState.value = SearchAppBarState.CLOSE
+        searchAppBarState = SearchAppBarState.CLOSE
 //        refreshAllTasks()
     }
 
     fun onOpenSearchBar() {
-        searchAppBarState.value = SearchAppBarState.OPEN
+        searchAppBarState = SearchAppBarState.OPEN
     }
 
     private fun addTask() {

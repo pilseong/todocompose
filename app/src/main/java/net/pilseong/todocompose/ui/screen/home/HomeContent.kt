@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +38,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -372,10 +372,10 @@ fun NoteContent(
                 ) {
                     Row(
                         modifier = Modifier
-                            .padding(horizontal = XLARGE_PADDING, vertical = XLARGE_PADDING)
+                            .padding(start = XLARGE_PADDING, top = XLARGE_PADDING, bottom = XLARGE_PADDING)
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.Start,
 
                     ) {
                         Text(
@@ -390,6 +390,7 @@ fun NoteContent(
                             fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
                             fontSize = MaterialTheme.typography.headlineMedium.fontSize
                         )
+                        Spacer(modifier = Modifier.width(SMALL_PADDING))
                         Card(
                             modifier = Modifier
                                 .padding(top = 4.dp)
@@ -421,6 +422,7 @@ fun NoteContent(
                                 Text(
                                     text = stringResource(id = noteSortingOption.label),
                                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
