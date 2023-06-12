@@ -27,27 +27,30 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 
 @Composable
 fun TaskAppBar(
+    task: TodoTask,
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
-    todoTask: TodoTask,
+    taskUiState: TaskUiState,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
 ) {
     when (taskAppBarState) {
         TaskAppBarState.VIEWER -> {
-            Log.i("PHILIP", "[TaskAppBar] todo received ${todoTask.title}")
+            Log.i("PHILIP", "[TaskAppBar] todo received ${taskUiState.taskDetails.title}")
             DetailTaskBar(
-                todoTask = todoTask,
+                task = task,
                 toListScreen = toListScreen,
                 onCopyClicked = onCopyClicked,
                 onEditClicked = onEditClicked
@@ -55,7 +58,11 @@ fun TaskAppBar(
         }
 
         TaskAppBarState.EDITOR -> {
-            EditTaskBar(toListScreen = toListScreen, edit = todoTask.id != NEW_ITEM_ID)
+            EditTaskBar(
+                uiState = taskUiState,
+                toListScreen = toListScreen,
+                edit = taskUiState.taskDetails.id != NEW_ITEM_ID
+            )
 
         }
     }
@@ -67,6 +74,7 @@ fun TaskAppBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskBar(
+    uiState: TaskUiState,
     toListScreen: (Action) -> Unit,
     edit: Boolean = false
 ) {
@@ -82,12 +90,12 @@ fun EditTaskBar(
             Text(
                 text = if (edit) stringResource(id = R.string.edit_task_appbar_title)
                 else stringResource(id = R.string.new_task_appbar_title),
-//                color = MaterialTheme.colorScheme.topBarContentColor
             )
         },
         actions = {
             // done action
             CommonAction(
+                enabled = uiState.isEntryValid,
                 onClicked = {
                     if (edit) {
                         toListScreen(Action.UPDATE)
@@ -104,24 +112,27 @@ fun EditTaskBar(
 
 @Composable
 fun CommonAction(
+    enabled: Boolean = true,
     onClicked: () -> Unit,
     icon: ImageVector? = null,
     painter: Painter? = null,
     description: String,
     tint: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    IconButton(onClick = { onClicked() }) {
+    IconButton(
+        enabled = enabled,
+        onClick = { onClicked() }) {
         if (icon == null && painter != null) {
             Icon(
                 painter = painter,
                 contentDescription = description,
-                tint = tint
+                tint = if (enabled) tint else tint.copy(alpha = 0.2F)
             )
         } else if (icon != null && painter == null) {
             Icon(
                 imageVector = icon,
                 contentDescription = description,
-                tint = tint
+                tint = if (enabled) tint else tint.copy(alpha = 0.2F)
             )
         }
     }
@@ -130,12 +141,12 @@ fun CommonAction(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailTaskBar(
-    todoTask: TodoTask,
+    task: TodoTask,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
 ) {
-    Log.i("PHILIP", "[DetailTaskBar] todo received $todoTask")
+    Log.i("PHILIP", "[DetailTaskBar] todo received $task")
     TopAppBar(
         navigationIcon = {
             CommonAction(
@@ -149,7 +160,7 @@ fun DetailTaskBar(
         title = {
             FittedTextTitle(
                 onAppBarTitleClick = { },
-                appbarTitle = todoTask.title,
+                appbarTitle = task.title,
                 clickEnabled = false
             )
 //            Text(
@@ -159,11 +170,11 @@ fun DetailTaskBar(
 //            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = todoTask.priority.color.copy(alpha = 0.5F)
+            containerColor = task.priority.color.copy(alpha = 0.5F)
         ),
         actions = {
             DetailTaskBarActions(
-                todoTask = todoTask,
+                task = task,
                 toListScreen = toListScreen,
                 onCopyClicked = onCopyClicked,
                 onEditClicked = onEditClicked
@@ -174,7 +185,7 @@ fun DetailTaskBar(
 
 @Composable
 fun DetailTaskBarActions(
-    todoTask: TodoTask,
+    task: TodoTask,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
@@ -184,8 +195,14 @@ fun DetailTaskBarActions(
 
     // 경고 팝업
     DisplayAlertDialog(
-        title = stringResource(id = R.string.delete_task_dialog_title, todoTask.title),
-        message = stringResource(id = R.string.delete_task_dialog_confirmation, todoTask.title),
+        title = stringResource(
+            id = R.string.delete_task_dialog_title,
+            task.title
+        ),
+        message = stringResource(
+            id = R.string.delete_task_dialog_confirmation,
+            task.title
+        ),
         openDialog = expanded,
         onCloseDialog = { expanded = false },
         onYesClicked = { toListScreen(Action.DELETE) }
@@ -218,7 +235,10 @@ fun DetailTaskBarActions(
 @Composable
 fun EditTaskBarPreview() {
     TodoComposeTheme {
-        EditTaskBar(toListScreen = {})
+        EditTaskBar(
+            uiState = TaskUiState(),
+            toListScreen = {}
+        )
     }
 }
 
@@ -228,11 +248,13 @@ fun EditTaskBarPreview() {
 fun DetailTaskBarPreview() {
     TodoComposeTheme {
         DetailTaskBar(
-            todoTask = TodoTask(
-                1, "필성 힘내!!!",
-                "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                Priority.HIGH,
-                notebookId = -1
+            task = TodoTask(
+                id = -1,
+                title = "필성 힘내!!!",
+                description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                priority = Priority.HIGH,
+                progression = State.NONE,
+                notebookId = -1,
             ),
             toListScreen = {},
             onCopyClicked = {},

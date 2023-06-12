@@ -50,26 +50,25 @@ import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
+import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskContent(
-    taskIndex: Int,
-    tasks: List<TodoTask>,
+    task: TodoTask,
+    taskUiState: TaskUiState,
+    taskIndex: Int = 0,
+    taskSize: Int = 0,
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
-    title: String,
-    description: String,
-    priority: Priority,
-    onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onPriorityChange: (Priority) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
     onSwipeRightOnViewer: () -> Unit,
     onSwipeLeftOnViewer: () -> Unit
 ) {
 
-    Log.i("PHILIP", "[TaskContent] $taskAppBarState")
+    Log.i("PHILIP", "size : $taskSize, taskInded : $taskIndex")
     if (taskAppBarState == TaskAppBarState.VIEWER) {
 
         // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
@@ -82,6 +81,7 @@ fun TaskContent(
                     DismissValue.DismissedToEnd -> {
                         onSwipeRightOnViewer()
                         true
+
                     }
 
                     DismissValue.DismissedToStart -> {
@@ -97,6 +97,7 @@ fun TaskContent(
         // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
         // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
         LaunchedEffect(key1 = taskIndex) {
+            Log.i("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
             if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
                 dismissState.snapTo(DismissValue.DismissedToStart)
             } else {
@@ -118,20 +119,16 @@ fun TaskContent(
             },
             dismissContent = {
                 ViewerContent(
-                    task = tasks[taskIndex]
+                    task = task
                 )
             },
-            directions = getDirections(taskIndex, tasks.size - 1)
+            directions = getDirections(taskIndex, taskSize - 1)
         )
 
     } else {
         EditorContent(
-            title,
-            onTitleChange,
-            priority,
-            onPriorityChange,
-            description,
-            onDescriptionChange
+            taskUiState = taskUiState,
+            onValueChange = onValueChange
         )
     }
 }
@@ -160,7 +157,6 @@ private fun ViewerContent(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
-//            .padding(all = LARGE_PADDING)
             .verticalScroll(scrollState)
 
     ) {
@@ -272,33 +268,27 @@ private fun ViewerContent(
 
 @Composable
 private fun EditorContent(
-    title: String,
-    onTitleChange: (String) -> Unit,
-    priority: Priority,
-    onPriorityChange: (Priority) -> Unit,
-    description: String,
-    onDescriptionChange: (String) -> Unit
+    taskUiState: TaskUiState,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
+
+
     Column(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
-//            .padding(all = LARGE_PADDING)
     ) {
         Card {
-
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = title,
+                value = taskUiState.taskDetails.title,
                 label = {
                     Text(text = stringResource(id = R.string.new_task_title_placeholder))
                 },
-                onValueChange = { onTitleChange(it) },
+                onValueChange = { onValueChange(taskUiState.taskDetails.copy(title = it)) },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-//                focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-//                disabledIndicatorColor = Color.Transparent
                 )
             )
         }
@@ -309,11 +299,8 @@ private fun EditorContent(
         )
         Card {
             PriorityDropDown(
-//                modifier = Modifier.fillMaxWidth(0.95F),
-                priority = priority,
-                onPrioritySelected = {
-                    onPriorityChange(it)
-                }
+                priority = taskUiState.taskDetails.priority,
+                onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
             )
         }
         Divider(
@@ -324,13 +311,13 @@ private fun EditorContent(
         Card {
             TextField(
                 modifier = Modifier.fillMaxSize(),
-                value = description,
+                value = taskUiState.taskDetails.description,
                 label = {
                     Text(
                         text = stringResource(id = R.string.new_task_description_placeholder)
                     )
                 },
-                onValueChange = { onDescriptionChange(it) },
+                onValueChange = { onValueChange(taskUiState.taskDetails.copy(description = it)) },
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
                 )
@@ -344,9 +331,18 @@ private fun EditorContent(
 fun ViewerContentPreview() {
     TodoComposeTheme {
         TaskContent(
+            task = TodoTask(
+                id = -1,
+                title = "필성 힘내!!!",
+                description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                priority = Priority.HIGH,
+                progression = State.NONE,
+                notebookId = -1,
+            ),
             taskIndex = 0,
-            tasks = listOf(
-                TodoTask(
+            taskSize = 1,
+            taskUiState = TaskUiState(
+                taskDetails = TaskDetails(
                     id = -1,
                     title = "필성 힘내!!!",
                     description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
@@ -355,15 +351,31 @@ fun ViewerContentPreview() {
                     notebookId = -1,
                 )
             ),
-            title = "필성 힘내!!!",
-            description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-            priority = Priority.HIGH,
-            onTitleChange = {},
-            onDescriptionChange = {},
-            onPriorityChange = {},
+            onValueChange = {},
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
             taskAppBarState = TaskAppBarState.VIEWER
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun EditorContentPrevie() {
+    MaterialTheme {
+        EditorContent(
+            taskUiState = TaskUiState(
+                taskDetails = TaskDetails(
+                    id = -1,
+                    title = "필성 힘내!!!",
+                    description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    priority = Priority.HIGH,
+                    progression = State.NONE,
+                    notebookId = -1,
+                )
+            ),
+            onValueChange = {}
         )
     }
 }

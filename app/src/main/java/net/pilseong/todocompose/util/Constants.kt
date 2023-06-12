@@ -24,7 +24,8 @@ object Constants {
     const val DATE_ORDER_PREFERENCE_KEY = "date_order_preference_key"
     const val NOTE_SORTING_ORDER_ID_PREFERENCE_KEY = "note_sorting_order_preference_key"
 
-    const val NEW_ITEM_ID = -1
+    const val NEW_ITEM_ID = 0
+    const val NEW_ITEM_INDEX = -1
 
     const val PAGE_SIZE = 40
 }

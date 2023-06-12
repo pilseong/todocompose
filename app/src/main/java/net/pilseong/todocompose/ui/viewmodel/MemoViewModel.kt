@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,7 +41,6 @@ import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.util.Action
-import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SearchAppBarState
@@ -97,18 +97,8 @@ class MemoViewModel @Inject constructor(
     var searchRangeAll by mutableStateOf(false)
     var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
-    // 수정 및 신규 메모 작성에 사용할 변수
-    var id by mutableIntStateOf(NEW_ITEM_ID)
-        private set
-    var title by mutableStateOf("")
-    var description by mutableStateOf("")
-    var priority by mutableStateOf(Priority.LOW)
-    var notebookId by mutableIntStateOf(-1)
-
-    private var createdAt = ZonedDateTime.now()
-    private var updatedAt = ZonedDateTime.now()
-    private var state by mutableStateOf(State.NONE)
-
+    // snack 바에 결과를 보여주기 위해서 마지막 action의 상태를 저장한다.
+    var savedLastTodoTask = TodoTask.instance()
 
     fun updateIndex(index: Int) {
         this.index = index
@@ -117,23 +107,18 @@ class MemoViewModel @Inject constructor(
     // 화면 인덱스 이동 - delay 를 준 것은 swipeToDismiss 에서 swipe animation 구동 시에
     // 전환 된 화면이 화면에 표출 되는 것을 막기 위함
     fun incrementIndex() {
-        Log.i("PHILIP", "[MemoViewModel] index: $index, snapshot ${snapshotTasks.size}")
-        if (this.index < snapshotTasks.size - 1) {
-            viewModelScope.launch {
-                delay(100)
-                index++
-                Log.i("PHILIP", "[MemoViewModel] incrementIndex $index")
-            }
+        viewModelScope.launch {
+            delay(100)
+            index++
+            Log.i("PHILIP", "[MemoViewModel] incrementIndex $index")
         }
     }
 
     fun decrementIndex() {
-        if (this.index > 0) {
-            viewModelScope.launch {
-                delay(300)
-                index--
-                Log.i("PHILIP", "[MemoViewModel] decrementIndex $index")
-            }
+        viewModelScope.launch {
+            delay(300)
+            index--
+            Log.i("PHILIP", "[MemoViewModel] decrementIndex $index")
         }
     }
 
@@ -202,20 +187,21 @@ class MemoViewModel @Inject constructor(
                     initialValue = PagingData.empty()
                 )
                 .cachedIn(viewModelScope)
-                .collect {
+                .collectLatest {
                     tasks.value = it
                 }
         }
     }
 
+
     // 공유 정보를 위해서 사용 한다
     // 위의 allTasks 의 snapshot 이 저장 된다.
-    var snapshotTasks by mutableStateOf(emptyList<TodoTask>())
-        private set
+//    var snapshotTasks by mutableStateOf(emptyList<TodoTask>())
+//        private set
 
-    fun updateSnapshotTasks(tasks: List<TodoTask>) {
-        snapshotTasks = tasks
-    }
+//    fun updateSnapshotTasks(tasks: List<TodoTask>) {
+//        snapshotTasks = tasks
+//    }
 
     // for reading the saved priority sort state
     var prioritySortState by mutableStateOf(Priority.NONE)
@@ -234,12 +220,13 @@ class MemoViewModel @Inject constructor(
 
 
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
-    var notebooks: StateFlow<List<NotebookWithCount>> = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-            initialValue = emptyList()
-        )
+    var notebooks: StateFlow<List<NotebookWithCount>> =
+        notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = emptyList()
+            )
 
     // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
     fun observePrioritySortState() {
@@ -483,7 +470,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun persistFirstRecentNotebookIdState(notebookId: Int) {
-        viewModelScope.launch{
+        viewModelScope.launch {
             dataStoreRepository.persistFirstRecentNotebookId(notebookId)
         }
     }
@@ -517,30 +504,16 @@ class MemoViewModel @Inject constructor(
 
     fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
         taskAppBarState = TaskAppBarState.EDITOR
-        copySelectedTaskToEditFields(task)
+        updateUiState(
+            if (task.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = notebookIdState)
+            else task.toTaskDetails()
+        )
     }
 
-    private fun copySelectedTaskToEditFields(task: TodoTask) {
-        id = task.id
-        title = task.title
-        description = task.description
-        priority = task.priority
-        state = task.progression
-        notebookId = task.notebookId
-        createdAt = task.createdAt
-        updatedAt = task.updatedAt
-    }
 
     fun setTaskScreenToViewerMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
         taskAppBarState = TaskAppBarState.VIEWER
-        copySelectedTaskToEditFields(task)
-    }
-
-
-    fun updateTitle(newTitle: String) {
-        if (newTitle.length <= MAX_TITLE_LENGTH) {
-            title = newTitle
-        }
+        updateUiState(task.toTaskDetails())
     }
 
 
@@ -574,7 +547,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.DELETE -> {
-                deleteTask(snapshotTasks[index].id)
+                deleteTask(todoTask)
                 updateActionPerformed()
             }
 
@@ -637,6 +610,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.UPDATED_AT_ASC -> {
                         if (!sortOrderEnabled) {
                             snackBarOrderEnabled = false
@@ -644,6 +618,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.CREATED_AT_DESC -> {
                         if (sortOrderEnabled) {
                             snackBarOrderEnabled = true
@@ -651,6 +626,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.CREATED_AT_ASC -> {
                         if (!sortOrderEnabled) {
                             snackBarOrderEnabled = false
@@ -675,6 +651,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.UPDATED_AT_ASC -> {
                         if (sortDateEnabled) {
                             snackBarDateEnabled = true
@@ -682,6 +659,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.CREATED_AT_DESC -> {
                         if (!sortDateEnabled) {
                             snackBarDateEnabled = false
@@ -689,6 +667,7 @@ class MemoViewModel @Inject constructor(
                             updateActionPerformed()
                         }
                     }
+
                     SortOption.CREATED_AT_ASC -> {
                         if (!sortDateEnabled) {
                             snackBarDateEnabled = false
@@ -722,24 +701,28 @@ class MemoViewModel @Inject constructor(
                         else
                             stateState + 1
                     }
+
                     State.WAITING -> {
                         if ((stateState and 2) == 2)
                             stateState - 2
                         else
                             stateState + 2
                     }
+
                     State.SUSPENDED -> {
                         if ((stateState and 4) == 4)
                             stateState - 4
                         else
                             stateState + 4
                     }
+
                     State.ACTIVE -> {
                         if ((stateState and 8) == 8)
                             stateState - 8
                         else
                             stateState + 8
                     }
+
                     State.COMPLETED -> {
                         if ((stateState and 16) == 16)
                             stateState - 16
@@ -776,25 +759,40 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun addTask() {
+        savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(
                 "PHILIP",
-                "[MemoViewModel] addTask performed with $title, $description, $priority $notebookIdState"
+                "[MemoViewModel] addTask performed with $taskUiState"
             )
-            todoRepository.addTask(
-                TodoTask(
-                    id = 0,
-                    title = title,
-                    description = description,
-                    priority = priority,
-                    progression = state,
-                    notebookId = notebookIdState
-                )
-            )
+            todoRepository.addTask(taskUiState.taskDetails.toTodoTask())
             refreshAllTasks()
         }
         this.action = Action.ADD
     }
+
+    private fun updateTask() {
+        Log.i(
+            "PHILIP",
+            "[MemoViewModel] updateTask performed with $taskUiState"
+        )
+        savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.updateTask(taskUiState.taskDetails.toTodoTask())
+        }
+        this.action = Action.UPDATE
+    }
+
+    private fun deleteTask(task: TodoTask) {
+        savedLastTodoTask = task.copy()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.deleteTask(task.id)
+            refreshAllTasks()
+        }
+        this.action = Action.DELETE
+    }
+
 
     private fun moveToTask(destinationNoteId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -813,17 +811,10 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(
                 "PHILIP",
-                "[MemoViewModel] undoTask - undo with $title, $description, $priority, $notebookId, $createdAt"
+                "[MemoViewModel] undoTask - undo with $savedLastTodoTask"
             )
             todoRepository.addTask(
-                TodoTask(
-                    0,
-                    title,
-                    description,
-                    priority,
-                    notebookId = notebookId,
-                    createdAt = createdAt
-                )
+                savedLastTodoTask
             )
             refreshAllTasks()
         }
@@ -866,33 +857,6 @@ class MemoViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-
-    private fun updateTask() {
-        viewModelScope.launch(Dispatchers.IO) {
-            todoRepository.updateTask(
-                TodoTask(
-                    id = id,
-                    title = title,
-                    description = description,
-                    priority = priority,
-                    progression = state,
-                    notebookId = notebookId,
-                    createdAt = createdAt
-                )
-            )
-
-        }
-        this.action = Action.UPDATE
-    }
-
-    private fun deleteTask(todoId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            todoRepository.deleteTask(todoId)
-            refreshAllTasks()
-        }
-        this.action = Action.DELETE
     }
 
     private fun deleteAllTasks() {
@@ -992,4 +956,61 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+    var taskUiState by mutableStateOf(TaskUiState())
+        private set
+
+    fun updateUiState(taskDetails: TaskDetails) {
+        taskUiState =
+            TaskUiState(taskDetails = taskDetails, isEntryValid = validateInput(taskDetails))
+    }
+
+    private fun validateInput(uiState: TaskDetails = taskUiState.taskDetails): Boolean {
+        return with(uiState) {
+            title.isNotBlank() && description.isNotBlank()
+        }
+    }
+
 }
+
+data class TaskDetails(
+    val id: Int = NEW_ITEM_ID,
+    val title: String = "",
+    val description: String = "",
+    val priority: Priority = Priority.NONE,
+    var favorite: Boolean = false,
+    var progression: State = State.NONE,
+    val createdAt: ZonedDateTime = ZonedDateTime.now(),
+    val updatedAt: ZonedDateTime = ZonedDateTime.now(),
+    val notebookId: Int = -1
+)
+
+
+fun TaskDetails.toTodoTask() = TodoTask(
+    id = id,
+    title = title,
+    description = description,
+    priority = priority,
+    favorite = favorite,
+    progression = progression,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    notebookId = notebookId
+)
+
+fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
+    id = id,
+    title = title,
+    description = description,
+    priority = priority,
+    favorite = favorite,
+    progression = progression,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    notebookId = notebookId
+)
+
+
+data class TaskUiState(
+    val taskDetails: TaskDetails = TaskDetails(),
+    val isEntryValid: Boolean = false
+)

@@ -4,13 +4,11 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
@@ -73,8 +71,8 @@ fun ListScreen(
     stateSuspended: Boolean = true,
     stateWaiting: Boolean = true,
     stateNone: Boolean = true,
-    toTaskScreen: (List<TodoTask>) -> Unit,
-    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
+    toTaskScreen: () -> Unit,
+    onSwipeToEdit: (Int, TodoTask) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
@@ -86,7 +84,7 @@ fun ListScreen(
     onStateSelected: (State) -> Unit,
     onStateChange: (TodoTask, State) -> Unit,
     onImportClick: () -> Unit,
-    onFabClicked: (List<TodoTask>) -> Unit,
+    onFabClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit,
@@ -173,12 +171,8 @@ fun ListScreen(
         },
         bottomBar = {
             BottomActionBarNavigation(onClickBottomNavBar) {
-                onFabClicked(tasks.itemSnapshotList.items)
+                onFabClicked()
             }
-//            BottomNavBar(
-//                onClick = onClickBottomNavBar,
-//                currentDestination = MEMO_LIST
-//            )
         }
     ) { paddingValues ->
         Column(
@@ -215,7 +209,7 @@ fun ListScreen(
                 toTaskScreen = { index ->
                     memoViewModel.setTaskScreenToViewerMode(tasks.peek(index)!!)
                     memoViewModel.updateIndex(index)
-                    toTaskScreen(tasks.itemSnapshotList.items)
+                    toTaskScreen()
                 },
 //                    onSwipeToDelete = { action, task ->
 //                        // undo 처리를 위해서 데이터 동기화 필요
@@ -364,7 +358,7 @@ private fun ListScreenPreview() {
         onFavoriteClick = {},
         onLongClickReleased = {},
         onLongClickApplied = {},
-        onSwipeToEdit = { a, todo, todos -> }
+        onSwipeToEdit = { a, todo -> }
 
     )
 }

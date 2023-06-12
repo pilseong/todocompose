@@ -144,7 +144,6 @@ fun InfoDialog(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val context = LocalContext.current;
                             val width = remember { mutableStateOf(0.dp) }
                             Column {
                                 Text(

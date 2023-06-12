@@ -79,8 +79,6 @@ fun SimpleDateRangePickerSheet(
             initialDisplayMode = DisplayMode.Picker
         )
 
-        val scope = rememberCoroutineScope()
-
         ModalBottomSheet(
             onDismissRequest = {
                 Log.i("PHILIP", "SimpleDateRangePickerSheet onDismissRequest")
@@ -354,13 +352,6 @@ fun TestCode() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewTest() {
-    val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
-            .toEpochMilli(),
-        initialSelectedEndDateMillis = Instant.now().toEpochMilli(),
-        yearRange = IntRange(2000, 2100), // available years
-        initialDisplayMode = DisplayMode.Picker
-    )
     MaterialTheme {
         TestCode()
     }

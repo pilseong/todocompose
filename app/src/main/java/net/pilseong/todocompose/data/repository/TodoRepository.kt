@@ -19,6 +19,7 @@ import javax.inject.Inject
 class TodoRepository @Inject constructor(
     private val todoDAO: TodoDAO
 ) {
+    // export 를 위해 작성
     suspend fun getAllTasks(): List<TodoTask> {
         return todoDAO.allTasks()
     }

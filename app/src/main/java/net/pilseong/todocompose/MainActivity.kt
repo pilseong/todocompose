@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Surface
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import net.pilseong.todocompose.navigation.MainNavGraph
@@ -15,6 +16,8 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             TodoComposeTheme {

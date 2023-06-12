@@ -12,9 +12,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -35,51 +35,33 @@ fun TaskScreen(
     val taskAppBarState = memoViewModel.taskAppBarState
     val taskIndex = memoViewModel.index
 
+
     Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
-    val tasks = memoViewModel.snapshotTasks
-    Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.size}")
+    val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
+    Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.itemCount}")
 
     val context = LocalContext.current
 
-    // 뒤로 가기 버튼에 대한 가로 채기 및 처리
-//    BackHandler {
-//        toListScreen(null)
-//    }
-
-    val emptyTitleString = stringResource(id = R.string.empty_title_popup)
-    val emptyDescriptionString = stringResource(id = R.string.empty_description_popup)
     val clipboardMessage = stringResource(id = R.string.viewer_appbar_clipboard_copied_popup)
     val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TaskAppBar(
+                task = tasks.peek(taskIndex)!!,
                 taskAppBarState = taskAppBarState,
-                todoTask = if (taskIndex >= 0) tasks[taskIndex] else TodoTask.instance(),
+                taskUiState = memoViewModel.taskUiState,
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
                         if (action == Action.DELETE) {
-                            memoViewModel.handleActions(action = action)
+                            memoViewModel.handleActions(action = action, todoTask = tasks[taskIndex]!!)
                             toListScreen(null)
                         } else {
-                            if (memoViewModel.title.isEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    emptyTitleString,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else if (memoViewModel.description.isEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    emptyDescriptionString,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                // the action is executed here
-                            } else {
-                                memoViewModel.handleActions(action = action)
+                                memoViewModel.handleActions(
+                                    action = action
+                                )
                                 toListScreen(null)
-                            }
                         }
                     } else {
                         toListScreen(null)
@@ -90,13 +72,13 @@ fun TaskScreen(
                     scope.launch {
                         copyToClipboard(
                             context = context,
-                            label = "content", text = memoViewModel.description
+                            label = "content", text = tasks[taskIndex]!!.description
                         )
                         Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onEditClicked = {
-                    memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex])
+                    memoViewModel.setTaskScreenToEditorMode(tasks.peek(taskIndex)!!)
                 }
             )
         },
@@ -112,22 +94,12 @@ fun TaskScreen(
                     .fillMaxSize()
             ) {
                 TaskContent(
+                    task = tasks.peek(taskIndex)!!,
+                    taskUiState = memoViewModel.taskUiState,
+                    taskSize = tasks.itemCount,
                     taskIndex = taskIndex,
-                    tasks = tasks,
                     taskAppBarState = taskAppBarState,
-                    title = memoViewModel.title,
-                    description = memoViewModel.description,
-                    priority = memoViewModel.priority,
-                    onTitleChange = { title ->
-                        Log.i("PHILIP", "[TaskScreen] title has changed $title")
-                        memoViewModel.updateTitle(title)
-                    },
-                    onDescriptionChange = { description ->
-                        memoViewModel.description = description
-                    },
-                    onPriorityChange = { priority ->
-                        memoViewModel.priority = priority
-                    },
+                    onValueChange = memoViewModel::updateUiState,
                     onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
                     onSwipeLeftOnViewer = { memoViewModel.incrementIndex() }
 

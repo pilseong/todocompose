@@ -32,7 +32,6 @@ fun NavGraphBuilder.homeComposable(
     composable(
         route = route,
     ) {
-//        val noteViewModel = hiltViewModel<NoteViewModel>()
         val noteViewModel = hiltViewModel<NoteViewModel>(
             viewModelStoreOwner = viewModelStoreOwner
         )

@@ -1,6 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -78,7 +78,7 @@ fun ListContent(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
+    onSwipeToEdit: (Int, TodoTask) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
@@ -116,7 +116,7 @@ fun DisplayTasks(
     tasks: LazyPagingItems<TodoTask>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, TodoTask) -> Unit,
-    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
+    onSwipeToEdit: (Int, TodoTask) -> Unit,
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (TodoTask) -> Unit,
@@ -125,7 +125,6 @@ fun DisplayTasks(
     selectedItemsIds: SnapshotStateList<Int>,
     onStateSelected: (TodoTask, State) -> Unit,
 ) {
-//    Log.i("PHILIP", "[DisplayTasks] tasks is ${tasks.itemCount}")
     if (tasks.itemCount == 0) {
         EmptyContent()
     } else {
@@ -152,7 +151,7 @@ fun LazyItemList(
     tasks: LazyPagingItems<TodoTask>,
     header: Boolean = false,
     dateEnabled: Boolean = false,
-    onSwipeToEdit: (Int, TodoTask, List<TodoTask>) -> Unit,
+    onSwipeToEdit: (Int, TodoTask) -> Unit,
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (TodoTask) -> Unit,
     onLongClickReleased: (Int) -> Unit,
@@ -205,40 +204,22 @@ fun LazyItemList(
             }
 
             val drawEndEdge = remember(dateEnabled, tasks, index) {
-                val currentDate: ZonedDateTime?
+                val today: ZonedDateTime?
                 val nextDate: ZonedDateTime?
 
                 if (dateEnabled) {
-                    currentDate = tasks.peek(index)?.createdAt
+                    today = tasks.peek(index)?.createdAt
                     nextDate = if (index == tasks.itemCount - 1) null
                     else tasks.peek(index + 1)?.createdAt
                 } else {
-                    currentDate = tasks.peek(index)?.updatedAt
+                    today = tasks.peek(index)?.updatedAt
                     nextDate = if (index == tasks.itemCount - 1) null
                     else tasks.peek(index + 1)?.updatedAt
                 }
 
-                currentDate?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
+                today?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
             }
 
-//            val currentItem by rememberUpdatedState(newValue = tasks.peek(index)!!)
-//            var currentItem by remember {
-//                mutableStateOf(tasks.get(index)!!)
-//            }.apply { value =  tasks.get(index)!! }
-//            var currentItem by remember {
-//                mutableStateOf(tasks.peek(index)!!)
-//            }
-
-//            if (currentItem.id == 75) {
-//                Log.i("PHILIP", "id 75 currentItem favortie ${currentItem.title}, ${currentItem.favorite}")
-//            }
-
-            if (tasks.peek(index)!!.id == 75) {
-                Log.i(
-                    "PHILIP",
-                    "id 75 currentItem favortie ${tasks.peek(index)!!.title}, ${tasks.peek(index)!!.favorite}"
-                )
-            }
             val dismissState = rememberDismissState(
                 confirmValueChange = {
                     when (it) {
@@ -247,7 +228,6 @@ fun LazyItemList(
                             onSwipeToEdit(
                                 index,
                                 tasks.peek(index)!!,
-                                tasks.itemSnapshotList.items
                             )
                         }
 
@@ -577,7 +557,7 @@ fun ListContentPreview() {
             ).collectAsLazyPagingItems(),
             toTaskScreen = {},
 //            onSwipeToDelete = { a, b -> },
-            onSwipeToEdit = { a, b, c ->},
+            onSwipeToEdit = { a, b ->},
 //            screenMode = ScreenMode.NORMAL,
             onFavoriteClick = {},
             onLongClickReleased = {},

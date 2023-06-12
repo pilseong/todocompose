@@ -158,16 +158,14 @@ fun NavGraphBuilder.memoNavGraph(
                 tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
                 selectedItems = memoViewModel.selectedItems,
                 selectedNotebook = memoViewModel.selectedNotebook.value,
-                toTaskScreen = { snapshot ->
-                    memoViewModel.updateSnapshotTasks(snapshot)
+                toTaskScreen = {
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)
                     toTaskScreen()
                 },
-                onSwipeToEdit = { index, todoTask, snapshot ->
+                onSwipeToEdit = { index, todoTask ->
                     memoViewModel.updateIndex(index)
                     memoViewModel.setTaskScreenToEditorMode(todoTask)
-                    memoViewModel.updateSnapshotTasks(snapshot)
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)
 
@@ -229,10 +227,9 @@ fun NavGraphBuilder.memoNavGraph(
                 onImportClick = {
                     intentResultLauncher.launch("*/*")
                 },
-                onFabClicked = { items ->
-                    memoViewModel.updateIndex(Constants.NEW_ITEM_ID)
+                onFabClicked = {
+                    memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
                     memoViewModel.setTaskScreenToEditorMode()
-                    memoViewModel.updateSnapshotTasks(items)
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)
                     toTaskScreen()
@@ -326,7 +323,7 @@ fun NavGraphBuilder.memoNavGraph(
                 snackBarHostState = snackBarHostState,
                 action = memoViewModel.action,
                 enabled = memoViewModel.actionPerformed,
-                title = memoViewModel.title,
+                title = memoViewModel.savedLastTodoTask.title,
                 buttonClicked = { selectedAction, result ->
                     Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
