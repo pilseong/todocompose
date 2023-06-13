@@ -18,7 +18,7 @@ abstract class NotebookDAO(
 ) {
 
     @Query("SELECT * FROM note_table  WHERE id = :id")
-    abstract fun getNotebook(id: Int): Notebook
+    abstract suspend fun getNotebook(id: Int): Notebook
 
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
             "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +

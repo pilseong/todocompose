@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Notebook
@@ -202,7 +201,7 @@ class MemoViewModel @Inject constructor(
             )
 
 
-    private fun getNotebook(id: Int) {
+    private suspend fun getNotebook(id: Int) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
         if (id == -1) selectedNotebook.value =
             Notebook.instance(title = context.resources.getString(R.string.default_note_title))
@@ -754,30 +753,26 @@ class MemoViewModel @Inject constructor(
 
     var uiState: UserData by mutableStateOf(UserData())
 
-    private val uiStateFlow: StateFlow<MemoListUiState> =
+    private val uiStateFlow: StateFlow<UiState> =
         dataStoreRepository.userData.map {
-            MemoListUiState.Success(it)
+            UiState.Success(it)
         }.stateIn(
             scope = viewModelScope,
-            initialValue = MemoListUiState.Loading,
+            initialValue = UiState.Loading,
             started = SharingStarted.WhileSubscribed(5_000),
         )
 
 
     fun observeUiState() {
         Log.i("PHILIP", "[MemoViewModel] observeUiState() executed")
-        firstFetch = false
         viewModelScope.launch {
             uiStateFlow
                 .onEach {
                     when (it) {
-                        is MemoListUiState.Success -> {
+                        is UiState.Success -> {
                             uiState = it.userData
                             refreshAllTasks()
-                            delay(100)
-                            withContext(Dispatchers.IO) {
-                                getNotebook(uiState.notebookIdState)
-                            }
+                            getNotebook(uiState.notebookIdState)
                         }
 
                         else -> {}
@@ -824,9 +819,9 @@ fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
     notebookId = notebookId
 )
 
-sealed interface MemoListUiState {
-    object Loading : MemoListUiState
-    data class Success(val userData: UserData) : MemoListUiState
+sealed interface UiState {
+    object Loading : UiState
+    data class Success(val userData: UserData) : UiState
 }
 
 

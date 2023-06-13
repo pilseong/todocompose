@@ -26,7 +26,7 @@ class NotebookRepository @Inject constructor(
         return notebookDAO.getAllNotebooks()
     }
 
-    fun getNotebook(id: Int): Notebook {
+    suspend fun getNotebook(id: Int): Notebook {
         return notebookDAO.getNotebook(id)
     }
 

@@ -49,11 +49,11 @@ fun NavGraphBuilder.homeComposable(
 
 
         if (noteViewModel.firstFetch) {
-            noteViewModel.observeNotebookIdChange()
-            noteViewModel.observeNoteSortingState()
-            noteViewModel.observeFirstRecentNotebookIdChange()
-            noteViewModel.observeSecondRecentNotebookIdChange()
-//            noteViewModel.getNotebooks()
+            noteViewModel.observeUiState()
+//            noteViewModel.observeNotebookIdChange()
+//            noteViewModel.observeNoteSortingState()
+//            noteViewModel.observeFirstRecentNotebookIdChange()
+//            noteViewModel.observeSecondRecentNotebookIdChange()
         }
 
         HomeScreen(
