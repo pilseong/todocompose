@@ -66,22 +66,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-//    val readPrioritySortState: Flow<String> = context.dataStore.data
-//        .catch { exception ->
-//            if (exception is IOException) {
-//                emit(emptyPreferences())
-//            } else {
-//                throw exception
-//            }
-//        }
-//        .map { preferences ->
-//            Log.i(
-//                "PHILIP",
-//                "[DataStoreRepository]readPrioritySortState ${preferences[PreferenceKeys.sortState]}"
-//            )
-//            preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
-//        }
-
     // favorite 정보를 저장 한다.
     suspend fun persistFavoriteEnabledState(favorite: Boolean) {
         withContext(ioDispatcher) {
@@ -92,22 +76,6 @@ class DataStoreRepository @Inject constructor(
             }
         }
     }
-
-//    val readFavoriteState: Flow<String> = context.dataStore.data
-//        .catch { exception ->
-//            if (exception is IOException) {
-//                emit(emptyPreferences())
-//            } else {
-//                throw exception
-//            }
-//        }
-//        .map { preferences ->
-//            Log.i(
-//                "PHILIP",
-//                "[DataStoreRepository]readFavoriteState ${preferences[PreferenceKeys.favoriteState]}"
-//            )
-//            preferences[PreferenceKeys.favoriteState] ?: false.toString()
-//        }
 
     suspend fun persistSelectedNotebookId(notebookId: Int) {
         withContext(ioDispatcher) {
@@ -233,24 +201,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-//    val readStateState: Flow<Int> = context.dataStore.data
-//        .catch { exception ->
-//            if (exception is IOException) {
-//                emit(emptyPreferences())
-//            } else {
-//                throw exception
-//            }
-//        }
-//        .map { preferences ->
-//            Log.i(
-//                "PHILIP",
-//                "[DataStoreRepository]readStateState ${preferences[PreferenceKeys.stateState]}"
-//            )
-//
-//            // 0b11111
-//            preferences[PreferenceKeys.stateState] ?: 31
-//        }
-
     suspend fun persistDateOrderState(dateOrderState: Int) {
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
@@ -261,21 +211,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-//    val readDateOrderState: Flow<Int> = context.dataStore.data
-//        .catch { exception ->
-//            if (exception is IOException) {
-//                emit(emptyPreferences())
-//            } else {
-//                throw exception
-//            }
-//        }
-//        .map { preferences ->
-//            Log.i(
-//                "PHILIP",
-//                "[DataStoreRepository]readDateOrderState ${preferences[PreferenceKeys.dateOrderState]}"
-//            )
-//            preferences[PreferenceKeys.dateOrderState] ?: SortOption.UPDATED_AT_DESC.ordinal
-//        }
 
     suspend fun persistNoteSortingOrderState(noteSortingOption: NoteSortingOption) {
         withContext(ioDispatcher) {
