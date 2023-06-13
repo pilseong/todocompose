@@ -60,7 +60,7 @@ fun NavGraphBuilder.homeComposable(
             notebooks = noteViewModel.notebooks.collectAsState().value,
             selectedNotebookIds = noteViewModel.selectedNotebooks,
             currentNotebook = noteViewModel.currentNotebook.value,
-            noteSortingOption = noteViewModel.sortingOptionState,
+            noteSortingOption = noteViewModel.noteSortingOptionState,
             firstRecentNotebook = noteViewModel.firstRecentNotebook.value,
             secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
             onClickBottomNavBar = { route ->

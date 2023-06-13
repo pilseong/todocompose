@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -76,20 +75,10 @@ fun TaskItem(
     selectedItemsIds: SnapshotStateList<Int>,
     onStateSelected: (TodoTask, State) -> Unit,
 ) {
-
-//    if (currentItem.id == 75) {
-//        Log.i("PHILIP", "id 75 currentItem favortie ${currentItem.title}, ${currentItem.favorite}")
-//    }
-
-    if (todoTask.id == 75) {
-        Log.i("PHILIP", "id 75 TaskItem drawing with ${todoTask.favorite}")
-    }
     val selected = remember(selectedItemsIds.size) {
         mutableStateOf(selectedItemsIds.contains(todoTask.id))
     }
 
-//    val favoriteOn by rememberUpdatedState(todoTask.favorite)
-//    var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
     var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
         .apply {
             value = todoTask.favorite

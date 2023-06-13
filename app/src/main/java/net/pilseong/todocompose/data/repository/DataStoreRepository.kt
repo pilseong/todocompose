@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.di.IoDispatcher
 import net.pilseong.todocompose.util.Constants.DATE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.FAVORITE_ENABLED_PREFERENCE_KEY
@@ -41,6 +42,8 @@ class DataStoreRepository @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     @ApplicationContext private val context: Context
 ) {
+
+
     private object PreferenceKeys {
         val sortState = stringPreferencesKey(name = PRIORITY_PREFERENCE_KEY)
         val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
@@ -63,21 +66,21 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readPrioritySortState: Flow<String> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readPrioritySortState ${preferences[PreferenceKeys.sortState]}"
-            )
-            preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
-        }
+//    val readPrioritySortState: Flow<String> = context.dataStore.data
+//        .catch { exception ->
+//            if (exception is IOException) {
+//                emit(emptyPreferences())
+//            } else {
+//                throw exception
+//            }
+//        }
+//        .map { preferences ->
+//            Log.i(
+//                "PHILIP",
+//                "[DataStoreRepository]readPrioritySortState ${preferences[PreferenceKeys.sortState]}"
+//            )
+//            preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
+//        }
 
     // favorite 정보를 저장 한다.
     suspend fun persistFavoriteEnabledState(favorite: Boolean) {
@@ -90,21 +93,21 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readFavoriteState: Flow<String> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readFavoriteState ${preferences[PreferenceKeys.favoriteState]}"
-            )
-            preferences[PreferenceKeys.favoriteState] ?: false.toString()
-        }
+//    val readFavoriteState: Flow<String> = context.dataStore.data
+//        .catch { exception ->
+//            if (exception is IOException) {
+//                emit(emptyPreferences())
+//            } else {
+//                throw exception
+//            }
+//        }
+//        .map { preferences ->
+//            Log.i(
+//                "PHILIP",
+//                "[DataStoreRepository]readFavoriteState ${preferences[PreferenceKeys.favoriteState]}"
+//            )
+//            preferences[PreferenceKeys.favoriteState] ?: false.toString()
+//        }
 
     suspend fun persistSelectedNotebookId(notebookId: Int) {
         withContext(ioDispatcher) {
@@ -132,6 +135,39 @@ class DataStoreRepository @Inject constructor(
             preferences[PreferenceKeys.notebookIdState] ?: -1
         }
 
+
+
+    val userData: Flow<UserData> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            Log.i("PHILIP", "[DataStoreRepository] userdata $preferences ")
+            UserData(
+                prioritySortState = Priority.valueOf(
+                    preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
+                ),
+                dateOrderState = SortOption.values()[preferences[PreferenceKeys.dateOrderState]
+                    ?: SortOption.UPDATED_AT_DESC.ordinal],
+                notebookIdState = preferences[PreferenceKeys.notebookIdState] ?: -1,
+                firstRecentNotebookId = preferences[PreferenceKeys.recentNoteFirst],
+                secondRecentNotebookId = preferences[PreferenceKeys.recentNoteSecond],
+                sortFavorite = (preferences[PreferenceKeys.favoriteState]
+                    ?: false.toString()).toBoolean(),
+                stateState = preferences[PreferenceKeys.stateState] ?: 31,
+                stateNone = ((preferences[PreferenceKeys.stateState] ?: 31) and 1) == 1,
+                stateWaiting = ((preferences[PreferenceKeys.stateState] ?: 31) and 2) == 2,
+                stateSuspended = ((preferences[PreferenceKeys.stateState] ?: 31) and 4) == 4,
+                stateActive = ((preferences[PreferenceKeys.stateState] ?: 31) and 8) == 8,
+                stateCompleted = ((preferences[PreferenceKeys.stateState] ?: 31) and 16) == 16,
+                noteSortingOptionState = NoteSortingOption.values()[preferences[PreferenceKeys.noteSortingOrderState]
+                    ?: NoteSortingOption.ACCESS_AT.ordinal],
+            )
+        }
 
     suspend fun persistFirstRecentNotebookId(notebookId: Int) {
         withContext(ioDispatcher) {
@@ -197,23 +233,23 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readStateState: Flow<Int> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readStateState ${preferences[PreferenceKeys.stateState]}"
-            )
-
-            // 0b11111
-            preferences[PreferenceKeys.stateState] ?: 31
-        }
+//    val readStateState: Flow<Int> = context.dataStore.data
+//        .catch { exception ->
+//            if (exception is IOException) {
+//                emit(emptyPreferences())
+//            } else {
+//                throw exception
+//            }
+//        }
+//        .map { preferences ->
+//            Log.i(
+//                "PHILIP",
+//                "[DataStoreRepository]readStateState ${preferences[PreferenceKeys.stateState]}"
+//            )
+//
+//            // 0b11111
+//            preferences[PreferenceKeys.stateState] ?: 31
+//        }
 
     suspend fun persistDateOrderState(dateOrderState: Int) {
         withContext(ioDispatcher) {
@@ -225,23 +261,21 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readDateOrderState: Flow<Int> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readDateOrderState ${preferences[PreferenceKeys.dateOrderState]}"
-            )
-            val default = 0b11111
-            default.toInt()
-            preferences[PreferenceKeys.dateOrderState] ?: SortOption.UPDATED_AT_DESC.ordinal
-        }
+//    val readDateOrderState: Flow<Int> = context.dataStore.data
+//        .catch { exception ->
+//            if (exception is IOException) {
+//                emit(emptyPreferences())
+//            } else {
+//                throw exception
+//            }
+//        }
+//        .map { preferences ->
+//            Log.i(
+//                "PHILIP",
+//                "[DataStoreRepository]readDateOrderState ${preferences[PreferenceKeys.dateOrderState]}"
+//            )
+//            preferences[PreferenceKeys.dateOrderState] ?: SortOption.UPDATED_AT_DESC.ordinal
+//        }
 
     suspend fun persistNoteSortingOrderState(noteSortingOption: NoteSortingOption) {
         withContext(ioDispatcher) {
@@ -267,7 +301,7 @@ class DataStoreRepository @Inject constructor(
         .map { preferences ->
             Log.i(
                 "PHILIP",
-                "[DataStoreRepository]readNoteSortingOrderState ${preferences[PreferenceKeys.noteSortingOrderState]}"
+                "[DataStoreRepository]readNoteSortingOrderState $preferences, ${preferences[PreferenceKeys.noteSortingOrderState]}"
             )
             preferences[PreferenceKeys.noteSortingOrderState] ?: NoteSortingOption.ACCESS_AT.ordinal
         }

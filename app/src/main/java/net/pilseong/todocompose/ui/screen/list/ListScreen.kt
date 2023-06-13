@@ -190,7 +190,7 @@ fun ListScreen(
                 dateEnabled = dataEnabled,
                 startDate = memoViewModel.startDate,
                 endDate = memoViewModel.endDate,
-                favoriteOn = memoViewModel.sortFavorite,
+                favoriteOn = memoViewModel.uiState.sortFavorite,
                 stateCompleted = stateCompleted,
                 stateActive = stateActive,
                 stateSuspended = stateSuspended,

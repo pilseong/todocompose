@@ -24,8 +24,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +38,7 @@ import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
@@ -64,17 +67,12 @@ class MemoViewModel @Inject constructor(
         private set
 
     var selectedNotebook = mutableStateOf(Notebook.instance())
-    var readyFlagForNotebookId = false
-    var readyFlagForPriority = false
-    var readyFlagForDateOrderState = false
-    var readyFlagForFavorite = false
-    var readyFlagForStateState = false
 
     /**
      * 화면의 state 를 관리 하는 변수들 선언
      */
 
-    // 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
+// 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
     var sortFavorite by mutableStateOf(false)
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
@@ -123,15 +121,15 @@ class MemoViewModel @Inject constructor(
     }
 
     // 명령어 의 흐름이 다른 경우 별도의 변수를 사용 하였다.
-    // 맨 처음 로딩 시에 date store 에서 받아온 값으로 정렬을 하는데
-    // 현재 3개의 값을 저장 하고 있다. observer 들은 이전 값에 변동이 없는 경우는 그리지 않는데
-    // 맨 처음 에는 저장된 값이 같더 라도 그려 줘야 한다.
+// 맨 처음 로딩 시에 date store 에서 받아온 값으로 정렬을 하는데
+// 현재 3개의 값을 저장 하고 있다. observer 들은 이전 값에 변동이 없는 경우는 그리지 않는데
+// 맨 처음 에는 저장된 값이 같더 라도 그려 줘야 한다.
     var firstFetch = true
 
     // 아래 두 변수는 snack bar 를 그려 줄 때 현재 Action 에 대한 처리를 하는데
-    // 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
-    // date store 에 저장된 경우는 persist 하고 읽는 것 까지 시간이 걸리기 때문에
-    // 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
+// 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
+// date store 에 저장된 경우는 persist 하고 읽는 것 까지 시간이 걸리기 때문에
+// 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
     var snackBarOrderEnabled = false
     var snackBarDateEnabled = false
 
@@ -163,23 +161,24 @@ class MemoViewModel @Inject constructor(
     fun refreshAllTasks() {
         Log.i(
             "PHILIP",
-            "[MemoViewModel] refreshAllTasks condition with ${dateOrderState}, notebook_id: $notebookIdState"
+            "[MemoViewModel] refreshAllTasks condition with ${uiState.dateOrderState}, notebook_id: $uiState.notebookIdState"
         )
         viewModelScope.launch {
+
             todoRepository.getTasks(
                 query = searchTextString,
                 searchRangeAll = searchRangeAll,
-                sortCondition = dateOrderState.ordinal,
-                priority = prioritySortState,
-                notebookId = notebookIdState,
+                sortCondition = uiState.dateOrderState.ordinal,
+                priority = uiState.prioritySortState,
+                notebookId = uiState.notebookIdState,
                 startDate = startDate,
                 endDate = endDate,
-                isFavoriteOn = sortFavorite,
-                stateCompleted = stateCompleted,
-                stateActive = stateActive,
-                stateSuspended = stateSuspended,
-                stateWaiting = stateWaiting,
-                stateNone = stateNone,
+                isFavoriteOn = uiState.sortFavorite,
+                stateCompleted = uiState.stateCompleted,
+                stateActive = uiState.stateActive,
+                stateSuspended = uiState.stateSuspended,
+                stateWaiting = uiState.stateWaiting,
+                stateNone = uiState.stateNone,
             )
                 .stateIn(
                     scope = viewModelScope,
@@ -193,32 +192,6 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-
-    // 공유 정보를 위해서 사용 한다
-    // 위의 allTasks 의 snapshot 이 저장 된다.
-//    var snapshotTasks by mutableStateOf(emptyList<TodoTask>())
-//        private set
-
-//    fun updateSnapshotTasks(tasks: List<TodoTask>) {
-//        snapshotTasks = tasks
-//    }
-
-    // for reading the saved priority sort state
-    var prioritySortState by mutableStateOf(Priority.NONE)
-    var dateOrderState by mutableStateOf(SortOption.UPDATED_AT_DESC)
-    var notebookIdState by mutableIntStateOf(Int.MIN_VALUE)
-    private var firstRecentNotebookId by mutableStateOf<Int?>(null)
-    private var secondRecentNotebookId by mutableStateOf<Int?>(null)
-
-    var stateCompleted by mutableStateOf(true)
-    var stateActive by mutableStateOf(true)
-    var stateSuspended by mutableStateOf(true)
-    var stateWaiting by mutableStateOf(true)
-    var stateNone by mutableStateOf(true)
-
-    var stateState by mutableStateOf(31)
-
-
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
     var notebooks: StateFlow<List<NotebookWithCount>> =
         notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
@@ -228,202 +201,6 @@ class MemoViewModel @Inject constructor(
                 initialValue = emptyList()
             )
 
-    // sort property 를 읽어 온다. 읽으면 _prioritySortState 가 변경 된댜.
-    fun observePrioritySortState() {
-        Log.i("PHILIP", "[MemoViewModel] observePrioritySortState() executed")
-        viewModelScope.launch {
-            dataStoreRepository.readPrioritySortState
-                .map { Priority.valueOf(it) }
-                .collect { priority ->
-
-                    if (firstFetch) {
-                        prioritySortState = priority
-                        if (readyFlagForNotebookId && readyFlagForDateOrderState && readyFlagForFavorite && readyFlagForStateState) {
-                            firstFetch = false
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForPriority = true
-                        }
-                    } else {
-                        if (priority != prioritySortState) {
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with priority $prioritySortState"
-                            )
-                            prioritySortState = priority
-                            refreshAllTasks()
-                        }
-                    }
-                }
-        }
-    }
-
-
-    fun observeFavoriteState() {
-        Log.i("PHILIP", "[MemoViewModel] observeFavoriteState() executed")
-        viewModelScope.launch {
-            dataStoreRepository.readFavoriteState
-                .map { it.toBoolean() }
-                .collect { state ->
-
-                    if (firstFetch) {
-                        sortFavorite = state
-                        if (readyFlagForNotebookId && readyFlagForDateOrderState && readyFlagForPriority && readyFlagForStateState) {
-                            firstFetch = false
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForFavorite = true
-                        }
-                    } else {
-                        if (state != sortFavorite) {
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with sortFavorite $sortFavorite"
-                            )
-                            sortFavorite = state
-                            refreshAllTasks()
-                        }
-                    }
-                }
-        }
-    }
-
-    fun observeDateOrderEnabledState() {
-        Log.i("PHILIP", "[MemoViewModel] observeDateOrderEnabledState() executed")
-        viewModelScope.launch {
-            dataStoreRepository.readDateOrderState
-                .map { it }
-                .collect { state ->
-                    if (firstFetch) {
-                        dateOrderState = SortOption.values()[state]
-                        if (readyFlagForNotebookId && readyFlagForFavorite && readyFlagForPriority && readyFlagForStateState) {
-                            firstFetch = false
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForDateOrderState = true
-                        }
-                    } else {
-                        if (SortOption.values()[state] != dateOrderState) {
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with dateEnabled $dateOrderState"
-                            )
-                            dateOrderState = SortOption.values()[state]
-                            refreshAllTasks()
-                        }
-                    }
-                }
-        }
-    }
-
-    fun observeNotebookIdChange() {
-        Log.i("PHILIP", "[MemoViewModel] observeNotebookIdChange() executed $dataStoreRepository")
-        viewModelScope.launch {
-            delay(100)
-            dataStoreRepository.readSelectedNotebookId
-                .map { it }
-                .collect { selectedNoteId ->
-                    if (firstFetch) {
-                        notebookIdState = selectedNoteId
-                        if (readyFlagForFavorite && readyFlagForDateOrderState && readyFlagForPriority && readyFlagForStateState) {
-                            firstFetch = false
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] observeNotebookIdChange() $dataStoreRepository refreshAllTasks() firstFetch executed with notebookId: $notebookIdState"
-                            )
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForNotebookId = true
-                        }
-                    } else {
-                        if (selectedNoteId != notebookIdState) {
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] observeNotebookIdChange() $dataStoreRepository refreshAllTasks() executed with notebookId: $notebookIdState"
-                            )
-                            notebookIdState = selectedNoteId
-                            refreshAllTasks()
-                        }
-                    }
-                    withContext(Dispatchers.IO) {
-                        getNotebook(selectedNoteId)
-                    }
-                }
-        }
-    }
-
-    fun observeStateState() {
-        Log.i("PHILIP", "[MemoViewModel] observeStateState() executed")
-
-        viewModelScope.launch {
-            dataStoreRepository.readStateState
-                .map { it }
-                .collect { state ->
-                    if (firstFetch) {
-                        setIndividualStateValues(state)
-
-                        if (readyFlagForFavorite && readyFlagForDateOrderState && readyFlagForPriority && readyFlagForNotebookId) {
-                            firstFetch = false
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() firstFetch executed with stateState: $stateState"
-                            )
-                            refreshAllTasks()
-                        } else {
-                            readyFlagForStateState = true
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] observeStateState() firstFetch with $stateState, $stateNone, $stateWaiting, $stateSuspended, $stateWaiting, $stateCompleted"
-                            )
-                        }
-                    } else {
-                        if (state != stateState) {
-                            setIndividualStateValues(state)
-
-                            Log.i(
-                                "PHILIP",
-                                "[MemoViewModel] refreshAllTasks() executed with stateState: $stateState, $stateNone, $stateWaiting, $stateSuspended, $stateWaiting, $stateCompleted"
-                            )
-                            refreshAllTasks()
-                        }
-                    }
-                }
-        }
-    }
-
-    private fun setIndividualStateValues(state: Int) {
-        stateState = state
-
-        stateNone = (stateState and 1) == 1
-        stateWaiting = (stateState and 2) == 2
-        stateSuspended = (stateState and 4) == 4
-        stateActive = (stateState and 8) == 8
-        stateCompleted = (stateState and 16) == 16
-    }
-
-    fun observeFirstRecentNotebookIdChange() {
-        Log.i("PHILIP", "[MemoViewModel] observeFirstRecentNotebookIdChange() executed")
-
-        viewModelScope.launch {
-            dataStoreRepository.readFirstRecentNotebookId
-                .map { it }
-                .collect { state ->
-                    if (state != firstRecentNotebookId) firstRecentNotebookId = state
-                }
-        }
-    }
-
-    fun observeSecondRecentNotebookIdChange() {
-        Log.i("PHILIP", "[MemoViewModel] observeSecondRecentNotebookIdChange() executed")
-
-        viewModelScope.launch {
-            dataStoreRepository.readSecondRecentNotebookId
-                .map { it }
-                .collect { state ->
-                    if (state != secondRecentNotebookId) secondRecentNotebookId = state
-                }
-        }
-    }
 
     private fun getNotebook(id: Int) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
@@ -455,13 +232,13 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun persistNotebookIdState(id: Int) {
-        if (notebookIdState != id) {
+        if (uiState.notebookIdState != id) {
             viewModelScope.launch {
-                if (firstRecentNotebookId == null) {
-                    persistFirstRecentNotebookIdState(notebookIdState)
+                if (uiState.firstRecentNotebookId == null) {
+                    persistFirstRecentNotebookIdState(uiState.notebookIdState)
                 } else {
-                    persistSecondRecentNotebookIdState(firstRecentNotebookId!!)
-                    persistFirstRecentNotebookIdState(notebookIdState)
+                    persistSecondRecentNotebookIdState(uiState.firstRecentNotebookId!!)
+                    persistFirstRecentNotebookIdState(uiState.notebookIdState)
                 }
                 dataStoreRepository.persistSelectedNotebookId(id)
                 updateActionPerformed()
@@ -489,7 +266,7 @@ class MemoViewModel @Inject constructor(
 
 
     // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
-// 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
+    // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
     var action = Action.NO_ACTION
         private set
 
@@ -502,16 +279,16 @@ class MemoViewModel @Inject constructor(
         this.actionPerformed = Random.nextBytes(4)
     }
 
-    fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
+    fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance(notebookId = uiState.notebookIdState)) {
         taskAppBarState = TaskAppBarState.EDITOR
         updateUiState(
-            if (task.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = notebookIdState)
+            if (task.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = uiState.notebookIdState)
             else task.toTaskDetails()
         )
     }
 
 
-    fun setTaskScreenToViewerMode(task: TodoTask = TodoTask.instance(notebookIdState)) {
+    fun setTaskScreenToViewerMode(task: TodoTask = TodoTask.instance(notebookId = uiState.notebookIdState)) {
         taskAppBarState = TaskAppBarState.VIEWER
         updateUiState(task.toTaskDetails())
     }
@@ -590,7 +367,7 @@ class MemoViewModel @Inject constructor(
             Action.PRIORITY_CHANGE -> {
                 updateAction(action)
                 // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여 져야 한다.
-                if (priority != prioritySortState) {
+                if (priority != uiState.prioritySortState) {
                     persistPrioritySortState(priority)
                     updateActionPerformed()
                 }
@@ -599,10 +376,10 @@ class MemoViewModel @Inject constructor(
             Action.SORT_ORDER_CHANGE -> {
                 Log.i(
                     "PHILIP",
-                    "[MemoViewModel] handleActions performed with $dateOrderState, $sortOrderEnabled"
+                    "[MemoViewModel] handleActions performed with $uiState.dateOrderState, $sortOrderEnabled"
                 )
                 updateAction(action)
-                when (dateOrderState) {
+                when (uiState.dateOrderState) {
                     SortOption.UPDATED_AT_DESC -> {
                         if (sortOrderEnabled) {
                             snackBarOrderEnabled = true
@@ -640,10 +417,10 @@ class MemoViewModel @Inject constructor(
             Action.SORT_DATE_CHANGE -> {
                 Log.i(
                     "PHILIP",
-                    "[MemoViewModel] handleActions performed with $dateOrderState, $sortDateEnabled"
+                    "[MemoViewModel] handleActions performed with ${uiState.dateOrderState}, $sortDateEnabled"
                 )
                 updateAction(action)
-                when (dateOrderState) {
+                when (uiState.dateOrderState) {
                     SortOption.UPDATED_AT_DESC -> {
                         if (sortDateEnabled) {
                             snackBarDateEnabled = true
@@ -694,42 +471,7 @@ class MemoViewModel @Inject constructor(
 
             Action.STATE_FILTER_CHANGE -> {
 
-                val result = when (state) {
-                    State.NONE -> {
-                        if ((stateState and 1) == 1)
-                            stateState - 1
-                        else
-                            stateState + 1
-                    }
-
-                    State.WAITING -> {
-                        if ((stateState and 2) == 2)
-                            stateState - 2
-                        else
-                            stateState + 2
-                    }
-
-                    State.SUSPENDED -> {
-                        if ((stateState and 4) == 4)
-                            stateState - 4
-                        else
-                            stateState + 4
-                    }
-
-                    State.ACTIVE -> {
-                        if ((stateState and 8) == 8)
-                            stateState - 8
-                        else
-                            stateState + 8
-                    }
-
-                    State.COMPLETED -> {
-                        if ((stateState and 16) == 16)
-                            stateState - 16
-                        else
-                            stateState + 16
-                    }
-                }
+                val result = stateBinaryCalculation(state)
                 persistStateState(result)
             }
 
@@ -745,6 +487,46 @@ class MemoViewModel @Inject constructor(
                 this.action = Action.NO_ACTION
             }
         }
+    }
+
+    private fun stateBinaryCalculation(state: State): Int {
+        val result = when (state) {
+            State.NONE -> {
+                if ((uiState.stateState and 1) == 1)
+                    uiState.stateState - 1
+                else
+                    uiState.stateState + 1
+            }
+
+            State.WAITING -> {
+                if ((uiState.stateState and 2) == 2)
+                    uiState.stateState - 2
+                else
+                    uiState.stateState + 2
+            }
+
+            State.SUSPENDED -> {
+                if ((uiState.stateState and 4) == 4)
+                    uiState.stateState - 4
+                else
+                    uiState.stateState + 4
+            }
+
+            State.ACTIVE -> {
+                if ((uiState.stateState and 8) == 8)
+                    uiState.stateState - 8
+                else
+                    uiState.stateState + 8
+            }
+
+            State.COMPLETED -> {
+                if ((uiState.stateState and 16) == 16)
+                    uiState.stateState - 16
+                else
+                    uiState.stateState + 16
+            }
+        }
+        return result
     }
 
     // 검색 app bar 가 닫힐 때 설정된 우선 순위에 따른 결과가 나와야 한다.
@@ -837,23 +619,23 @@ class MemoViewModel @Inject constructor(
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
             when (state) {
                 State.NONE -> {
-                    if (!stateNone) refreshAllTasks()
+                    if (!uiState.stateNone) refreshAllTasks()
                 }
 
                 State.WAITING -> {
-                    if (!stateWaiting) refreshAllTasks()
+                    if (!uiState.stateWaiting) refreshAllTasks()
                 }
 
                 State.SUSPENDED -> {
-                    if (!stateSuspended) refreshAllTasks()
+                    if (!uiState.stateSuspended) refreshAllTasks()
                 }
 
                 State.ACTIVE -> {
-                    if (!stateActive) refreshAllTasks()
+                    if (!uiState.stateActive) refreshAllTasks()
                 }
 
                 State.COMPLETED -> {
-                    if (!stateCompleted) refreshAllTasks()
+                    if (!uiState.stateCompleted) refreshAllTasks()
                 }
             }
         }
@@ -909,7 +691,6 @@ class MemoViewModel @Inject constructor(
                 notebookRepository.insertMultipleNotebooks(notes)
             }
         }
-
         item?.close()
     }
 
@@ -970,6 +751,41 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+
+    var uiState: UserData by mutableStateOf(UserData())
+
+    private val uiStateFlow: StateFlow<MemoListUiState> =
+        dataStoreRepository.userData.map {
+            MemoListUiState.Success(it)
+        }.stateIn(
+            scope = viewModelScope,
+            initialValue = MemoListUiState.Loading,
+            started = SharingStarted.WhileSubscribed(5_000),
+        )
+
+
+    fun observeUiState() {
+        Log.i("PHILIP", "[MemoViewModel] observeUiState() executed")
+        firstFetch = false
+        viewModelScope.launch {
+            uiStateFlow
+                .onEach {
+                    when (it) {
+                        is MemoListUiState.Success -> {
+                            uiState = it.userData
+                            refreshAllTasks()
+                            delay(100)
+                            withContext(Dispatchers.IO) {
+                                getNotebook(uiState.notebookIdState)
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
+                .collect()
+        }
+    }
 }
 
 data class TaskDetails(
@@ -983,7 +799,6 @@ data class TaskDetails(
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
     val notebookId: Int = -1
 )
-
 
 fun TaskDetails.toTodoTask() = TodoTask(
     id = id,
@@ -1008,6 +823,11 @@ fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
     updatedAt = updatedAt,
     notebookId = notebookId
 )
+
+sealed interface MemoListUiState {
+    object Loading : MemoListUiState
+    data class Success(val userData: UserData) : MemoListUiState
+}
 
 
 data class TaskUiState(

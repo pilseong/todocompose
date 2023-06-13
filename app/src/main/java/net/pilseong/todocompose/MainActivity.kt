@@ -14,11 +14,35 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+//    private val viewModel: MainActivityViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+//        var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
+
+//        val splashScreen = installSplashScreen()
         installSplashScreen()
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        // Update the uiState
+//        lifecycleScope.launch {
+//            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                viewModel.uiState
+//                    .onEach {
+//                        uiState = it
+//                    }
+//                    .collect()
+//            }
+//        }
+//
+//        splashScreen.setKeepOnScreenCondition {
+//            when (uiState) {
+//                MainActivityUiState.Loading -> true
+//                is MainActivityUiState.Success -> false
+//            }
+//        }
+
         setContent {
             TodoComposeTheme {
                 val navHostController = rememberNavController()

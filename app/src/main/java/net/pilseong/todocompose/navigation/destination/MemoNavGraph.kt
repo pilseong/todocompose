@@ -116,6 +116,8 @@ fun NavGraphBuilder.memoNavGraph(
                 }
             }
 
+            val uiState = memoViewModel.uiState
+
             val intentResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
                     memoViewModel.handleImport(uri)
@@ -138,15 +140,10 @@ fun NavGraphBuilder.memoNavGraph(
                         "${backStackEntry.arguments?.getInt(NOTE_ID_ARGUMENT)}"
             )
 
+            // ui state observer started
+
             if (memoViewModel.firstFetch) {
-                Log.i("PHILIP", "[MemoNavGraph] memoViewModel value ${memoViewModel.toString()}")
-                memoViewModel.observePrioritySortState()
-                memoViewModel.observeDateOrderEnabledState()
-                memoViewModel.observeFavoriteState()
-                memoViewModel.observeNotebookIdChange()
-                memoViewModel.observeStateState()
-                memoViewModel.observeFirstRecentNotebookIdChange()
-                memoViewModel.observeSecondRecentNotebookIdChange()
+                memoViewModel.observeUiState()
             }
 
 
@@ -154,7 +151,7 @@ fun NavGraphBuilder.memoNavGraph(
                 snackBarHostState = snackBarHostState,
                 searchAppBarState = memoViewModel.searchAppBarState,
                 searchText = memoViewModel.searchTextString,
-                prioritySortState = memoViewModel.prioritySortState,
+                prioritySortState = uiState.prioritySortState,
                 tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
                 selectedItems = memoViewModel.selectedItems,
                 selectedNotebook = memoViewModel.selectedNotebook.value,
@@ -173,15 +170,15 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onClickBottomNavBar = onClickBottomNavBar,
                 memoViewModel = memoViewModel,
-                stateCompleted = memoViewModel.stateCompleted,
-                stateActive = memoViewModel.stateActive,
-                stateSuspended = memoViewModel.stateSuspended,
-                stateWaiting = memoViewModel.stateWaiting,
-                stateNone = memoViewModel.stateNone,
-                orderEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
-                        memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
-                dataEnabled = (memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
-                        memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
+                stateCompleted = uiState.stateCompleted,
+                stateActive = uiState.stateActive,
+                stateSuspended = uiState.stateSuspended,
+                stateWaiting = uiState.stateWaiting,
+                stateNone = uiState.stateNone,
+                orderEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
+                dataEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        uiState.dateOrderState == SortOption.CREATED_AT_DESC),
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()
                     action.value = Action.NOTEBOOK_CHANGE
@@ -218,7 +215,7 @@ fun NavGraphBuilder.memoNavGraph(
                     dialogTitle.value = moveToNotebookStr
                     openDialog.value = true
                 },
-                onStateSelected = {state ->
+                onStateSelected = { state ->
                     memoViewModel.handleActions(Action.STATE_FILTER_CHANGE, state = state)
                 },
                 onStateChange = { task, state ->
@@ -261,21 +258,21 @@ fun NavGraphBuilder.memoNavGraph(
                 onFavoriteSortClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_FAVORITE_CHANGE,
-                        favorite = !memoViewModel.sortFavorite
+                        favorite = !uiState.sortFavorite
                     )
                 },
                 onOrderEnabledClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_ORDER_CHANGE,
-                        sortOrderEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
-                                memoViewModel.dateOrderState == SortOption.UPDATED_AT_ASC),
+                        sortOrderEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                                uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
                     )
                 },
                 onDateEnabledClick = {
                     memoViewModel.handleActions(
                         action = Action.SORT_DATE_CHANGE,
-                        sortDateEnabled = !(memoViewModel.dateOrderState == SortOption.CREATED_AT_ASC ||
-                                memoViewModel.dateOrderState == SortOption.CREATED_AT_DESC),
+                        sortDateEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                                uiState.dateOrderState == SortOption.CREATED_AT_DESC),
                     )
                 },
                 onPrioritySelected = { priority ->

@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,7 +81,7 @@ fun ListAppBar(
     onExportClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean) -> Unit,
 ) {
-    Log.i("PHILIP", "selectedItems $selectedItemsCount")
+//    Log.i("PHILIP", "selectedItems $selectedItemsCount")
     if (selectedItemsCount > 0) {
         MultiSelectAppbar(
             scrollBehavior = scrollBehavior,

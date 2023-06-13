@@ -37,7 +37,7 @@ class NoteViewModel @Inject constructor(
 
     var selectedNotebooks = mutableStateListOf<Int>()
 
-    var sortingOptionState by mutableStateOf(NoteSortingOption.ACCESS_AT)
+    var noteSortingOptionState by mutableStateOf(NoteSortingOption.ACCESS_AT)
 
 
     fun appendMultiSelectedNotebook(id: Int) {
@@ -97,9 +97,9 @@ class NoteViewModel @Inject constructor(
     private fun getNotebooks() {
         Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
         viewModelScope.launch {
-            notebookRepository.getNotebooks(sortingOptionState)
+            notebookRepository.getNotebooks(noteSortingOptionState)
                 .collect() {
-                    Log.i("PHILIP", "[NoteViewModel] getNotebooks() executed $sortingOptionState")
+                    Log.i("PHILIP", "[NoteViewModel] getNotebooks() executed $noteSortingOptionState")
                     notebooks.value = it
                 }
         }
@@ -213,15 +213,15 @@ class NoteViewModel @Inject constructor(
             dataStoreRepository.readNoteSortingOrderState
                 .map { it }
                 .collect { option ->
-                    if (sortingOptionState.ordinal != option || firstList) {
+                    if (noteSortingOptionState.ordinal != option || firstList) {
                         if (firstList) firstList = false
-                        sortingOptionState = NoteSortingOption.values()[option]
+                        noteSortingOptionState = NoteSortingOption.values()[option]
                         withContext(Dispatchers.IO) {
                             getNotebooks()
                         }
                         Log.i(
                             "PHILIP",
-                            "[NoteViewModel] observeNoteSortingState executed() $sortingOptionState ${NoteSortingOption.values()[option]}"
+                            "[NoteViewModel] observeNoteSortingState executed() $noteSortingOptionState ${NoteSortingOption.values()[option]}"
                         )
                     }
                 }
@@ -271,7 +271,7 @@ class NoteViewModel @Inject constructor(
             }
 
             NoteAction.SORT_BY_TIME -> {
-                if (sortingOptionState != noteSortingOption) {
+                if (noteSortingOptionState != noteSortingOption) {
                     viewModelScope.launch {
                         dataStoreRepository.persistNoteSortingOrderState(noteSortingOption = noteSortingOption)
                     }
