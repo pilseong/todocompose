@@ -5,7 +5,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
@@ -65,11 +67,15 @@ class TodoRepository @Inject constructor(
 
 
     suspend fun addTask(todoTask: TodoTask) {
-        todoDAO.addTask(todoTask)
+        withContext(Dispatchers.IO) {
+            todoDAO.addTask(todoTask)
+        }
     }
 
     suspend fun updateTask(todoTask: TodoTask) {
-        todoDAO.updateTaskWithTimestamp(todoTask)
+        withContext(Dispatchers.IO) {
+            todoDAO.updateTaskWithTimestamp(todoTask)
+        }
     }
 
     suspend fun updateTaskWithoutUpdatedAt(todoTask: TodoTask) {
@@ -78,25 +84,37 @@ class TodoRepository @Inject constructor(
 
 
     suspend fun deleteTask(todoId: Int) {
-        todoDAO.deleteTask(todoId)
+        withContext(Dispatchers.IO) {
+            todoDAO.deleteTask(todoId)
+        }
     }
 
     suspend fun deleteAllTasks() {
-        todoDAO.deleteAllTasks()
+        withContext(Dispatchers.IO) {
+            todoDAO.deleteAllTasks()
+        }
     }
 
     suspend fun deleteSelectedTasks(notesIds: List<Int>) {
-        todoDAO.deleteSelectedTasks(notesIds)
+        withContext(Dispatchers.IO) {
+            todoDAO.deleteSelectedTasks(notesIds)
+        }
     }
 
     suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
-        todoDAO.insertMultipleMemos(tasks)
+        withContext(Dispatchers.IO) {
+            todoDAO.insertMultipleMemos(tasks)
+        }
     }
 
     suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
-        todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
+        withContext(Dispatchers.IO) {
+            todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
+        }
     }
 
     suspend fun getMemoCount(notebookId: Int): DefaultNoteMemoCount =
-        todoDAO.getMemoCount(notebookId)
+        withContext(Dispatchers.IO) {
+            todoDAO.getMemoCount(notebookId)
+        }
 }

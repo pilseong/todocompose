@@ -12,46 +12,45 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
+import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.copyToClipboard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun TaskScreen(
+    tasks: LazyPagingItems<TodoTask>,
+    taskIndex: Int,
+    taskAppBarState: TaskAppBarState,
+    taskUiState: TaskUiState,
     memoViewModel: MemoViewModel,
     toListScreen: (Int?) -> Unit,
 ) {
-    // 세부 화면 스크린 에서는 리스트 에서 생성 하고 저장한 snapshot 만 의존 한다.
-    // 1. 현재 리스트
-    // 2. 해당 인덱스
-    // 3. 테스크 top bar 의 상태
-    val taskAppBarState = memoViewModel.taskAppBarState
-    val taskIndex = memoViewModel.index
-
-
-    Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
-    val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
-    Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.itemCount}")
 
     val context = LocalContext.current
 
     val clipboardMessage = stringResource(id = R.string.viewer_appbar_clipboard_copied_popup)
     val scope = rememberCoroutineScope()
 
+    Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
+
     Scaffold(
         topBar = {
             TaskAppBar(
                 task = if (taskIndex >= 0) tasks.peek(taskIndex)!! else TodoTask.instance(),
                 taskAppBarState = taskAppBarState,
-                taskUiState = memoViewModel.taskUiState,
+                taskUiState = taskUiState,
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
@@ -96,7 +95,7 @@ fun TaskScreen(
             ) {
                 TaskContent(
                     task = if (taskIndex >= 0) tasks.peek(taskIndex)!! else TodoTask.instance(),
-                    taskUiState = memoViewModel.taskUiState,
+                    taskUiState = taskUiState,
                     taskSize = tasks.itemCount,
                     taskIndex = taskIndex,
                     taskAppBarState = taskAppBarState,

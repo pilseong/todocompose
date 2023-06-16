@@ -23,6 +23,7 @@ import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.InfoDialog
 import net.pilseong.todocompose.ui.screen.home.NoteAction
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
+import net.pilseong.todocompose.ui.viewmodel.UiState
 
 fun NavGraphBuilder.homeComposable(
     navHostController: NavHostController,
@@ -47,60 +48,61 @@ fun NavGraphBuilder.homeComposable(
         val action = remember { mutableStateOf(NoteAction.ADD) }
         val indexSelected = remember { mutableStateOf(-1) }
 
+        when (noteViewModel.uiState) {
+            UiState.Loading -> {
+                Log.i("PHILIP", "Ui is loading")
+            }
+            is UiState.Success -> {
+                HomeScreen(
+                    notebooks = noteViewModel.notebooks.collectAsState().value,
+                    selectedNotebookIds = noteViewModel.selectedNotebooks,
+                    currentNotebook = noteViewModel.currentNotebook.value,
+                    noteSortingOption = (noteViewModel.uiState as UiState.Success).userData.noteSortingOptionState,
+                    firstRecentNotebook = noteViewModel.firstRecentNotebook.value,
+                    secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
+                    onClickBottomNavBar = { route ->
+                        navHostController.navigate(route)
+                    },
+                    onFabClick = {
+                        action.value = NoteAction.ADD
+                        dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
+                        openDialog.value = true
+                    },
+                    onSelectNotebook = { id ->
+                        noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = id)
+                        scope.launch {
+                            navHostController.navigate(Screen.MemoList.route)
+                        }
+                    },
+                    onSelectNotebookWithLongClick = { id ->
+                        noteViewModel.appendMultiSelectedNotebook(id)
+                    },
+                    onBackButtonClick = {
+                        noteViewModel.selectedNotebooks.clear()
+                    },
+                    onDeleteSelectedClicked = {
+                        noteViewModel.deleteSelectedNotebooks()
+                    },
+                    onEditClick = {
+                        noteViewModel.setEditProperties(noteViewModel.selectedNotebooks[0])
+                        action.value = NoteAction.EDIT
+                        dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
+                        openDialog.value = true
+                    },
+                    onInfoClick = { id ->
+                        indexSelected.value = id
+                        infoDialog.value = true
 
-        if (noteViewModel.firstFetch) {
-            noteViewModel.observeUiState()
-//            noteViewModel.observeNotebookIdChange()
-//            noteViewModel.observeNoteSortingState()
-//            noteViewModel.observeFirstRecentNotebookIdChange()
-//            noteViewModel.observeSecondRecentNotebookIdChange()
+                    },
+                    onSortMenuClick = {
+                        sortingOptionDialog.value = !sortingOptionDialog.value
+                    }
+                )
+
+            }
         }
 
-        HomeScreen(
-            notebooks = noteViewModel.notebooks.collectAsState().value,
-            selectedNotebookIds = noteViewModel.selectedNotebooks,
-            currentNotebook = noteViewModel.currentNotebook.value,
-            noteSortingOption = noteViewModel.noteSortingOptionState,
-            firstRecentNotebook = noteViewModel.firstRecentNotebook.value,
-            secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
-            onClickBottomNavBar = { route ->
-                navHostController.navigate(route)
-            },
-            onFabClick = {
-                action.value = NoteAction.ADD
-                dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
-                openDialog.value = true
-            },
-            onSelectNotebook = { id ->
-                noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = id)
-                scope.launch {
-                    navHostController.navigate(Screen.MemoList.route)
-                }
-            },
-            onSelectNotebookWithLongClick = { id ->
-                noteViewModel.appendMultiSelectedNotebook(id)
-            },
-            onBackButtonClick = {
-                noteViewModel.selectedNotebooks.clear()
-            },
-            onDeleteSelectedClicked = {
-                noteViewModel.deleteSelectedNotebooks()
-            },
-            onEditClick = {
-                noteViewModel.setEditProperties(noteViewModel.selectedNotebooks[0])
-                action.value = NoteAction.EDIT
-                dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
-                openDialog.value = true
-            },
-            onInfoClick = { id ->
-                indexSelected.value = id
-                infoDialog.value = true
 
-            },
-            onSortMenuClick = {
-                sortingOptionDialog.value = !sortingOptionDialog.value
-            }
-        )
 
         DropdownMenu(
             expanded = sortingOptionDialog.value,

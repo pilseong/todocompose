@@ -140,13 +140,6 @@ fun NavGraphBuilder.memoNavGraph(
                         "${backStackEntry.arguments?.getInt(NOTE_ID_ARGUMENT)}"
             )
 
-            // ui state observer started
-
-            if (memoViewModel.firstFetch) {
-                memoViewModel.observeUiState()
-            }
-
-
             ListScreen(
                 snackBarHostState = snackBarHostState,
                 searchAppBarState = memoViewModel.searchAppBarState,
@@ -376,13 +369,29 @@ fun NavGraphBuilder.memoNavGraph(
                 "[memoNavGraph] TaskScreen called"
             )
 
-            // activity가 destory 되고 다시 생성된 경우는 List 화면으로 forwarding
-            if (memoViewModel.firstFetch) {
-                Log.i("PHILIP", "[MemoNavGraph] memoViewModel value ${memoViewModel.toString()}")
+            // 세부 화면 스크린 에서는 리스트 에서 생성 하고 저장한 snapshot 만 의존 한다.
+            // 1. 현재 리스트
+            // 2. 해당 인덱스
+            // 3. 테스크 top bar 의 상태
+            val taskAppBarState = memoViewModel.taskAppBarState
+            val taskIndex = memoViewModel.index
+
+
+            Log.i("PHILIP", "[TaskScreen] index is $taskIndex")
+            val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
+            Log.i("PHILIP", "[TaskScreen] size of tasks ${tasks.itemCount}")
+
+
+            // activity  destroy 되고 다시 생성된 경우는 List 화면으로 forwarding - 샤오미 종특
+            if (taskIndex >= tasks.itemCount) {
+                Log.i("PHILIP", "[MemoNavGraph] memoViewModel value $memoViewModel")
                 navHostController.navigate(Screen.MemoList.route)
             } else {
-
                 TaskScreen(
+                    tasks = tasks,
+                    taskIndex = taskIndex,
+                    taskAppBarState = taskAppBarState,
+                    taskUiState = memoViewModel.taskUiState,
                     memoViewModel = memoViewModel,
                     toListScreen = toListScreen
                 )

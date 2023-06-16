@@ -19,7 +19,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -152,7 +151,7 @@ class MemoViewModel @Inject constructor(
 
 
     fun getDefaultNoteCount() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             defaultNoteMemoCount = todoRepository.getMemoCount(-1)
         }
     }
@@ -163,7 +162,6 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] refreshAllTasks condition with ${uiState.dateOrderState}, notebook_id: $uiState.notebookIdState"
         )
         viewModelScope.launch {
-
             todoRepository.getTasks(
                 query = searchTextString,
                 searchRangeAll = searchRangeAll,
@@ -541,7 +539,7 @@ class MemoViewModel @Inject constructor(
 
     private fun addTask() {
         savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             Log.i(
                 "PHILIP",
                 "[MemoViewModel] addTask performed with $taskUiState"
@@ -558,7 +556,7 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
         savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             todoRepository.updateTask(taskUiState.taskDetails.toTodoTask())
         }
         this.action = Action.UPDATE
@@ -567,7 +565,7 @@ class MemoViewModel @Inject constructor(
     private fun deleteTask(task: TodoTask) {
         savedLastTodoTask = task.copy()
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             todoRepository.deleteTask(task.id)
             refreshAllTasks()
         }
@@ -576,7 +574,7 @@ class MemoViewModel @Inject constructor(
 
 
     private fun moveToTask(destinationNoteId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             Log.i(
                 "PHILIP",
                 "[MemoViewModel] moveToTask performed with ${selectedItems.toList()} to notebook id with $destinationNoteId "
@@ -589,7 +587,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun undoTask() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             Log.i(
                 "PHILIP",
                 "[MemoViewModel] undoTask - undo with $savedLastTodoTask"
@@ -603,7 +601,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun updateFavorite(todo: TodoTask) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             Log.i("PHILIP", "updateFavorite ${todo.favorite}")
 //            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(favorite = !todo.favorite))
             todoRepository.updateTaskWithoutUpdatedAt(todo)
@@ -613,7 +611,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun updateState(todo: TodoTask, state: State) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             todoRepository.updateTaskWithoutUpdatedAt(todo.copy(progression = state))
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
             when (state) {
@@ -641,7 +639,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun deleteAllTasks() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             todoRepository.deleteAllTasks()
             refreshAllTasks()
         }
@@ -649,7 +647,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun deleteSelectedTasks() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             todoRepository.deleteSelectedTasks(selectedItems)
             selectedItems.clear()
             refreshAllTasks()
@@ -685,7 +683,7 @@ class MemoViewModel @Inject constructor(
 
             Log.i("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
 
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch {
                 todoRepository.insertMultipleMemos(memos)
                 notebookRepository.insertMultipleNotebooks(notes)
             }
@@ -694,7 +692,7 @@ class MemoViewModel @Inject constructor(
     }
 
     fun exportData() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val allMemoData = todoRepository.getAllTasks()
             var memoJson = gson?.toJson(allMemoData)
             val filename = "memos.txt"
@@ -763,7 +761,8 @@ class MemoViewModel @Inject constructor(
         )
 
 
-    fun observeUiState() {
+    private fun observeUiState() {
+        if (firstFetch) firstFetch = false
         Log.i("PHILIP", "[MemoViewModel] observeUiState() executed")
         viewModelScope.launch {
             uiStateFlow
@@ -774,12 +773,15 @@ class MemoViewModel @Inject constructor(
                             refreshAllTasks()
                             getNotebook(uiState.notebookIdState)
                         }
-
                         else -> {}
                     }
                 }
                 .collect()
         }
+    }
+
+    init {
+        observeUiState()
     }
 }
 

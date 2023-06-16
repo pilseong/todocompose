@@ -4,44 +4,35 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
+import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
+import net.pilseong.todocompose.ui.viewmodel.UiState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-//    private val viewModel: MainActivityViewModel by viewModels()
+    private val noteViewModel: NoteViewModel by viewModels()
+    val memoViewModel: MemoViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.i("PHILIP", "[MainActivity] onCreate called")
 
-//        var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
-
-//        val splashScreen = installSplashScreen()
-        installSplashScreen()
-
-        // Update the uiState
-//        lifecycleScope.launch {
-//            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                viewModel.uiState
-//                    .onEach {
-//                        uiState = it
-//                    }
-//                    .collect()
-//            }
-//        }
-//
-//        splashScreen.setKeepOnScreenCondition {
-//            when (uiState) {
-//                MainActivityUiState.Loading -> true
-//                is MainActivityUiState.Success -> false
-//            }
-//        }
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition {
+            noteViewModel.isLoading
+        }
 
         setContent {
             TodoComposeTheme {
@@ -50,7 +41,6 @@ class MainActivity : ComponentActivity() {
                 // dark mode에서는 더 이상 이슈가 생기지 않지만
                 // light 모드 에서는 배경색으로 인한 flikering이 여전히 존재
                 Surface {
-                    Log.i("PHILIP", "MainActivity")
                     MainNavGraph(
                         startDestination = BottomBarScreen.Home.route,
                         navHostController = navHostController
@@ -80,5 +70,10 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Log.i("PHILIP", "[MainActivity]onResume is called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i("PHILIP", "[MainActivity]onDestory is called")
     }
 }

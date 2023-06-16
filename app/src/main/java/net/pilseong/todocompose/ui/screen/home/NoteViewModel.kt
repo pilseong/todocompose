@@ -44,7 +44,9 @@ class NoteViewModel @Inject constructor(
 
     var selectedNotebooks = mutableStateListOf<Int>()
 
-    var noteSortingOptionState by mutableStateOf(NoteSortingOption.ACCESS_AT)
+    var isLoading = true
+
+//    var noteSortingOptionState by mutableStateOf(NoteSortingOption.ACCESS_AT)
 
 
     fun appendMultiSelectedNotebook(id: Int) {
@@ -79,8 +81,6 @@ class NoteViewModel @Inject constructor(
     val firstRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
     val secondRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
 
-    var firstFetch = true
-
 
     fun setEditProperties(targetId: Int) {
         val notebook = notebooks.value.find { notebook ->
@@ -96,16 +96,18 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun getNotebooks() {
+    private fun getNotebooks(userData: UserData) {
+//        val userData = (uiState as UiState.Success).userData
         Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
         viewModelScope.launch {
-            notebookRepository.getNotebooks(noteSortingOptionState)
+            notebookRepository.getNotebooks(userData.noteSortingOptionState)
                 .collect() {
                     Log.i(
                         "PHILIP",
-                        "[NoteViewModel] getNotebooks() executed $noteSortingOptionState"
+                        "[NoteViewModel] getNotebooks() executed ${userData.noteSortingOptionState}"
                     )
                     notebooks.value = it
+                    if (isLoading) isLoading = false
                 }
         }
     }
@@ -188,6 +190,8 @@ class NoteViewModel @Inject constructor(
             "[NoteViewModel] handleActions performed with $action, notebookId $notebookId"
         )
 
+        val userData = (uiState as UiState.Success).userData
+
         when (action) {
             NoteAction.ADD -> {
                 viewModelScope.launch {
@@ -206,13 +210,13 @@ class NoteViewModel @Inject constructor(
             }
 
             NoteAction.SELECT_NOTEBOOK -> {
-                if (uiState.notebookIdState != notebookId) {
+                if (notebookIdState != notebookId) {
                     viewModelScope.launch {
-                        if (uiState.firstRecentNotebookId == null) {
-                            persistFirstRecentNotebookIdState(uiState.notebookIdState)
+                        if (userData.firstRecentNotebookId == null) {
+                            persistFirstRecentNotebookIdState(userData.notebookIdState)
                         } else {
-                            persistSecondRecentNotebookIdState(uiState.firstRecentNotebookId!!)
-                            persistFirstRecentNotebookIdState(uiState.notebookIdState)
+                            persistSecondRecentNotebookIdState(userData.firstRecentNotebookId!!)
+                            persistFirstRecentNotebookIdState(userData.notebookIdState)
                         }
                         persistNotebookIdState(notebookId = notebookId)
                     }
@@ -220,7 +224,8 @@ class NoteViewModel @Inject constructor(
             }
 
             NoteAction.SORT_BY_TIME -> {
-                if (noteSortingOptionState != noteSortingOption) {
+
+                if (userData.noteSortingOptionState != noteSortingOption) {
                     viewModelScope.launch {
                         dataStoreRepository.persistNoteSortingOrderState(noteSortingOption = noteSortingOption)
                     }
@@ -238,6 +243,7 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun editNotebook() {
+        val userData = (uiState as UiState.Success).userData
         viewModelScope.launch {
             notebookRepository.updateNotebook(
                 Notebook(
@@ -254,11 +260,11 @@ class NoteViewModel @Inject constructor(
                 currentNotebook.value = fetched
             }
 
-            if (uiState.firstRecentNotebookId == id.value) {
+            if (userData.firstRecentNotebookId == id.value) {
                 firstRecentNotebook.value = fetched
             }
 
-            if (uiState.secondRecentNotebookId == id.value) {
+            if (userData.secondRecentNotebookId == id.value) {
                 secondRecentNotebook.value = fetched
             }
         }
@@ -285,7 +291,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    var uiState: UserData by mutableStateOf(UserData())
+    var uiState: UiState by mutableStateOf(UiState.Loading)
 
     private val uiStateFlow: StateFlow<UiState> =
         dataStoreRepository.userData.map {
@@ -297,19 +303,18 @@ class NoteViewModel @Inject constructor(
         )
 
 
-    fun observeUiState() {
+    private fun observeUiState() {
         Log.i("PHILIP", "[NoteViewModel] observeUiState() executed")
-        firstFetch = false
         viewModelScope.launch {
             uiStateFlow
                 .onEach {
                     when (it) {
                         is UiState.Success -> {
-                            uiState = it.userData
+                            uiState = it
                             getCurrentNote(it.userData)
                             getFirstNote(it.userData)
                             getSecondNote(it.userData)
-                            getNotebooks()
+                            getNotebooks(it.userData)
                         }
 
                         else -> {}
@@ -317,6 +322,16 @@ class NoteViewModel @Inject constructor(
                 }
                 .collect()
         }
+    }
+
+    init {
+        observeUiState()
+    }
+
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.i("PHILIP", "[NoteViewModel] onCleared called")
     }
 }
 
