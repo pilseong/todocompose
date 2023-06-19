@@ -276,8 +276,8 @@ fun NoteContent(
                                         0.2f
                                     )
                                 ).copy(0.9f),
-                                fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
-                                fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                                fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
+                                fontSize = MaterialTheme.typography.headlineSmall.fontSize
                             )
                         }
 
@@ -286,6 +286,8 @@ fun NoteContent(
                             modifier = Modifier
                                 .fillMaxWidth(),
                         ) {
+
+//                            Log.i("PHILIP", "locale ${Locale.current.language}")
                             Text(
                                 modifier = Modifier.padding(start = 4.dp),
 //                                color = headlineYellow,
@@ -298,8 +300,8 @@ fun NoteContent(
                                 ).copy(0.9f),
                                 text = stringResource(id = R.string.note_content_today) + ": ${
                                     ZonedDateTime.now().toLocalDate().format(
-                                        DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
-                                    )
+                                        DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat),
+                                        java.util.Locale.getDefault()))
                                 }",
                                 fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
                                 fontSize = MaterialTheme.typography.titleSmall.fontSize
@@ -372,10 +374,11 @@ fun NoteContent(
                 ) {
                     Row(
                         modifier = Modifier
-                            .padding(start = XLARGE_PADDING, top = XLARGE_PADDING, bottom = XLARGE_PADDING)
+//                            .padding(start = XLARGE_PADDING, top = XLARGE_PADDING, bottom = XLARGE_PADDING, end =)
+                            .padding(XLARGE_PADDING)
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
+                        horizontalArrangement = Arrangement.SpaceBetween,
 
                     ) {
                         Text(
@@ -387,10 +390,10 @@ fun NoteContent(
                                     0.2f
                                 )
                             ).copy(0.9f),
-                            fontStyle = MaterialTheme.typography.headlineMedium.fontStyle,
-                            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                            fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
                         )
-                        Spacer(modifier = Modifier.width(SMALL_PADDING))
+//                        Spacer(modifier = Modifier.width(SMALL_PADDING))
                         Card(
                             modifier = Modifier
                                 .padding(top = 4.dp)

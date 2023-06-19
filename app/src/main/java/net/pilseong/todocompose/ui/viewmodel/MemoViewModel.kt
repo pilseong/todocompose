@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -151,8 +152,10 @@ class MemoViewModel @Inject constructor(
 
 
     fun getDefaultNoteCount() {
-        viewModelScope.launch {
-            defaultNoteMemoCount = todoRepository.getMemoCount(-1)
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.getMemoCount(-1).collectLatest {
+                defaultNoteMemoCount = it
+            }
         }
     }
 
@@ -179,24 +182,30 @@ class MemoViewModel @Inject constructor(
             )
                 .stateIn(
                     scope = viewModelScope,
-                    started = SharingStarted.Lazily,
+                    started = SharingStarted.WhileSubscribed(),
                     initialValue = PagingData.empty()
                 )
                 .cachedIn(viewModelScope)
                 .collectLatest {
+                    Log.i(
+                        "PHILIP",
+                        "[MemoViewModel] refreshAllTasks how many"
+                    )
                     tasks.value = it
                 }
         }
     }
 
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
-    var notebooks: StateFlow<List<NotebookWithCount>> =
-        notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Lazily,
-                initialValue = emptyList()
-            )
+    var notebooks = mutableStateOf<List<NotebookWithCount>>(emptyList())
+
+
+    fun getNotebooks() {
+        viewModelScope.launch {
+            notebooks.value = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
+        }
+
+    }
 
 
     private suspend fun getNotebook(id: Int) {

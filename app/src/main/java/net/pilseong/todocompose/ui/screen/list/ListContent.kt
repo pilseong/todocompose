@@ -392,18 +392,6 @@ private fun TaskItemHeader(
     if (currentDate?.toLocalDate().toString() != prevDate?.toLocalDate().toString()) {
         DateHeader(currentDate!!)
     }
-//    val currentDateString = currentDate?.toLocalDateTime()?.format(
-//        DateTimeFormatter.ofPattern("yyyy-MM-dd")
-//    ).toString()
-//
-//    val prevDateString = if (index == 0) null
-//    else prevDate?.toLocalDateTime()?.format(
-//        DateTimeFormatter.ofPattern("yyyy-MM-dd")
-//    ).toString()
-//
-//    if (currentDateString != prevDateString) {
-//        DateHeader(currentDate!!)
-//    }
 }
 
 

@@ -113,8 +113,7 @@ class TodoRepository @Inject constructor(
         }
     }
 
-    suspend fun getMemoCount(notebookId: Int): DefaultNoteMemoCount =
-        withContext(Dispatchers.IO) {
-            todoDAO.getMemoCount(notebookId)
-        }
+    fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount> =
+        todoDAO.getMemoCount(notebookId)
+
 }

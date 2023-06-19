@@ -88,7 +88,7 @@
     <string name="bottom_nav_label_settings">Settings</string>
     <string name="bottom_nav_label_memo">Memos</string>
     <string name="bottom_nav_label_home">Home</string>
-    <string name="note_content_dateformat">LLL dd, yyyy</string>
+    <string name="note_content_dateformat">EEE, LLL dd, yyyy</string>
     <string name="note_inside_dateformat">LLL, dd, yy</string>
     <string name="default_note_title">Default Notebook</string>
     <string name="note_screen_recent_notebooks">Recent</string>

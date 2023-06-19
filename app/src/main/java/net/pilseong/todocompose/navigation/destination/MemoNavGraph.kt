@@ -34,7 +34,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -78,7 +77,7 @@ fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
     viewModelStoreOwner: ViewModelStoreOwner,
     toTaskScreen: () -> Unit,
-    toListScreen: (Int?) -> Unit,
+    toListScreen: () -> Unit,
     onClickBottomNavBar: (String) -> Unit
 ) {
     navigation(
@@ -174,6 +173,7 @@ fun NavGraphBuilder.memoNavGraph(
                         uiState.dateOrderState == SortOption.CREATED_AT_DESC),
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()
+                    memoViewModel.getNotebooks()
                     action.value = Action.NOTEBOOK_CHANGE
                     dialogTitle.value = createNotebookStr
                     openDialog.value = true
@@ -184,9 +184,13 @@ fun NavGraphBuilder.memoNavGraph(
                 },
                 onCloseClicked = {
                     if (memoViewModel.searchTextString.isNotEmpty() ||
-                            memoViewModel.searchRangeAll) {
+                        memoViewModel.searchRangeAll
+                    ) {
                         memoViewModel.searchTextString = ""
-                        memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
+                        memoViewModel.handleActions(
+                            Action.SEARCH_RANGE_CHANGE,
+                            searchRangeAll = false
+                        )
                     } else {
                         memoViewModel.onCloseSearchBar()
                     }
@@ -295,7 +299,7 @@ fun NavGraphBuilder.memoNavGraph(
                 onDismissRequest = {
                     openDialog.value = false
                 },
-                notebooks = memoViewModel.notebooks.collectAsState().value,
+                notebooks = memoViewModel.notebooks.value,
                 defaultNoteMemoCount = memoViewModel.defaultNoteMemoCount,
                 onCloseClick = {
                     openDialog.value = false
@@ -347,7 +351,10 @@ fun NavGraphBuilder.memoNavGraph(
                 } else {
                     if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
                         memoViewModel.searchTextString = ""
-                        memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = false)
+                        memoViewModel.handleActions(
+                            Action.SEARCH_RANGE_CHANGE,
+                            searchRangeAll = false
+                        )
                     } else {
                         memoViewModel.onCloseSearchBar()
                     }
@@ -392,8 +399,32 @@ fun NavGraphBuilder.memoNavGraph(
                     taskIndex = taskIndex,
                     taskAppBarState = taskAppBarState,
                     taskUiState = memoViewModel.taskUiState,
-                    memoViewModel = memoViewModel,
-                    toListScreen = toListScreen
+                    toListScreen = { action ->
+                        // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
+                        if (action != Action.NO_ACTION) {
+                            if (action == Action.DELETE) {
+                                memoViewModel.handleActions(
+                                    action = action,
+                                    todoTask = tasks[taskIndex]!!
+                                )
+                                toListScreen()
+                            } else {
+                                memoViewModel.handleActions(
+                                    action = action
+                                )
+                                toListScreen()
+                            }
+                        } else {
+                            toListScreen()
+                            memoViewModel.refreshAllTasks()
+                        }
+                    },
+                    onEditClicked = {
+                        memoViewModel.setTaskScreenToEditorMode(tasks.peek(taskIndex)!!)
+                    },
+                    onValueChange = memoViewModel::updateUiState,
+                    onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
+                    onSwipeLeftOnViewer = { memoViewModel.incrementIndex() }
                 )
             }
 

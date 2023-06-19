@@ -13,15 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.TaskAppBarState
@@ -34,8 +32,11 @@ fun TaskScreen(
     taskIndex: Int,
     taskAppBarState: TaskAppBarState,
     taskUiState: TaskUiState,
-    memoViewModel: MemoViewModel,
-    toListScreen: (Int?) -> Unit,
+    toListScreen: (Action) -> Unit,
+    onEditClicked: () -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
+    onSwipeRightOnViewer: () -> Unit,
+    onSwipeLeftOnViewer: () -> Unit,
 ) {
 
     val context = LocalContext.current
@@ -51,23 +52,7 @@ fun TaskScreen(
                 task = if (taskIndex >= 0) tasks.peek(taskIndex)!! else TodoTask.instance(),
                 taskAppBarState = taskAppBarState,
                 taskUiState = taskUiState,
-                toListScreen = { action ->
-                    // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
-                    if (action != Action.NO_ACTION) {
-                        if (action == Action.DELETE) {
-                            memoViewModel.handleActions(action = action, todoTask = tasks[taskIndex]!!)
-                            toListScreen(null)
-                        } else {
-                                memoViewModel.handleActions(
-                                    action = action
-                                )
-                                toListScreen(null)
-                        }
-                    } else {
-                        toListScreen(null)
-                        memoViewModel.refreshAllTasks()
-                    }
-                },
+                toListScreen = toListScreen,
                 onCopyClicked = {
                     scope.launch {
                         copyToClipboard(
@@ -77,9 +62,7 @@ fun TaskScreen(
                         Toast.makeText(context, clipboardMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
-                onEditClicked = {
-                    memoViewModel.setTaskScreenToEditorMode(tasks.peek(taskIndex)!!)
-                }
+                onEditClicked = onEditClicked,
             )
         },
         content = { paddingValues ->
@@ -99,9 +82,9 @@ fun TaskScreen(
                     taskSize = tasks.itemCount,
                     taskIndex = taskIndex,
                     taskAppBarState = taskAppBarState,
-                    onValueChange = memoViewModel::updateUiState,
-                    onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
-                    onSwipeLeftOnViewer = { memoViewModel.incrementIndex() }
+                    onValueChange = onValueChange,
+                    onSwipeRightOnViewer = onSwipeRightOnViewer,
+                    onSwipeLeftOnViewer = onSwipeLeftOnViewer,
 
                 )
             }

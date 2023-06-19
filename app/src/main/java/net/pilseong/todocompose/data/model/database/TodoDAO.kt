@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
@@ -135,7 +136,7 @@ abstract class TodoDAO {
             "SUM (CASE priority WHEN 'LOW' THEN 1 END) AS low, " +
             "SUM (CASE priority  WHEN 'NONE' THEN 1 END) AS none " +
             "FROM todo_table WHERE notebook_id = :notebookId")
-    abstract suspend fun getMemoCount(notebookId: Int): DefaultNoteMemoCount
+    abstract fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount>
 
     @Transaction
     open suspend fun insertMultipleMemos(tasks: List<TodoTask>) {

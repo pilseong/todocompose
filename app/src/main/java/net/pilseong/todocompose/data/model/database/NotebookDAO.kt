@@ -75,5 +75,5 @@ abstract class NotebookDAO(
             "CASE WHEN :sortingOption = 'ACCESS_AT' THEN accessed_at END DESC, " +
             "CASE WHEN :sortingOption = 'UPDATED_AT' THEN updated_at END DESC, " +
             "CASE WHEN :sortingOption = 'CREATED_AT' THEN created_at END DESC")
-    abstract fun getNotebooksWithCount(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>>
+    abstract suspend fun getNotebooksWithCount(sortingOption: NoteSortingOption): List<NotebookWithCount>
 }

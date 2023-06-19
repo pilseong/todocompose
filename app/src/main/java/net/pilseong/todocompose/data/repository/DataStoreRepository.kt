@@ -87,24 +87,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readSelectedNotebookId: Flow<Int> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readSelectedNotebookId ${preferences[PreferenceKeys.notebookIdState]}"
-            )
-            preferences[PreferenceKeys.notebookIdState] ?: -1
-        }
-
-
-
     val userData: Flow<UserData> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) {
@@ -114,7 +96,7 @@ class DataStoreRepository @Inject constructor(
             }
         }
         .map { preferences ->
-            Log.i("PHILIP", "[DataStoreRepository] userdata $preferences ")
+//            Log.i("PHILIP", "[DataStoreRepository] userdata $preferences ")
             UserData(
                 prioritySortState = Priority.valueOf(
                     preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
@@ -147,23 +129,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    val readFirstRecentNotebookId: Flow<Int?> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readFirstRecentNotebookId ${preferences[PreferenceKeys.recentNoteFirst]}"
-            )
-            preferences[PreferenceKeys.recentNoteFirst]
-        }
-
-
     suspend fun persistSecondRecentNotebookId(notebookId: Int) {
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
@@ -173,23 +138,6 @@ class DataStoreRepository @Inject constructor(
             }
         }
     }
-
-    val readSecondRecentNotebookId: Flow<Int?> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readSecondRecentNotebookId ${preferences[PreferenceKeys.recentNoteSecond]}"
-            )
-            preferences[PreferenceKeys.recentNoteSecond]
-        }
-
 
     suspend fun persistStateState(stateState: Int) {
         withContext(ioDispatcher) {
@@ -224,20 +172,4 @@ class DataStoreRepository @Inject constructor(
             }
         }
     }
-
-    val readNoteSortingOrderState: Flow<Int> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            Log.i(
-                "PHILIP",
-                "[DataStoreRepository]readNoteSortingOrderState $preferences, ${preferences[PreferenceKeys.noteSortingOrderState]}"
-            )
-            preferences[PreferenceKeys.noteSortingOrderState] ?: NoteSortingOption.ACCESS_AT.ordinal
-        }
 }

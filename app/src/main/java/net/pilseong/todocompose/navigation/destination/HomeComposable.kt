@@ -107,7 +107,7 @@ fun NavGraphBuilder.homeComposable(
         DropdownMenu(
             expanded = sortingOptionDialog.value,
             onDismissRequest = { sortingOptionDialog.value = false },
-            offset = DpOffset(290.dp, (-490).dp)
+            offset = DpOffset(290.dp, (-480).dp)
         ) {
             SortMenuItems { option ->
                 Log.i("PHILIP", "sortMenuItem clicked $option")

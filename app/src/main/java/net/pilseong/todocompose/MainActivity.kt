@@ -6,9 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +14,6 @@ import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.ui.viewmodel.UiState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

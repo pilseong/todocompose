@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -69,7 +70,15 @@ fun BookShelf(
             end = SMALL_PADDING
         ),
         content = {
-            items(notebooks.size) { index ->
+            items(
+                items = notebooks,
+                key = { note ->
+                    note.id
+                }
+            ) { notebook ->
+//            items(
+//                count = notebooks.size,
+//            ) { index ->
 
                 val selected = remember(selectedNotebookIds.size) {
 //                    Log.i(
@@ -79,7 +88,7 @@ fun BookShelf(
 //                    )
                     mutableStateOf(
                         selectedNotebookIds.contains(
-                            notebooks[index].id
+                            notebook.id
                         )
                     )
                 }
@@ -92,13 +101,13 @@ fun BookShelf(
                         .combinedClickable(
                             onClick = {
                                 if (selectedNotebookIds.size > 0) {
-                                    onSelectNotebookWithLongClick(notebooks[index].id)
+                                    onSelectNotebookWithLongClick(notebook.id)
                                 } else {
-                                    onSelectNotebook(notebooks[index].id)
+                                    onSelectNotebook(notebook.id)
                                 }
                             },
                             onLongClick = {
-                                onSelectNotebookWithLongClick(notebooks[index].id)
+                                onSelectNotebookWithLongClick(notebook.id)
                             }
                         ),
                     shadowElevation = if (selected.value) 0.dp else 6.dp,
@@ -134,7 +143,7 @@ fun BookShelf(
                                         10000.dp
                                     )
                                 } else
-                                    getPriorityColor(notebooks[index].priority).copy(
+                                    getPriorityColor(notebook.priority).copy(
                                         alpha = 0.4f
                                     ),
 //                                                    MaterialTheme.colorScheme.surface,
@@ -156,7 +165,7 @@ fun BookShelf(
                                             modifier = Modifier.padding(
                                                 horizontal = SMALL_PADDING
                                             ),
-                                            text = notebooks[index].title,
+                                            text = notebook.title,
                                             color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                 alpha = 0.2f
                                             )
@@ -180,7 +189,7 @@ fun BookShelf(
                                         } else
                                             Color(
                                                 ColorUtils.blendARGB(
-                                                    getPriorityColor(notebooks[index].priority).toArgb(),
+                                                    getPriorityColor(notebook.priority).toArgb(),
                                                     Color.Black.toArgb(),
                                                     0.5f
                                                 )
@@ -199,7 +208,7 @@ fun BookShelf(
                                                 Text(
                                                     text = when (noteSortingOption) {
                                                         NoteSortingOption.ACCESS_AT -> {
-                                                            notebooks[index].accessedAt.toLocalDateTime()
+                                                            notebook.accessedAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         stringResource(id = R.string.note_inside_dateformat)
@@ -208,7 +217,7 @@ fun BookShelf(
                                                         }
 
                                                         NoteSortingOption.UPDATED_AT -> {
-                                                            notebooks[index].updatedAt.toLocalDateTime()
+                                                            notebook.updatedAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         stringResource(id = R.string.note_inside_dateformat)
@@ -217,7 +226,7 @@ fun BookShelf(
                                                         }
 
                                                         NoteSortingOption.CREATED_AT -> {
-                                                            notebooks[index].createdAt.toLocalDateTime()
+                                                            notebook.createdAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         stringResource(id = R.string.note_inside_dateformat)
@@ -241,7 +250,7 @@ fun BookShelf(
                                                 Text(
                                                     text = when (noteSortingOption) {
                                                         NoteSortingOption.ACCESS_AT -> {
-                                                            notebooks[index].accessedAt.toLocalDateTime()
+                                                            notebook.accessedAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         "HH:mm"
@@ -250,7 +259,7 @@ fun BookShelf(
                                                         }
 
                                                         NoteSortingOption.UPDATED_AT -> {
-                                                            notebooks[index].updatedAt.toLocalDateTime()
+                                                            notebook.updatedAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         "HH:mm"
@@ -259,7 +268,7 @@ fun BookShelf(
                                                         }
 
                                                         NoteSortingOption.CREATED_AT -> {
-                                                            notebooks[index].createdAt.toLocalDateTime()
+                                                            notebook.createdAt.toLocalDateTime()
                                                                 .format(
                                                                     DateTimeFormatter.ofPattern(
                                                                         "HH:mm"
@@ -320,13 +329,13 @@ fun BookShelf(
                             Badge(
                                 modifier = Modifier
                                     .clickable {
-                                        onInfoClick(notebooks[index].id)
+                                        onInfoClick(notebook.id)
                                     },
                                 containerColor = if (selected.value) BadgeDefaults.containerColor
                                     .copy(alpha = 0.2f)
                                 else BadgeDefaults.containerColor
                             ) {
-                                Text(text = notebooks[index].memoCount.toString())
+                                Text(text = notebook.memoCount.toString())
                             }
                         }
                     }
@@ -340,7 +349,7 @@ fun BookShelf(
                                 modifier = Modifier
                                     .padding(top = 20.dp)
                                     .clickable {
-                                        onInfoClick(notebooks[index].id)
+                                        onInfoClick(notebook.id)
                                     }
                                     .size(30.dp),
                                 imageVector = Icons.Default.Info,
