@@ -12,7 +12,8 @@ object Constants {
 
     const val NOTE_ID_ARGUMENT = "note_id"
 
-    const val MAX_TITLE_LENGTH = 30
+    const val MAX_TITLE_LENGTH = 2000
+    const val MAX_CONTENT_LENGTH = 51200
 
     const val PREFERENCE_NAME = "todo_preferences"
     const val PRIORITY_PREFERENCE_KEY = "priority_sort_key"

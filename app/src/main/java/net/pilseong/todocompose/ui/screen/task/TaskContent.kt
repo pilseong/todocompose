@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
@@ -52,6 +55,8 @@ import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
+import net.pilseong.todocompose.util.Constants.MAX_CONTENT_LENGTH
+import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.time.format.DateTimeFormatter
 
@@ -275,42 +280,65 @@ private fun EditorContent(
 
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
+//            .imePadding()
     ) {
-        Card {
-            TextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = taskUiState.taskDetails.title,
-                label = {
-                    Text(text = stringResource(id = R.string.new_task_title_placeholder))
-                },
-                onValueChange = { onValueChange(taskUiState.taskDetails.copy(title = it)) },
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
+        Row {
+            Column(modifier = Modifier.weight(1F)) {
+                PriorityDropDown(
+                    priority = taskUiState.taskDetails.priority,
+                    onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
                 )
-            )
+            }
+            Column(modifier = Modifier.weight(1F)) {
+                PriorityDropDown(
+                    priority = taskUiState.taskDetails.priority,
+                    onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
+                )
+            }
         }
         Divider(
             modifier = Modifier
-                .height(MEDIUM_PADDING),
-            color = MaterialTheme.colorScheme.background,
+                .height(1.dp),
+            color = MaterialTheme.colorScheme.onSurface,
         )
-        Card {
-            PriorityDropDown(
-                priority = taskUiState.taskDetails.priority,
-                onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
-            )
-        }
-        Divider(
+//        Card {
+        TextField(
             modifier = Modifier
-                .height(MEDIUM_PADDING),
-            color = MaterialTheme.colorScheme.background,
+                .fillMaxWidth()
+                .imePadding(),
+            value = taskUiState.taskDetails.title,
+            label = {
+                Text(text = stringResource(id = R.string.new_task_title_placeholder))
+            },
+            onValueChange = { it ->
+                if (it.length <= MAX_TITLE_LENGTH)
+                    onValueChange(taskUiState.taskDetails.copy(title = it))
+
+            },
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                    2.dp
+                )
+            ),
+            singleLine = false,
+            maxLines = 3,
+            supportingText = {
+                Text(
+                    text = "${taskUiState.taskDetails.title.length} / $MAX_TITLE_LENGTH",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+            }
         )
-        Card {
+//        }
+        Surface() {
             TextField(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .imePadding()
+                    .fillMaxSize(),
                 value = taskUiState.taskDetails.description,
                 label = {
                     Text(
@@ -319,8 +347,18 @@ private fun EditorContent(
                 },
                 onValueChange = { onValueChange(taskUiState.taskDetails.copy(description = it)) },
                 colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                )
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        2.dp
+                    )
+                ),
+                supportingText = {
+                    Text(
+                        text = "${taskUiState.taskDetails.description.length} / $MAX_CONTENT_LENGTH",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                    )
+                }
             )
         }
     }

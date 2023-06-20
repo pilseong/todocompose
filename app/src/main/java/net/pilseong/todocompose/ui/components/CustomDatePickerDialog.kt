@@ -107,7 +107,7 @@ fun SimpleDateRangePickerSheet(
 fun getFormattedDate(timeInMillis: Long): String {
     val calender = Calendar.getInstance()
     calender.timeInMillis = timeInMillis
-    val dateFormat = SimpleDateFormat(stringResource(id = R.string.note_content_dateformat))
+    val dateFormat = SimpleDateFormat(stringResource(id = R.string.datepicker_date_format))
     return dateFormat.format(calender.timeInMillis)
 }
 

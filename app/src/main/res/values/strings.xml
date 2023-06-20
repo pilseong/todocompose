@@ -111,6 +111,7 @@
     <string name="current_label">Now</string>
     <string name="datepicker_start_label">Start Date</string>
     <string name="datepicker_end_label">End Date</string>
+    <string name="datepicker_date_format">LLL dd, yyyy</string>
     <string name="note_sort_created_at_label">Created At</string>
     <string name="note_sort_updated_at_label">Updated At</string>
     <string name="note_sort_accessed_at_label">Accessed At</string>

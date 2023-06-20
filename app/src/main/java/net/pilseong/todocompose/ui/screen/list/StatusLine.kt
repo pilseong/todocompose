@@ -370,7 +370,7 @@ fun StatusLine(
                             Instant.ofEpochMilli(startDate),
                             ZoneId.systemDefault()
                         ).format(
-                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
+                            DateTimeFormatter.ofPattern(stringResource(id = R.string.datepicker_date_format))
                         )
                     else stringResource(id = R.string.status_line_date_range_from_the_first_memo_text)
 
@@ -379,7 +379,7 @@ fun StatusLine(
                             Instant.ofEpochMilli(endDate),
                             ZoneId.systemDefault()
                         ).format(
-                            DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat))
+                            DateTimeFormatter.ofPattern(stringResource(id = R.string.datepicker_date_format))
                         )
                     else stringResource(id = R.string.status_line_date_range_up_to_date_text)
                     Surface(
