@@ -25,6 +25,11 @@ abstract class NotebookDAO(
             "FROM note_table WHERE id = :id")
     abstract suspend fun getNotebookWithCount(id: Int): NotebookWithCount
 
+    @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
+            "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +
+            "FROM note_table WHERE id = :id")
+    abstract fun getNotebookWithCountAsFlow(id: Int): Flow<NotebookWithCount>
+
     @Query("SELECT * FROM note_table ORDER BY updated_at DESC")
     abstract fun getNotebooks(): Flow<List<Notebook>>
 
@@ -76,4 +81,13 @@ abstract class NotebookDAO(
             "CASE WHEN :sortingOption = 'UPDATED_AT' THEN updated_at END DESC, " +
             "CASE WHEN :sortingOption = 'CREATED_AT' THEN created_at END DESC")
     abstract suspend fun getNotebooksWithCount(sortingOption: NoteSortingOption): List<NotebookWithCount>
+
+    @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
+            "(SELECT COUNT(*) FROM todo_table WHERE note_table.id = todo_table.notebook_id) as memoCount " +
+            "FROM note_table " +
+            "ORDER BY " +
+            "CASE WHEN :sortingOption = 'ACCESS_AT' THEN accessed_at END DESC, " +
+            "CASE WHEN :sortingOption = 'UPDATED_AT' THEN updated_at END DESC, " +
+            "CASE WHEN :sortingOption = 'CREATED_AT' THEN created_at END DESC")
+    abstract fun getNotebooksWithCountAsFlow(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>>
 }

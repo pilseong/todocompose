@@ -17,6 +17,7 @@ object Constants {
     const val PREFERENCE_NAME = "todo_preferences"
     const val PRIORITY_PREFERENCE_KEY = "priority_sort_key"
     const val FAVORITE_ENABLED_PREFERENCE_KEY = "favorite_sort_key"
+    const val RECENT_NOTEBOOK_PREFERENCE_KEY = "recent_notebooks_key"
     const val NOTEBOOK_ID_PREFERENCE_KEY = "notebook_id_key"
     const val RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY = "recent_notebook_first_id_key"
     const val RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY = "recent_notebook_second_id_key"

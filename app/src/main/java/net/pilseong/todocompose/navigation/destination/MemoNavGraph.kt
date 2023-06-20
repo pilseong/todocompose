@@ -34,6 +34,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -173,7 +174,6 @@ fun NavGraphBuilder.memoNavGraph(
                         uiState.dateOrderState == SortOption.CREATED_AT_DESC),
                 onAppBarTitleClick = {
                     memoViewModel.getDefaultNoteCount()
-                    memoViewModel.getNotebooks()
                     action.value = Action.NOTEBOOK_CHANGE
                     dialogTitle.value = createNotebookStr
                     openDialog.value = true
@@ -299,7 +299,7 @@ fun NavGraphBuilder.memoNavGraph(
                 onDismissRequest = {
                     openDialog.value = false
                 },
-                notebooks = memoViewModel.notebooks.value,
+                notebooks = memoViewModel.notebooks.collectAsState().value,
                 defaultNoteMemoCount = memoViewModel.defaultNoteMemoCount,
                 onCloseClick = {
                     openDialog.value = false

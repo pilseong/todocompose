@@ -33,7 +33,6 @@ import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
@@ -197,15 +196,20 @@ class MemoViewModel @Inject constructor(
     }
 
     //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
-    var notebooks = mutableStateOf<List<NotebookWithCount>>(emptyList())
+    var notebooks = notebookRepository.getNotebooksAsFlow(NoteSortingOption.ACCESS_AT)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
 
-    fun getNotebooks() {
-        viewModelScope.launch {
-            notebooks.value = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
-        }
-
-    }
+//    fun getNotebooks() {
+//        viewModelScope.launch {
+//            notebooks.value = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
+//        }
+//
+//    }
 
 
     private suspend fun getNotebook(id: Int) {
@@ -239,28 +243,18 @@ class MemoViewModel @Inject constructor(
 
     private fun persistNotebookIdState(id: Int) {
         if (uiState.notebookIdState != id) {
+            val noteIdsList = mutableListOf<String>()
+            noteIdsList.add(id.toString())
+            noteIdsList.add(uiState.notebookIdState.toString())
+
+            if (uiState.firstRecentNotebookId != null) {
+                noteIdsList.add(uiState.firstRecentNotebookId.toString())
+            }
+
             viewModelScope.launch {
-                if (uiState.firstRecentNotebookId == null) {
-                    persistFirstRecentNotebookIdState(uiState.notebookIdState)
-                } else {
-                    persistSecondRecentNotebookIdState(uiState.firstRecentNotebookId!!)
-                    persistFirstRecentNotebookIdState(uiState.notebookIdState)
-                }
-                dataStoreRepository.persistSelectedNotebookId(id)
+                dataStoreRepository.persistRecentNoteIds(noteIdsList)
                 updateActionPerformed()
             }
-        }
-    }
-
-    private fun persistFirstRecentNotebookIdState(notebookId: Int) {
-        viewModelScope.launch {
-            dataStoreRepository.persistFirstRecentNotebookId(notebookId)
-        }
-    }
-
-    private fun persistSecondRecentNotebookIdState(notebookId: Int) {
-        viewModelScope.launch {
-            dataStoreRepository.persistSecondRecentNotebookId(notebookId)
         }
     }
 

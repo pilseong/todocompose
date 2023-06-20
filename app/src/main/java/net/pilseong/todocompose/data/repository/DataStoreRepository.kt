@@ -27,6 +27,7 @@ import net.pilseong.todocompose.util.Constants.NOTE_SORTING_ORDER_ID_PREFERENCE_
 import net.pilseong.todocompose.util.Constants.PREFERENCE_NAME
 import net.pilseong.todocompose.util.Constants.PRIORITY_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY
+import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
 import net.pilseong.todocompose.util.NoteSortingOption
@@ -49,6 +50,7 @@ class DataStoreRepository @Inject constructor(
         val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
         val notebookIdState = intPreferencesKey(name = NOTEBOOK_ID_PREFERENCE_KEY)
+        val recentNoteIdsState = stringPreferencesKey(name = RECENT_NOTEBOOK_PREFERENCE_KEY)
         val recentNoteFirst = intPreferencesKey(name = RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY)
         val recentNoteSecond = intPreferencesKey(name = RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY)
         val stateState = intPreferencesKey(name = STATE_PREFERENCE_KEY)
@@ -77,16 +79,6 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    suspend fun persistSelectedNotebookId(notebookId: Int) {
-        withContext(ioDispatcher) {
-            // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
-            context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistSelectedNotebookId $notebookId")
-                preferences[PreferenceKeys.notebookIdState] = notebookId
-            }
-        }
-    }
-
     val userData: Flow<UserData> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) {
@@ -96,16 +88,20 @@ class DataStoreRepository @Inject constructor(
             }
         }
         .map { preferences ->
-//            Log.i("PHILIP", "[DataStoreRepository] userdata $preferences ")
+            Log.i("PHILIP", "[DataStoreRepository]reading $preferences")
+
+            val noteIdsStr = preferences[PreferenceKeys.recentNoteIdsState]
+            val noteIds = noteIdsStr?.split(",")
+
             UserData(
                 prioritySortState = Priority.valueOf(
                     preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
                 ),
                 dateOrderState = SortOption.values()[preferences[PreferenceKeys.dateOrderState]
                     ?: SortOption.UPDATED_AT_DESC.ordinal],
-                notebookIdState = preferences[PreferenceKeys.notebookIdState] ?: -1,
-                firstRecentNotebookId = preferences[PreferenceKeys.recentNoteFirst],
-                secondRecentNotebookId = preferences[PreferenceKeys.recentNoteSecond],
+                notebookIdState = if (noteIds != null) noteIds[0].toInt() else -1,
+                firstRecentNotebookId = if (noteIds != null && noteIds.size > 1) noteIds[1].toInt() else null,
+                secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toInt() else null,
                 sortFavorite = (preferences[PreferenceKeys.favoriteState]
                     ?: false.toString()).toBoolean(),
                 stateState = preferences[PreferenceKeys.stateState] ?: 31,
@@ -119,22 +115,12 @@ class DataStoreRepository @Inject constructor(
             )
         }
 
-    suspend fun persistFirstRecentNotebookId(notebookId: Int) {
+    suspend fun persistRecentNoteIds(noteIds: List<String>) {
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistFirstRecentNotebookId $notebookId")
-                preferences[PreferenceKeys.recentNoteFirst] = notebookId
-            }
-        }
-    }
-
-    suspend fun persistSecondRecentNotebookId(notebookId: Int) {
-        withContext(ioDispatcher) {
-            // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
-            context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistSecondRecentNotebookId $notebookId")
-                preferences[PreferenceKeys.recentNoteSecond] = notebookId
+                Log.i("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
+                preferences[PreferenceKeys.recentNoteIdsState] = noteIds.joinToString(",")
             }
         }
     }
