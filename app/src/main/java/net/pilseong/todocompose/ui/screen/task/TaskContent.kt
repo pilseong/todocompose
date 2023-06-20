@@ -345,7 +345,11 @@ private fun EditorContent(
                         text = stringResource(id = R.string.new_task_description_placeholder)
                     )
                 },
-                onValueChange = { onValueChange(taskUiState.taskDetails.copy(description = it)) },
+                onValueChange = { it ->
+                    if (it.length <= MAX_CONTENT_LENGTH)
+                        onValueChange(taskUiState.taskDetails.copy(description = it))
+
+                },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
