@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.twotone.Edit
@@ -30,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.ui.components.PriorityMenuItems
 import net.pilseong.todocompose.ui.components.StateMenuItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellowColor
@@ -52,6 +56,7 @@ import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.util.Action
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -59,23 +64,21 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun StatusLine(
+    uiState: UserData,
     prioritySortState: Priority,
-    orderEnabled: Boolean,
-    dateEnabled: Boolean,
+    orderEnabled: Boolean = false,
+    dateEnabled: Boolean = false,
+    searchRangeAll: Boolean = false,
     startDate: Long?,
     endDate: Long?,
     favoriteOn: Boolean = false,
-    stateCompleted: Boolean = true,
-    stateActive: Boolean = true,
-    stateSuspended: Boolean = true,
-    stateWaiting: Boolean = true,
-    stateNone: Boolean = true,
     onCloseClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onOrderEnabledClick: () -> Unit,
     onDateEnabledClick: () -> Unit,
-    onPrioritySelected: (Priority) -> Unit,
+    onPrioritySelected: (Action, Priority) -> Unit,
     onStateSelected: (State) -> Unit,
+    onRangeAllEnabledClick: (Boolean) -> Unit,
 ) {
     var containerColor = Color.Transparent
     var priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
@@ -105,12 +108,8 @@ fun StatusLine(
     Surface(
         modifier = Modifier
             .fillMaxWidth(),
-//            .height(if (startDate != null || endDate != null) 64.dp else 30.dp),
-//        tonalElevation = 1.dp
-//        color = MaterialTheme.colorScheme.topBarContainerColor
-
     ) {
-        var menuItemSwitch by remember { mutableStateOf(0) }
+        var menuItemSwitch by remember { mutableIntStateOf(0) }
         Column(
             modifier = Modifier.padding(horizontal = XLARGE_PADDING)
         ) {
@@ -121,19 +120,62 @@ fun StatusLine(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                item {
+                    // desc, asc
+                    Card(
+                        modifier = Modifier
+                            .clickable {
+                                onRangeAllEnabledClick(!searchRangeAll)
+                            },
+                        shape = RoundedCornerShape(4.dp),
+                        border = if (searchRangeAll)
+                            BorderStroke(color = Color.Transparent, width = 0.dp)
+                        else
+                            BorderStroke(
+                                0.5F.dp,
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (searchRangeAll) MaterialTheme.colorScheme
+                                .surfaceColorAtElevation(6.dp)
+                            else Color.Transparent,
+                        ),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SMALL_PADDING),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.width(12.dp),
+                                imageVector = if (searchRangeAll) Icons.Default.SelectAll
+                                else Icons.Default.Search,
+                                contentDescription = "Check list icon"
+                            )
+                            Spacer(modifier = Modifier.width(SMALL_PADDING))
+                            Text(
+                                text = if (searchRangeAll) stringResource(id = R.string.badge_search_range_all_label)
+                                else stringResource(id = R.string.badge_search_range_note_label),
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            )
+                        }
+                    }
+                }
 
                 item {
                     Card(
                         modifier = Modifier
                             .clickable {
-                                menuItemSwitch = 1
+                                menuItemSwitch = 2
                                 expanded = true
                             },
                         border =
-                            BorderStroke(
-                                0.5F.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
-                            ),
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
                         shape = RoundedCornerShape(4.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.Transparent
@@ -153,7 +195,46 @@ fun StatusLine(
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
                             Text(
-                                text = "State",
+                                text = stringResource(id = R.string.badge_priority_label),
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            )
+                        }
+                    }
+                }
+
+
+                item {
+                    Card(
+                        modifier = Modifier
+                            .clickable {
+                                menuItemSwitch = 1
+                                expanded = true
+                            },
+                        border =
+                        BorderStroke(
+                            0.5F.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+                        ),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SMALL_PADDING),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.width(12.dp),
+                                imageVector = Icons.Default.ChecklistRtl,
+                                contentDescription = "Check list icon"
+                            )
+                            Spacer(modifier = Modifier.width(SMALL_PADDING))
+                            Text(
+                                text = stringResource(id = R.string.badge_state_label),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }
@@ -237,8 +318,10 @@ fun StatusLine(
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
                             Text(
-                                text = stringResource(id = if (prioritySortState == Priority.NONE)
-                                    R.string.info_priority else prioritySortState.label),
+                                text = stringResource(
+                                    id = if (prioritySortState == Priority.NONE)
+                                        R.string.badge_priority_label else prioritySortState.label
+                                ),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }
@@ -328,7 +411,6 @@ fun StatusLine(
                                 text = if (dateEnabled) stringResource(id = R.string.badge_date_created_at_label)
                                 else stringResource(id = R.string.badge_date_updated_at_label),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
-//                            fontWeight = FontWeight.ExtraBold
                             )
                         }
                     }
@@ -340,22 +422,33 @@ fun StatusLine(
                 onDismissRequest = { expanded = false },
                 offset = if (menuItemSwitch == 0) DpOffset(150.dp, 0.dp) else DpOffset(0.dp, 0.dp)
             ) {
-                if (menuItemSwitch == 0) {
-                    PriorityMenuItems { it ->
-                        expanded = false
-                        onPrioritySelected(it)
+                when (menuItemSwitch) {
+                    0 -> {
+                        PriorityMenuItems { it ->
+                            expanded = false
+                            onPrioritySelected(Action.PRIORITY_CHANGE, it)
+                        }
                     }
-                }
-                else if (menuItemSwitch == 1)
-                    StateMenuItems(
-                        stateCompleted = stateCompleted,
-                        stateActive = stateActive,
-                        stateSuspended = stateSuspended,
-                        stateWaiting = stateWaiting,
-                        stateNone = stateNone,
+                    1 -> StateMenuItems(
+                        stateCompleted = uiState.stateCompleted,
+                        stateCancelled = uiState.stateCancelled,
+                        stateActive = uiState.stateActive,
+                        stateSuspended = uiState.stateSuspended,
+                        stateWaiting = uiState.stateWaiting,
+                        stateNone = uiState.stateNone,
                         onStateSelected = { state ->
                             onStateSelected(state)
                         })
+                    2 -> PriorityMenuItems(
+                        priorityHigh = uiState.priorityHigh,
+                        priorityMedium = uiState.priorityMedium,
+                        priorityLow = uiState.priorityLow,
+                        priorityNone = uiState.priorityNone,
+                        onPrioritySelected = { priority ->
+                            onPrioritySelected(Action.PRIORITY_FILTER_CHANGE, priority)
+                        }
+                    )
+                }
             }
             // 날짜 검색 부분 표출
             if (startDate != null || endDate != null) {
@@ -386,8 +479,6 @@ fun StatusLine(
 //                        color = MaterialTheme.colorScheme.onPrimaryElevation
                     ) {
                         Text(
-//                            modifier = Modifier
-//                                .padding(SMALL_PADDING),
                             text = stringResource(
                                 id = R.string.status_line_date_range_text,
                                 startDateStr, endDateStr
@@ -427,13 +518,12 @@ fun StatusLine(
 }
 
 
-
-
 @Preview
 @Composable
 fun PreviewStatusLine() {
     MaterialTheme {
         StatusLine(
+            uiState = UserData(),
             prioritySortState = Priority.NONE,
             orderEnabled = false,
             dateEnabled = false,
@@ -443,8 +533,9 @@ fun PreviewStatusLine() {
             onFavoriteClick = { /*TODO*/ },
             onOrderEnabledClick = { /*TODO*/ },
             onDateEnabledClick = { /*TODO*/ },
-            onPrioritySelected = {},
-            onStateSelected = {}
+            onPrioritySelected = {_, _-> },
+            onStateSelected = {},
+            onRangeAllEnabledClick = {}
         )
     }
 }

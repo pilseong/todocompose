@@ -335,7 +335,7 @@ fun BookShelf(
                                     .copy(alpha = 0.2f)
                                 else BadgeDefaults.containerColor
                             ) {
-                                Text(text = notebook.memoCount.toString())
+                                Text(text = notebook.memoTotalCount.toString())
                             }
                         }
                     }
@@ -372,16 +372,20 @@ fun BookShelfPreview() {
             notebooks =
             listOf(
                 NotebookWithCount(
+                    id = 1,
                     title = "My Love Note",
                     description = "desc1",
                     priority = Priority.NONE
                 ),
                 NotebookWithCount(
+                    id = 2,
                     title = "first notebooksss",
                     description = "desc2",
                     priority = Priority.NONE
                 ),
-                NotebookWithCount(title = "test3", description = "desc3", priority = Priority.NONE)
+                NotebookWithCount(
+                    id = 3,
+                    title = "test3", description = "desc3", priority = Priority.NONE)
             ),
             selectedNotebookIds = SnapshotStateList<Int>(),
             onSelectNotebookWithLongClick = {},

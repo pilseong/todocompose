@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.model.database.TodoDAO
@@ -36,11 +37,16 @@ class TodoRepository @Inject constructor(
         isFavoriteOn: Boolean = false,
         notebookId: Int = -1,
         stateCompleted: Boolean = true,
+        stateCancelled: Boolean = true,
         stateActive: Boolean = true,
         stateSuspended: Boolean = true,
         stateWaiting: Boolean = true,
         stateNone: Boolean = true,
-    ): Flow<PagingData<TodoTask>> {
+        priorityHigh: Boolean = true,
+        priorityMedium: Boolean = true,
+        priorityLow: Boolean = true,
+        priorityNone: Boolean = true
+    ): Flow<PagingData<MemoWithNotebook>> {
         Log.i("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
         return Pager(
             config = PagingConfig(pageSize = PAGE_SIZE),
@@ -56,10 +62,15 @@ class TodoRepository @Inject constructor(
                     isFavoriteOn = isFavoriteOn,
                     notebookId = notebookId,
                     stateCompleted = stateCompleted,
+                    stateCancelled = stateCancelled,
                     stateActive = stateActive,
                     stateSuspended = stateSuspended,
                     stateWaiting = stateWaiting,
                     stateNone = stateNone,
+                    priorityHigh = priorityHigh,
+                    priorityMedium = priorityMedium,
+                    priorityLow = priorityLow,
+                    priorityNone = priorityNone,
                 )
             }
         ).flow

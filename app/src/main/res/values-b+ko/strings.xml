@@ -56,6 +56,9 @@
     <string name="badge_date_created_at_label">생성일자</string>
     <string name="badge_date_updated_at_label">수정일자</string>
     <string name="badge_favorite_label">중요메모</string>
+    <string name="badge_search_range_all_label">범위설정</string>
+    <string name="badge_search_range_note_label">현재노트</string>
+    <string name="badge_state_label">작업단계</string>
     <string name="snackbar_message_order_asc_change">오름차순으로 정렬합니다.</string>
     <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>
     <string name="snackbar_message_date_created_at_change">생성일을 정렬기준으로 반영합니다.</string>
@@ -72,6 +75,7 @@
     <string name="loading_text">로딩중...</string>
     <string name="task_item_star_description">Favorite 선택 아이콘</string>
     <string name="task_content_dateformat">yyyy년MM월dd일 HH시mm분</string>
+    <string name="task_content_notebook_name">노트 이름</string>
     <string name="priority_high">높음</string>
     <string name="priority_medium">보통</string>
     <string name="priority_low">낮음</string>
@@ -79,6 +83,7 @@
     <string name="status_completed">완료</string>
     <string name="status_active">처리중</string>
     <string name="status_suspended">보류중</string>
+    <string name="status_cancelled">취소됨</string>
     <string name="status_waiting">대기</string>
     <string name="status_none">상태없음</string>
     <string name="import_menu_label">가져오기</string>
@@ -91,6 +96,7 @@
     <string name="note_content_today">오늘</string>
     <string name="note_inside_dateformat">yy년MM월dd일</string>
     <string name="default_note_title">기본 노트</string>
+    <string name="default_note_description">자동으로 생성되는 노트북 입니다.</string>
     <string name="note_screen_recent_notebooks">최근 사용한 노트</string>
     <string name="note_screen_recent_notebooks_label">최근 노트</string>
     <string name="note_screen_list_of_notebooks">노트 목록</string>
@@ -105,9 +111,17 @@
     <string name="info_created_at">생성일</string>
     <string name="info_updated_at">수정일</string>
     <string name="info_accessed_at">사용일</string>
-    <string name="info_priority">중요도</string>
+    <string name="info_priority">노트 중요도</string>
+    <string name="info_priority_memos_count">메모 중요도 분포(상/중/하/미지정)</string>
+    <string name="info_total_memos">총 메모수</string>
+    <string name="info_completed_count">완료 메모</string>
+    <string name="info_in_process_count">작업중 메모(처리/대기)</string>
+    <string name="info_suspended_count">보류중 메모</string>
+    <string name="info_waiting_count">대기 메모</string>
+    <string name="info_not_assigned_count">미지정 메모</string>
     <string name="info_description">설명</string>
     <string name="info_title">제목</string>
+    <string name="info_label">"노트 정보</string>
     <string name="current_label">선택노트</string>
     <string name="datepicker_start_label">시작일</string>
     <string name="datepicker_end_label">종료일</string>

@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter
 fun RecentNotebook(
     width: Int,
     onSelectNotebook: (Int) -> Unit,
+    onInfoClick: (Int) -> Unit,
     currentNotebook: NotebookWithCount
 ) {
     Surface(
@@ -99,11 +100,15 @@ fun RecentNotebook(
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
                                 Column(
-                                    modifier = Modifier.weight(1F),
+                                    modifier = Modifier
+                                        .clickable {
+                                            onInfoClick(currentNotebook.id)
+                                        }
+                                        .weight(1F),
                                     horizontalAlignment = Alignment.End
                                 ) {
                                     Badge() {
-                                        Text(text = currentNotebook.memoCount.toString())
+                                        Text(text = currentNotebook.memoTotalCount.toString())
                                     }
                                 }
                             }
@@ -188,7 +193,8 @@ fun PreviewRecentNotebook() {
         RecentNotebook(
             100,
             onSelectNotebook = {},
-            currentNotebook = NotebookWithCount.instance()
+            currentNotebook = NotebookWithCount.instance(),
+            onInfoClick = {}
         )
     }
 }

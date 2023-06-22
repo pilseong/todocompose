@@ -49,7 +49,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun InfoDialog(
-    modifier: Modifier = Modifier.wrapContentHeight(),
+    modifier: Modifier = Modifier,
     visible: Boolean,
     notebook: NotebookWithCount?,
     onDismissRequest: () -> Unit,
@@ -90,7 +90,7 @@ fun InfoDialog(
                         )
                         Spacer(modifier = Modifier.width(SMALL_PADDING))
                         Text(
-                            text = "Notebook Info",
+                            text = stringResource(id = R.string.info_label),
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -99,20 +99,25 @@ fun InfoDialog(
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clickable {
-                                        onEditClick(notebook?.id ?: Integer.MIN_VALUE)
-                                    },
-                                imageVector = Icons.Default.EditNote,
-                                contentDescription = "Edit Note Icon"
-                            )
-                            Spacer(modifier = Modifier.width(LARGE_PADDING))
+                            if (notebook?.id != -1) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clickable {
+                                            onEditClick(notebook?.id ?: Integer.MIN_VALUE)
+                                        },
+                                    imageVector = Icons.Default.EditNote,
+                                    contentDescription = "Edit Note Icon"
+                                )
+                                Spacer(modifier = Modifier.width(LARGE_PADDING))
+                            }
                             Icon(
                                 modifier = Modifier
                                     .border(
-                                        BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface),
+                                        BorderStroke(
+                                            1.5.dp,
+                                            MaterialTheme.colorScheme.onSurface
+                                        ),
                                         shape = RoundedCornerShape(30.dp)
                                     )
                                     .size(20.dp)
@@ -151,7 +156,7 @@ fun InfoDialog(
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    onTextLayout = { it ->
+                                    onTextLayout = {
                                         width.value = MetricsUtil.convertPixelsToDp(
                                             it.size.width.toFloat(),
                                             context
@@ -168,7 +173,7 @@ fun InfoDialog(
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
                                             modifier = Modifier
-                                                .padding(horizontal = SMALL_PADDING)
+                                                .padding(start = SMALL_PADDING)
                                                 .wrapContentHeight(),
                                             text = notebook?.title ?: "",
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -199,7 +204,7 @@ fun InfoDialog(
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    onTextLayout = { it ->
+                                    onTextLayout = {
                                         width.value = MetricsUtil.convertPixelsToDp(
                                             it.size.width.toFloat(),
                                             context
@@ -215,7 +220,7 @@ fun InfoDialog(
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
                                             modifier = Modifier
-                                                .padding(horizontal = SMALL_PADDING)
+                                                .padding(start = SMALL_PADDING)
                                                 .wrapContentHeight(),
                                             text = notebook?.description ?: "",
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -231,6 +236,32 @@ fun InfoDialog(
                                 .fillMaxWidth()
                                 .border(1.dp, color = MaterialTheme.colorScheme.primary)
                                 .height(1.dp)
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.info_total_memos),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.memoTotalCount.toString(),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .padding(bottom = MEDIUM_PADDING)
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
                         )
                         Row(
                             modifier = Modifier
@@ -268,14 +299,16 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = stringResource(id = R.string.info_created_at),
+                                text = stringResource(id = R.string.info_priority_memos_count),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = notebook?.createdAt?.toOffsetDateTime()
-                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                text = "" + (notebook?.highPriorityCount.toString()) + "/" +
+                                        (notebook?.mediumPriorityCount.toString()) + "/" +
+                                        (notebook?.lowPriorityCount.toString()) + "/" +
+                                        (notebook?.nonePriorityCount.toString()),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -295,14 +328,13 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = stringResource(id = R.string.info_updated_at),
+                                text = stringResource(id = R.string.info_completed_count),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = notebook?.updatedAt?.toOffsetDateTime()
-                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                text = notebook?.completedCount.toString(),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -322,14 +354,14 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = stringResource(id = R.string.info_accessed_at),
+                                text = stringResource(id = R.string.info_in_process_count),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = notebook?.accessedAt?.toOffsetDateTime()
-                                    ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                text = "" + (notebook?.activeCount.toString()) + "/" +
+                                        (notebook?.waitingCount.toString()),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -341,6 +373,141 @@ fun InfoDialog(
                                 .border(1.dp, color = MaterialTheme.colorScheme.primary)
                                 .fillMaxWidth()
                         )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.info_suspended_count),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.suspendedCount.toString(),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .padding(bottom = MEDIUM_PADDING)
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.info_not_assigned_count),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = notebook?.noneCount.toString(),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(
+                            Modifier
+                                .padding(bottom = MEDIUM_PADDING)
+                                .height(1.dp)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                        )
+                        if (notebook?.id != -1) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.info_created_at),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = notebook?.createdAt?.toOffsetDateTime()
+                                        ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            Spacer(
+                                Modifier
+                                    .padding(bottom = MEDIUM_PADDING)
+                                    .height(1.dp)
+                                    .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                    .fillMaxWidth()
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.info_updated_at),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = notebook?.updatedAt?.toOffsetDateTime()
+                                        ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            Spacer(
+                                Modifier
+                                    .padding(bottom = MEDIUM_PADDING)
+                                    .height(1.dp)
+                                    .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                    .fillMaxWidth()
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.info_accessed_at),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = notebook?.accessedAt?.toOffsetDateTime()
+                                        ?.format(DateTimeFormatter.ISO_DATE_TIME) ?: "",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            Spacer(
+                                Modifier
+                                    .padding(bottom = MEDIUM_PADDING)
+                                    .height(1.dp)
+                                    .border(1.dp, color = MaterialTheme.colorScheme.primary)
+                                    .fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }

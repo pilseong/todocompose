@@ -36,17 +36,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoWithNotebook
+import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.PriorityDropDown
+import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.screen.list.ColorBackGround
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -57,13 +60,14 @@ import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Constants.MAX_CONTENT_LENGTH
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskContent(
-    task: TodoTask,
+    task: MemoWithNotebook,
     taskUiState: TaskUiState,
     taskIndex: Int = 0,
     taskSize: Int = 0,
@@ -155,7 +159,7 @@ fun getDirections(selectedIndex: Int, endIndex: Int): Set<DismissDirection> {
 
 @Composable
 private fun ViewerContent(
-    task: TodoTask
+    task: MemoWithNotebook
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -165,12 +169,6 @@ private fun ViewerContent(
             .verticalScroll(scrollState)
 
     ) {
-        val priorityText = when (task.priority) {
-            Priority.HIGH -> stringResource(id = R.string.priority_high)
-            Priority.MEDIUM -> stringResource(id = R.string.priority_medium)
-            Priority.LOW -> stringResource(id = R.string.priority_low)
-            Priority.NONE -> stringResource(id = R.string.priority_none)
-        }
         Surface {
             Column(
                 modifier = Modifier
@@ -189,6 +187,10 @@ private fun ViewerContent(
                     Column(modifier = Modifier.weight(5F)) {
                         Column {
                             Text(
+                                stringResource(id = R.string.task_content_notebook_name),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
+                            Text(
                                 text = stringResource(id = R.string.info_created_at),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             )
@@ -197,7 +199,11 @@ private fun ViewerContent(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             )
                             Text(
-                                stringResource(id = R.string.info_priority),
+                                stringResource(id = R.string.badge_priority_label),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
+                            Text(
+                                stringResource(id = R.string.badge_state_label),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             )
                         }
@@ -206,11 +212,19 @@ private fun ViewerContent(
                         modifier = Modifier.weight(5F),
                         horizontalAlignment = Alignment.End
                     ) {
-                        Column {
+                        Column(
+                            horizontalAlignment = Alignment.End
+                        ) {
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text =
-                                task.updatedAt.toLocalDateTime()
+                                text = task.notebook?.title
+                                    ?: stringResource(id = R.string.default_note_title),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
+                            )
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = task.memo.updatedAt.toLocalDateTime()
                                     .format(
                                         DateTimeFormatter.ofPattern(
                                             stringResource(id = R.string.task_content_dateformat)
@@ -219,8 +233,7 @@ private fun ViewerContent(
                             )
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text =
-                                task.createdAt.toLocalDateTime()
+                                text = task.memo.createdAt.toLocalDateTime()
                                     .format(
                                         DateTimeFormatter.ofPattern(
                                             stringResource(id = R.string.task_content_dateformat)
@@ -229,10 +242,12 @@ private fun ViewerContent(
                             )
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text =
-                                stringResource(id = task.priority.label)
+                                text = stringResource(id = task.memo.priority.label)
                             )
-
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = stringResource(id = task.memo.progression.label),
+                            )
                         }
                     }
                 }
@@ -245,7 +260,7 @@ private fun ViewerContent(
                         )
                     }
                     Column(modifier = Modifier.weight(10F)) {
-                        Text(text = task.title)
+                        Text(text = task.memo.title)
                     }
 
                 }
@@ -264,7 +279,7 @@ private fun ViewerContent(
                 Text(
                     modifier = Modifier
                         .padding(LARGE_PADDING),
-                    text = task.description
+                    text = task.memo.description
                 )
             }
         }
@@ -282,25 +297,30 @@ private fun EditorContent(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
-//            .imePadding()
     ) {
         Row {
             Column(modifier = Modifier.weight(1F)) {
-                PriorityDropDown(
-                    priority = taskUiState.taskDetails.priority,
-                    onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
-                )
+                Surface(tonalElevation = 1.dp) {
+                    PriorityDropDown(
+                        isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
+                        priority = taskUiState.taskDetails.priority,
+                        onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
+                    )
+                }
             }
             Column(modifier = Modifier.weight(1F)) {
-                PriorityDropDown(
-                    priority = taskUiState.taskDetails.priority,
-                    onPrioritySelected = { onValueChange(taskUiState.taskDetails.copy(priority = it)) }
-                )
+                Surface(tonalElevation = 1.dp) {
+                    StatusDropDown(
+                        isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
+                        state = taskUiState.taskDetails.progression,
+                        onStateSelected = { onValueChange(taskUiState.taskDetails.copy(progression = it)) }
+                    )
+                }
             }
         }
         Divider(
             modifier = Modifier
-                .height(1.dp),
+                .height(0.7.dp),
             color = MaterialTheme.colorScheme.onSurface,
         )
 //        Card {
@@ -318,9 +338,11 @@ private fun EditorContent(
 
             },
             colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                    1.dp
+                ),
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    2.dp
+                    1.dp
                 )
             ),
             singleLine = false,
@@ -351,9 +373,11 @@ private fun EditorContent(
 
                 },
                 colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        1.dp
+                    ),
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                        2.dp
+                        1.dp
                     )
                 ),
                 supportingText = {
@@ -373,13 +397,17 @@ private fun EditorContent(
 fun ViewerContentPreview() {
     TodoComposeTheme {
         TaskContent(
-            task = TodoTask(
-                id = -1,
-                title = "필성 힘내!!!",
-                description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                priority = Priority.HIGH,
-                progression = State.NONE,
-                notebookId = -1,
+            task = MemoWithNotebook(
+                memo = TodoTask(
+                    id = -1,
+                    title = "필성 힘내!!!",
+                    description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    priority = Priority.HIGH,
+                    progression = State.NONE,
+                    notebookId = -1,
+                ),
+                notebook = Notebook.instance(),
+                total = 1
             ),
             taskIndex = 0,
             taskSize = 1,

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
@@ -61,7 +62,7 @@ class MemoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    var tasks = MutableStateFlow<PagingData<TodoTask>>(PagingData.empty())
+    var tasks = MutableStateFlow<PagingData<MemoWithNotebook>>(PagingData.empty())
         private set
 
     var selectedNotebook = mutableStateOf(Notebook.instance())
@@ -75,7 +76,6 @@ class MemoViewModel @Inject constructor(
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
     var index by mutableIntStateOf(0)
-        private set
 
     // list screen 에 있는 search bar 의 표시 상태를 저장 하는 변수
     var searchAppBarState by mutableStateOf(SearchAppBarState.CLOSE)
@@ -174,18 +174,23 @@ class MemoViewModel @Inject constructor(
                 endDate = endDate,
                 isFavoriteOn = uiState.sortFavorite,
                 stateCompleted = uiState.stateCompleted,
+                stateCancelled = uiState.stateCancelled,
                 stateActive = uiState.stateActive,
                 stateSuspended = uiState.stateSuspended,
                 stateWaiting = uiState.stateWaiting,
                 stateNone = uiState.stateNone,
+                priorityHigh = uiState.priorityHigh,
+                priorityMedium = uiState.priorityMedium,
+                priorityLow = uiState.priorityLow,
+                priorityNone = uiState.priorityNone,
             )
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(),
-                    initialValue = PagingData.empty()
-                )
+//                .stateIn(
+//                    scope = viewModelScope,
+//                    started = SharingStarted.WhileSubscribed(),
+//                    initialValue = PagingData.empty()
+//                )
                 .cachedIn(viewModelScope)
-                .collectLatest {
+                .collect {
                     Log.i(
                         "PHILIP",
                         "[MemoViewModel] refreshAllTasks how many"
@@ -202,15 +207,6 @@ class MemoViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-
-
-//    fun getNotebooks() {
-//        viewModelScope.launch {
-//            notebooks.value = notebookRepository.getNotebooks(NoteSortingOption.ACCESS_AT)
-//        }
-//
-//    }
-
 
     private suspend fun getNotebook(id: Int) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
@@ -261,6 +257,13 @@ class MemoViewModel @Inject constructor(
     private fun persistStateState(state: Int) {
         viewModelScope.launch {
             dataStoreRepository.persistStateState(state)
+        }
+    }
+
+
+    private fun persistPriorityFilterState(state: Int) {
+        viewModelScope.launch {
+            dataStoreRepository.persistPriorityFilterState(state)
         }
     }
 
@@ -470,13 +473,17 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.STATE_FILTER_CHANGE -> {
-
                 val result = stateBinaryCalculation(state)
                 persistStateState(result)
             }
 
             Action.STATE_CHANGE -> {
                 updateState(todoTask, state)
+            }
+
+            Action.PRIORITY_FILTER_CHANGE -> {
+                val result = priorityBinaryCalculation(priority)
+                persistPriorityFilterState(result)
             }
 
             Action.SEARCH_RANGE_CHANGE -> {
@@ -519,11 +526,51 @@ class MemoViewModel @Inject constructor(
                     uiState.stateState + 8
             }
 
-            State.COMPLETED -> {
+            State.CANCELLED -> {
                 if ((uiState.stateState and 16) == 16)
                     uiState.stateState - 16
                 else
                     uiState.stateState + 16
+            }
+
+            State.COMPLETED -> {
+                if ((uiState.stateState and 32) == 32)
+                    uiState.stateState - 32
+                else
+                    uiState.stateState + 32
+            }
+        }
+        return result
+    }
+
+    private fun priorityBinaryCalculation(priority: Priority): Int {
+        val result = when (priority) {
+            Priority.NONE -> {
+                if ((uiState.priorityFilterState and 1) == 1)
+                    uiState.priorityFilterState - 1
+                else
+                    uiState.priorityFilterState + 1
+            }
+
+            Priority.LOW -> {
+                if ((uiState.priorityFilterState and 2) == 2)
+                    uiState.priorityFilterState - 2
+                else
+                    uiState.priorityFilterState + 2
+            }
+
+            Priority.MEDIUM -> {
+                if ((uiState.priorityFilterState and 4) == 4)
+                    uiState.priorityFilterState - 4
+                else
+                    uiState.priorityFilterState + 4
+            }
+
+            Priority.HIGH -> {
+                if ((uiState.priorityFilterState and 8) == 8)
+                    uiState.priorityFilterState - 8
+                else
+                    uiState.priorityFilterState + 8
             }
         }
         return result
@@ -631,6 +678,10 @@ class MemoViewModel @Inject constructor(
                 }
 
                 State.ACTIVE -> {
+                    if (!uiState.stateActive) refreshAllTasks()
+                }
+
+                State.CANCELLED -> {
                     if (!uiState.stateActive) refreshAllTasks()
                 }
 
@@ -823,6 +874,31 @@ fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
     updatedAt = updatedAt,
     notebookId = notebookId
 )
+
+fun MemoWithNotebook.toTaskDetails(): TaskDetails = TaskDetails(
+    id = memo.id,
+    title = memo.title,
+    description = memo.description,
+    priority = memo.priority,
+    favorite = memo.favorite,
+    progression = memo.progression,
+    createdAt = memo.createdAt,
+    updatedAt = memo.updatedAt,
+    notebookId = memo.notebookId
+)
+
+fun MemoWithNotebook.toTodoTask(): TodoTask = TodoTask(
+    id = memo.id,
+    title = memo.title,
+    description = memo.description,
+    priority = memo.priority,
+    favorite = memo.favorite,
+    progression = memo.progression,
+    createdAt = memo.createdAt,
+    updatedAt = memo.updatedAt,
+    notebookId = memo.notebookId
+)
+
 
 sealed interface UiState {
     object Loading : UiState

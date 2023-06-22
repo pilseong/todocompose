@@ -24,13 +24,15 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoWithNotebook
+import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
-import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
@@ -39,7 +41,7 @@ import net.pilseong.todocompose.util.TaskAppBarState
 
 @Composable
 fun TaskAppBar(
-    task: TodoTask,
+    task: MemoWithNotebook,
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
     taskUiState: TaskUiState,
     toListScreen: (Action) -> Unit,
@@ -141,7 +143,7 @@ fun CommonAction(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailTaskBar(
-    task: TodoTask,
+    task: MemoWithNotebook,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
@@ -158,19 +160,19 @@ fun DetailTaskBar(
             )
         },
         title = {
-            FittedTextTitle(
-                onAppBarTitleClick = { },
-                appbarTitle = task.title,
-                clickEnabled = false
-            )
-//            Text(
-//                text = todoTask.title,
-//                overflow = TextOverflow.Ellipsis,
-//                color = MaterialTheme.colorScheme.topBarContentColor
+//            FittedTextTitle(
+//                onAppBarTitleClick = { },
+//                appbarTitle = task.memo.title,
+//                clickEnabled = false
 //            )
+            Text(
+                text = task.memo.title,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = task.priority.color.copy(alpha = 0.5F)
+            containerColor = task.memo.priority.color.copy(alpha = 0.5F)
         ),
         actions = {
             DetailTaskBarActions(
@@ -185,7 +187,7 @@ fun DetailTaskBar(
 
 @Composable
 fun DetailTaskBarActions(
-    task: TodoTask,
+    task: MemoWithNotebook,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
@@ -197,11 +199,11 @@ fun DetailTaskBarActions(
     DisplayAlertDialog(
         title = stringResource(
             id = R.string.delete_task_dialog_title,
-            task.title
+            task.memo.title
         ),
         message = stringResource(
             id = R.string.delete_task_dialog_confirmation,
-            task.title
+            task.memo.title
         ),
         openDialog = expanded,
         onCloseDialog = { expanded = false },
@@ -248,13 +250,17 @@ fun EditTaskBarPreview() {
 fun DetailTaskBarPreview() {
     TodoComposeTheme {
         DetailTaskBar(
-            task = TodoTask(
-                id = -1,
-                title = "필성 힘내!!!",
-                description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                priority = Priority.HIGH,
-                progression = State.NONE,
-                notebookId = -1,
+            task = MemoWithNotebook(
+                memo = TodoTask(
+                    id = -1,
+                    title = "필성 힘내!!!",
+                    description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    priority = Priority.HIGH,
+                    progression = State.NONE,
+                    notebookId = -1,
+                ),
+                notebook = Notebook.instance(),
+                total = 1
             ),
             toListScreen = {},
             onCopyClicked = {},

@@ -3,6 +3,7 @@ package net.pilseong.todocompose.data.model
 import androidx.compose.ui.graphics.Color
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.theme.STATE_ACTIVE_COLOR
+import net.pilseong.todocompose.ui.theme.STATE_CANCELLED_COLOR
 import net.pilseong.todocompose.ui.theme.STATE_COMPLETED_COLOR
 import net.pilseong.todocompose.ui.theme.STATE_NONE_COLOR
 import net.pilseong.todocompose.ui.theme.STATE_SUSPENDED_COLOR
@@ -13,5 +14,6 @@ enum class State(val color: Color, val label: Int) {
     WAITING(STATE_WAITING_COLOR, R.string.status_waiting),
     SUSPENDED(STATE_SUSPENDED_COLOR, R.string.status_suspended),
     ACTIVE(STATE_ACTIVE_COLOR, R.string.status_active),
+    CANCELLED(STATE_CANCELLED_COLOR, R.string.status_cancelled),
     COMPLETED(STATE_COMPLETED_COLOR, R.string.status_completed),
 }

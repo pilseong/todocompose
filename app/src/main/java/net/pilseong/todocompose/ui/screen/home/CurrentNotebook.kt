@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun CurrentNotebook(
     onSelectNotebook: (Int) -> Unit,
+    onInfoClick: (Int) -> Unit,
     currentNotebook: NotebookWithCount
 ) {
     Surface(
@@ -113,11 +114,15 @@ fun CurrentNotebook(
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
                                 Column(
-                                    modifier = Modifier.weight(1F),
+                                    modifier = Modifier
+                                        .clickable {
+                                            onInfoClick(currentNotebook.id)
+                                        }
+                                        .weight(1F),
                                     horizontalAlignment = Alignment.End
                                 ) {
                                     Badge() {
-                                        Text(text = currentNotebook.memoCount.toString())
+                                        Text(text = currentNotebook.memoTotalCount.toString())
                                     }
                                 }
                             }
@@ -195,6 +200,8 @@ fun CurrentNotebook(
 @Composable
 fun PreviewCurrentNotebook() {
     MaterialTheme {
-        CurrentNotebook(onSelectNotebook = {}, currentNotebook = NotebookWithCount.instance())
+        CurrentNotebook(onSelectNotebook = {},
+            onInfoClick = {},
+            currentNotebook = NotebookWithCount.instance())
     }
 }

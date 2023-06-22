@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,38 +44,35 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
+import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
+import net.pilseong.todocompose.ui.viewmodel.toTodoTask
+import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.HOME_SCREEN
 import net.pilseong.todocompose.util.SearchAppBarState
+import net.pilseong.todocompose.util.SortOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
+    uiState: UserData,
     memoViewModel: MemoViewModel = hiltViewModel(),
     selectedNotebook: Notebook,
     snackBarHostState: SnackbarHostState,
-    tasks: LazyPagingItems<TodoTask>,
+    tasks: LazyPagingItems<MemoWithNotebook>,
     searchAppBarState: SearchAppBarState = SearchAppBarState.CLOSE,
     searchText: String = "",
-    orderEnabled: Boolean = false,
-    dataEnabled: Boolean = false,
     selectedItems: SnapshotStateList<Int>,
-    prioritySortState: Priority = Priority.NONE,
-    stateCompleted: Boolean = true,
-    stateActive: Boolean = true,
-    stateSuspended: Boolean = true,
-    stateWaiting: Boolean = true,
-    stateNone: Boolean = true,
     toTaskScreen: () -> Unit,
-    onSwipeToEdit: (Int, TodoTask) -> Unit,
+    onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     onClickBottomNavBar: (String) -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
@@ -84,7 +82,7 @@ fun ListScreen(
     onDeleteSelectedClicked: () -> Unit,
     onMoveMemoClicked: () -> Unit,
     onStateSelected: (State) -> Unit,
-    onStateChange: (TodoTask, State) -> Unit,
+    onStateChange: (MemoWithNotebook, State) -> Unit,
     onImportClick: () -> Unit,
     onFabClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
@@ -95,16 +93,11 @@ fun ListScreen(
     onFavoriteSortClick: () -> Unit,
     onOrderEnabledClick: () -> Unit,
     onDateEnabledClick: () -> Unit,
-    onPrioritySelected: (Priority) -> Unit,
-    onFavoriteClick: (TodoTask) -> Unit,
+    onPrioritySelected: (Action, Priority) -> Unit,
+    onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
 ) {
-    // Flow 에 대한 collection 을 처리 하는 파이프 연결 변수들. 이 변수들 은 외부 데이터 베이스 나 외부 API 에 의존 한다.
-    // 모든 task 의 상태를 감시 한다. 리스트 는 nav graph 안에서 변동 될 수 있다.
-
-//    val snackBarHostState = remember { SnackbarHostState() }
-
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         canScroll = {
@@ -117,6 +110,7 @@ fun ListScreen(
         )
     )
 
+    Log.i("PHILIP", "size of ${tasks.itemCount}")
 
     /**
      * view model 을 통제 코드 종료
@@ -137,14 +131,6 @@ fun ListScreen(
                 )
             }
         },
-//        floatingActionButton = {
-//            AddMemoFab(
-//                icon = Icons.Default.Create,
-//                onFabClicked = {
-//                    onFabClicked(tasks.itemSnapshotList.items)
-//                }
-//            )
-//        },
         topBar = {
             ListAppBar(
                 scrollBehavior = scrollBehavior,
@@ -187,29 +173,29 @@ fun ListScreen(
         ) {
 
             StatusLine(
-                prioritySortState = prioritySortState,
-                orderEnabled = orderEnabled,
-                dateEnabled = dataEnabled,
+                uiState = uiState,
+                prioritySortState = uiState.prioritySortState,
+                orderEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
+                dateEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        uiState.dateOrderState == SortOption.CREATED_AT_DESC),
+                searchRangeAll = memoViewModel.searchRangeAll,
                 startDate = memoViewModel.startDate,
                 endDate = memoViewModel.endDate,
                 favoriteOn = memoViewModel.uiState.sortFavorite,
-                stateCompleted = stateCompleted,
-                stateActive = stateActive,
-                stateSuspended = stateSuspended,
-                stateWaiting = stateWaiting,
-                stateNone = stateNone,
                 onCloseClick = onDateRangeCloseClick,
                 onFavoriteClick = onFavoriteSortClick,
                 onOrderEnabledClick = onOrderEnabledClick,
                 onDateEnabledClick = onDateEnabledClick,
                 onPrioritySelected = onPrioritySelected,
-                onStateSelected = onStateSelected
+                onStateSelected = onStateSelected,
+                onRangeAllEnabledClick = onSearchRangeAllClicked
             )
 
             ListContent(
                 tasks = tasks,
                 toTaskScreen = { index ->
-                    memoViewModel.setTaskScreenToViewerMode(tasks.peek(index)!!)
+                    memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toTodoTask())
                     memoViewModel.updateIndex(index)
                     toTaskScreen()
                 },
@@ -220,7 +206,8 @@ fun ListScreen(
 //                    },
                 onSwipeToEdit = onSwipeToEdit,
                 header = true,
-                dateEnabled = dataEnabled,
+                dateEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
+                        uiState.dateOrderState == SortOption.CREATED_AT_DESC),
                 onFavoriteClick = onFavoriteClick,
                 onLongClickReleased = onLongClickReleased,
                 onLongClickApplied = onLongClickApplied,
@@ -241,23 +228,18 @@ private fun BottomActionBarNavigation(
         actions = {
             Row(modifier = Modifier.fillMaxWidth(0.80F)) {
                 Spacer(modifier = Modifier.width(25.dp))
-//                Row(modifier = Modifier.weight(1F)) {
-                    IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
-                        onClick = {
-                            onClickBottomNavBar(HOME_SCREEN)
-                        }) {
-                        Icon(Icons.Filled.Home, contentDescription = "Localized description")
-//                    }
+                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
+                    onClick = {
+                        onClickBottomNavBar(HOME_SCREEN)
+                    }) {
+                    Icon(Icons.Filled.Home, contentDescription = "Localized description")
                 }
-//                Row(modifier = Modifier.weight(1F)) {
-//                    Spacer(modifier = Modifier.width(18.dp))
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Localized description",
-                        )
-                    }
-//                }
+                IconButton(onClick = { /* doSomething() */ }) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Localized description",
+                    )
+                }
             }
         },
         floatingActionButton = {
@@ -323,18 +305,19 @@ private fun ListScreenPreview() {
         selectedItems = SnapshotStateList(),
         selectedNotebook = Notebook.instance(),
         tasks = flowOf(
-            PagingData.from<TodoTask>(
+            PagingData.from<MemoWithNotebook>(
                 listOf(
-                    TodoTask(
-                        1,
-                        "필성 힘내!!!",
-                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                        Priority.HIGH,
-                        notebookId = -1
-                    )
+//                    TodoTask(
+//                        1,
+//                        "필성 힘내!!!",
+//                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+//                        Priority.HIGH,
+//                        notebookId = -1
+//                    )
                 )
             )
         ).collectAsLazyPagingItems(),
+        uiState = UserData(),
         snackBarHostState = SnackbarHostState(),
         toTaskScreen = {},
         onClickBottomNavBar = {},
@@ -357,11 +340,11 @@ private fun ListScreenPreview() {
         onFavoriteSortClick = {},
         onOrderEnabledClick = {},
         onDateEnabledClick = {},
-        onPrioritySelected = {},
+        onPrioritySelected = { _, _ -> },
         onFavoriteClick = {},
         onLongClickReleased = {},
         onLongClickApplied = {},
-        onSwipeToEdit = { a, todo -> }
+        onSwipeToEdit = { a, todo -> },
 
-    )
+        )
 }

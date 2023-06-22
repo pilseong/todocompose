@@ -3,9 +3,12 @@ package net.pilseong.todocompose.navigation.destination
 import android.util.Log
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,12 +44,12 @@ fun NavGraphBuilder.homeComposable(
         val infoDialog = remember { mutableStateOf(false) }
         val sortingOptionDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
-        val dialogTitle =
-            remember { mutableStateOf(R.string.note_screen_create_notebook_dialog_title) }
+        var dialogTitle by
+            remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         val action = remember { mutableStateOf(NoteAction.ADD) }
-        val indexSelected = remember { mutableStateOf(-1) }
+        var indexSelected by remember { mutableIntStateOf(-1) }
 
         when (noteViewModel.uiState) {
             UiState.Loading -> {
@@ -65,7 +68,7 @@ fun NavGraphBuilder.homeComposable(
                     },
                     onFabClick = {
                         action.value = NoteAction.ADD
-                        dialogTitle.value = R.string.note_screen_create_notebook_dialog_title
+                        dialogTitle = R.string.note_screen_create_notebook_dialog_title
                         openDialog.value = true
                     },
                     onSelectNotebook = { id ->
@@ -86,11 +89,11 @@ fun NavGraphBuilder.homeComposable(
                     onEditClick = {
                         noteViewModel.setEditProperties(noteViewModel.selectedNotebooks[0])
                         action.value = NoteAction.EDIT
-                        dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
+                        dialogTitle = R.string.note_screen_edit_notebook_dialog_title
                         openDialog.value = true
                     },
                     onInfoClick = { id ->
-                        indexSelected.value = id
+                        indexSelected = id
                         infoDialog.value = true
 
                     },
@@ -117,7 +120,7 @@ fun NavGraphBuilder.homeComposable(
         }
 
         CreateEditNotebookDialog(
-            dialogTitle = dialogTitle.value,
+            dialogTitle = dialogTitle,
             visible = openDialog.value,
             title = noteViewModel.title.value,
             description = noteViewModel.description.value,
@@ -148,14 +151,14 @@ fun NavGraphBuilder.homeComposable(
 
         InfoDialog(
             visible = infoDialog.value,
-            notebook = noteViewModel.notebooks.collectAsState().value.find { it.id == indexSelected.value },
+            notebook = noteViewModel.notebooks.collectAsState().value.find { it.id == indexSelected } ?: noteViewModel.defaultNotebook.value,
             onDismissRequest = {
                 infoDialog.value = false
             },
             onEditClick = { id ->
                 noteViewModel.setEditProperties(id)
                 action.value = NoteAction.EDIT
-                dialogTitle.value = R.string.note_screen_edit_notebook_dialog_title
+                dialogTitle = R.string.note_screen_edit_notebook_dialog_title
                 infoDialog.value = false
                 openDialog.value = true
             }

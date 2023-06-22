@@ -15,6 +15,12 @@ data class UserData(
     val stateWaiting: Boolean = true,
     val stateSuspended: Boolean = true,
     val stateActive: Boolean = true,
+    val stateCancelled: Boolean = true,
     val stateCompleted: Boolean = true,
+    val priorityFilterState: Int = 16,
+    val priorityHigh: Boolean = true,
+    val priorityMedium: Boolean = true,
+    val priorityLow: Boolean = true,
+    val priorityNone: Boolean = true,
     val noteSortingOptionState: NoteSortingOption = NoteSortingOption.ACCESS_AT,
 )

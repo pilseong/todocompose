@@ -22,13 +22,11 @@ import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.di.IoDispatcher
 import net.pilseong.todocompose.util.Constants.DATE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.FAVORITE_ENABLED_PREFERENCE_KEY
-import net.pilseong.todocompose.util.Constants.NOTEBOOK_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.NOTE_SORTING_ORDER_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.PREFERENCE_NAME
+import net.pilseong.todocompose.util.Constants.PRIORITY_FILTER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.PRIORITY_PREFERENCE_KEY
-import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_PREFERENCE_KEY
-import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
 import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SortOption
@@ -49,10 +47,8 @@ class DataStoreRepository @Inject constructor(
         val sortState = stringPreferencesKey(name = PRIORITY_PREFERENCE_KEY)
         val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
-        val notebookIdState = intPreferencesKey(name = NOTEBOOK_ID_PREFERENCE_KEY)
         val recentNoteIdsState = stringPreferencesKey(name = RECENT_NOTEBOOK_PREFERENCE_KEY)
-        val recentNoteFirst = intPreferencesKey(name = RECENT_NOTEBOOK_FIRST_ID_PREFERENCE_KEY)
-        val recentNoteSecond = intPreferencesKey(name = RECENT_NOTEBOOK_SECOND_ID_PREFERENCE_KEY)
+        val priorityFilterState = intPreferencesKey(name = PRIORITY_FILTER_PREFERENCE_KEY)
         val stateState = intPreferencesKey(name = STATE_PREFERENCE_KEY)
         val noteSortingOrderState = intPreferencesKey(name = NOTE_SORTING_ORDER_ID_PREFERENCE_KEY)
     }
@@ -104,12 +100,21 @@ class DataStoreRepository @Inject constructor(
                 secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toInt() else null,
                 sortFavorite = (preferences[PreferenceKeys.favoriteState]
                     ?: false.toString()).toBoolean(),
-                stateState = preferences[PreferenceKeys.stateState] ?: 31,
-                stateNone = ((preferences[PreferenceKeys.stateState] ?: 31) and 1) == 1,
-                stateWaiting = ((preferences[PreferenceKeys.stateState] ?: 31) and 2) == 2,
-                stateSuspended = ((preferences[PreferenceKeys.stateState] ?: 31) and 4) == 4,
-                stateActive = ((preferences[PreferenceKeys.stateState] ?: 31) and 8) == 8,
-                stateCompleted = ((preferences[PreferenceKeys.stateState] ?: 31) and 16) == 16,
+
+                stateState = preferences[PreferenceKeys.stateState] ?: 63,
+                stateNone = ((preferences[PreferenceKeys.stateState] ?: 63) and 1) == 1,
+                stateWaiting = ((preferences[PreferenceKeys.stateState] ?: 63) and 2) == 2,
+                stateSuspended = ((preferences[PreferenceKeys.stateState] ?: 63) and 4) == 4,
+                stateActive = ((preferences[PreferenceKeys.stateState] ?: 63) and 8) == 8,
+                stateCancelled = ((preferences[PreferenceKeys.stateState] ?: 63) and 16) == 16,
+                stateCompleted = ((preferences[PreferenceKeys.stateState] ?: 63) and 32) == 32,
+
+                priorityFilterState = preferences[PreferenceKeys.priorityFilterState] ?: 15,
+                priorityNone = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 1) == 1,
+                priorityLow = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 2) == 2,
+                priorityMedium = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 4) == 4,
+                priorityHigh = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 8) == 8,
+
                 noteSortingOptionState = NoteSortingOption.values()[preferences[PreferenceKeys.noteSortingOrderState]
                     ?: NoteSortingOption.ACCESS_AT.ordinal],
             )
@@ -131,6 +136,16 @@ class DataStoreRepository @Inject constructor(
             context.dataStore.edit { preferences ->
                 Log.i("PHILIP", "[DataStoreRepository]persistStateState $stateState")
                 preferences[PreferenceKeys.stateState] = stateState
+            }
+        }
+    }
+
+    suspend fun persistPriorityFilterState(priorityFilterState: Int) {
+        withContext(ioDispatcher) {
+            // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
+            context.dataStore.edit { preferences ->
+                Log.i("PHILIP", "[DataStoreRepository]persistPriorityFilterState $priorityFilterState")
+                preferences[PreferenceKeys.priorityFilterState] = priorityFilterState
             }
         }
     }

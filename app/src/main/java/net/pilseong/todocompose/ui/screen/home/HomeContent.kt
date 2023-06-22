@@ -334,7 +334,11 @@ fun NoteContent(
                         Row(
                             modifier = Modifier.padding(SMALL_PADDING)
                         ) {
-                            CurrentNotebook(onSelectNotebook, currentNotebook)
+                            CurrentNotebook(
+                                onSelectNotebook,
+                                onInfoClick,
+                                currentNotebook
+                            )
                         }
                     }
 
@@ -351,6 +355,7 @@ fun NoteContent(
                                 RecentNotebook(
                                     width = recentNotebookSpace,
                                     onSelectNotebook,
+                                    onInfoClick,
                                     firstRecentNotebook
                                 )
                             else
@@ -360,6 +365,7 @@ fun NoteContent(
                                 RecentNotebook(
                                     width = recentNotebookSpace,
                                     onSelectNotebook,
+                                    onInfoClick,
                                     secondRecentNotebook
                                 )
                             else
@@ -494,16 +500,21 @@ fun NoteContentPreview() {
     NoteContent(
         listOf(
             NotebookWithCount(
+                id = 1,
                 title = "My Love Note",
                 description = "desc1",
                 priority = Priority.NONE
             ),
             NotebookWithCount(
+                id = 2,
                 title = "first notebooksss",
                 description = "desc2",
                 priority = Priority.NONE
             ),
-            NotebookWithCount(title = "test3", description = "desc3", priority = Priority.NONE)
+            NotebookWithCount(
+                id = 3,
+                title = "test3",
+                description = "desc3", priority = Priority.NONE)
         ),
         onSelectNotebook = {},
         onSelectNotebookWithLongClick = {},

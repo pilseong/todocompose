@@ -44,6 +44,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoWithNotebook
+import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
@@ -66,28 +68,28 @@ import java.time.format.DateTimeFormatter
 fun TaskItem(
     modifier: Modifier = Modifier,
     drawEndEdge: Boolean = false,
-    todoTask: TodoTask,
+    todoTask: MemoWithNotebook,
     toTaskScreen: (Int) -> Unit,
     datetime: ZonedDateTime,
     onFavoriteClick: () -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
     selectedItemsIds: SnapshotStateList<Int>,
-    onStateSelected: (TodoTask, State) -> Unit,
+    onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
     val selected = remember(selectedItemsIds.size) {
-        mutableStateOf(selectedItemsIds.contains(todoTask.id))
+        mutableStateOf(selectedItemsIds.contains(todoTask.memo.id))
     }
 
-    var favoriteOn by remember { mutableStateOf(todoTask.favorite) }
+    var favoriteOn by remember { mutableStateOf(todoTask.memo.favorite) }
         .apply {
-            value = todoTask.favorite
+            value = todoTask.memo.favorite
         }
 
-    var stateState by remember { mutableStateOf(todoTask.progression) }
+    var stateState by remember { mutableStateOf(todoTask.memo.progression) }
         .apply {
-            value = todoTask.progression
-    }
+            value = todoTask.memo.progression
+        }
 
     val localDensity = LocalDensity.current
     var componentHeight by remember { mutableStateOf(0.dp) }
@@ -128,25 +130,25 @@ fun TaskItem(
                 .combinedClickable(
                     onClick = {
                         if (selectedItemsIds.size > 0) {
-                            onLongClickApplied(todoTask.id)
+                            onLongClickApplied(todoTask.memo.id)
                         } else {
-                            toTaskScreen(todoTask.id)
+                            toTaskScreen(todoTask.memo.id)
                         }
                     },
                     onLongClick = {
                         selected.value = !selected.value
-                        onLongClickApplied(todoTask.id)
+                        onLongClickApplied(todoTask.memo.id)
                     }
                 ),
             shape = RoundedCornerShape(4.dp),
             tonalElevation = if (stateState == State.NONE) 0.5.dp else 0.dp,
-            shadowElevation =  if (stateState == State.NONE) 1.dp else 0.dp,
+            shadowElevation = if (stateState == State.NONE) 1.dp else 0.dp,
             color = if (selected.value) MaterialTheme.colorScheme.primaryContainer
-            else  if (stateState == State.NONE) MaterialTheme.colorScheme.surface
+            else if (stateState == State.NONE) MaterialTheme.colorScheme.surface
             else stateState.color.copy(alpha = 0.5F)
 //            else MaterialTheme.colorScheme.surface,
         ) {
-            val tintColor = when (todoTask.priority) {
+            val tintColor = when (todoTask.memo.priority) {
                 Priority.HIGH -> HighPriorityColor
                 Priority.MEDIUM -> MediumPriorityColor
                 Priority.LOW -> LowPriorityColor
@@ -191,12 +193,12 @@ fun TaskItem(
                                     onClick = {
                                         if (selected.value) {
                                             selected.value = false
-                                            onLongClickReleased(todoTask.id)
+                                            onLongClickReleased(todoTask.memo.id)
                                         }
                                     },
                                     onLongClick = {
                                         selected.value = !selected.value
-                                        onLongClickApplied(todoTask.id)
+                                        onLongClickApplied(todoTask.memo.id)
                                     }
                                 ),
 //                                .clickable(enabled = selected.value) {
@@ -217,14 +219,14 @@ fun TaskItem(
                         .weight(10f),
                 ) {
                     Text(
-                        text = todoTask.title,
+                        text = todoTask.memo.title,
                         color = MaterialTheme.colorScheme.taskItemContentColor,
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1,
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = todoTask.description,
+                        text = todoTask.memo.description,
                         color = MaterialTheme.colorScheme.taskItemContentColor,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
@@ -293,7 +295,7 @@ fun TaskItem(
     DropdownMenu(
         expanded = stateDialogExpanded,
         onDismissRequest = { stateDialogExpanded = false },
-        offset = DpOffset(300.dp, -20.dp)
+        offset = DpOffset(300.dp, (-20).dp)
     ) {
         StateMenuListItems(
             onStateSelected = { state ->
@@ -310,12 +312,16 @@ fun TaskItem(
 fun TaskItemPreview() {
     TodoComposeTheme {
         TaskItem(
-            todoTask = TodoTask(
-                1, "필성 힘내!!!",
-                "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                Priority.HIGH,
-                notebookId = -1,
-                progression = State.SUSPENDED
+            todoTask = MemoWithNotebook(
+                memo = TodoTask(
+                    1, "필성 힘내!!!",
+                    "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    Priority.HIGH,
+                    notebookId = -1,
+                    progression = State.SUSPENDED
+                ),
+                notebook = Notebook.instance(),
+                total = 1,
             ),
             toTaskScreen = {},
             datetime = ZonedDateTime.now(),
@@ -323,7 +329,7 @@ fun TaskItemPreview() {
             onLongClickReleased = {},
             onLongClickApplied = {},
             selectedItemsIds = SnapshotStateList(),
-            onStateSelected = { task, state -> }
+            onStateSelected = { _, _ -> }
         )
     }
 }

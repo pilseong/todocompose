@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,12 +42,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
-import net.pilseong.todocompose.ui.components.FittedTextTitle
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.components.SimpleDateRangePickerSheet
@@ -171,10 +172,14 @@ fun DefaultListAppBar(
     TopAppBar(
         scrollBehavior = scrollBehavior,
         title = {
-            FittedTextTitle(
-                onAppBarTitleClick = onAppBarTitleClick,
-                appbarTitle = appbarTitle,
-                clickEnabled = true
+            Text(
+                modifier = Modifier
+                    .clickable {
+                        onAppBarTitleClick()
+                    },
+                text = appbarTitle,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(

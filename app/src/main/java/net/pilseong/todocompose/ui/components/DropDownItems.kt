@@ -48,6 +48,29 @@ fun PriorityItem(
 }
 
 @Composable
+fun StateItem(
+    state: State
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Canvas(
+            modifier = Modifier
+                .offset(0.dp, 0.8.dp)
+                .size(PRIORITY_INDICATOR_SIZE)
+        ) {
+            drawCircle(color = state.color)
+        }
+        Text(
+            modifier = Modifier.padding(LARGE_PADDING),
+            text = stringResource(id = state.label),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
 @Preview
 fun PriorityItemPreview() {
     PriorityItem(priority = Priority.LOW)
@@ -137,6 +160,46 @@ fun StateItem(
 }
 
 @Composable
+fun PriorityItem(
+    enabled: Boolean,
+    priority: Priority,
+    onclick: () -> Unit,
+    text: String
+) {
+
+    Row(
+        modifier = Modifier.wrapContentHeight(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            Modifier.weight(1F),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .offset(0.dp, 0.8.dp)
+                    .size(PRIORITY_INDICATOR_SIZE)
+            ) {
+                drawCircle(color = priority.color)
+            }
+            Text(
+                modifier = Modifier.padding(start = LARGE_PADDING),
+                text = text,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Row {
+            Checkbox(checked = enabled, onCheckedChange = {
+                onclick()
+            })
+        }
+    }
+}
+
+
+@Composable
 @Preview
 fun SortItemPreview() {
     SortItem(text = "오름차순",
@@ -210,6 +273,7 @@ fun SortMenuItemsPreview() {
 @Composable
 fun StateMenuItems(
     stateCompleted: Boolean = true,
+    stateCancelled: Boolean = true,
     stateActive: Boolean = true,
     stateSuspended: Boolean = true,
     stateWaiting: Boolean = true,
@@ -223,6 +287,19 @@ fun StateMenuItems(
                 text = stringResource(id = State.COMPLETED.label),
                 onclick = {
                     onStateSelected(State.COMPLETED)
+                }
+            )
+        },
+        onClick = {
+            onStateSelected(State.COMPLETED)
+        })
+    DropdownMenuItem(
+        text = {
+            StateItem(state = State.CANCELLED,
+                enabled = stateCancelled,
+                text = stringResource(id = State.CANCELLED.label),
+                onclick = {
+                    onStateSelected(State.CANCELLED)
                 }
             )
         },
@@ -283,6 +360,68 @@ fun StateMenuItems(
         })
 }
 
+@Composable
+fun PriorityMenuItems(
+    priorityHigh: Boolean = true,
+    priorityMedium: Boolean = true,
+    priorityLow: Boolean = true,
+    priorityNone: Boolean = true,
+    onPrioritySelected: (Priority) -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            PriorityItem(priority = Priority.HIGH,
+                enabled = priorityHigh,
+                text = stringResource(id = Priority.HIGH.label),
+                onclick = {
+                    onPrioritySelected(Priority.HIGH)
+                }
+            )
+        },
+        onClick = {
+            onPrioritySelected(Priority.HIGH)
+        })
+    DropdownMenuItem(
+        text = {
+            PriorityItem(priority = Priority.MEDIUM,
+                enabled = priorityMedium,
+                text = stringResource(id = Priority.MEDIUM.label),
+                onclick = {
+                    onPrioritySelected(Priority.MEDIUM)
+                }
+            )
+        },
+        onClick = {
+            onPrioritySelected(Priority.MEDIUM)
+        })
+    DropdownMenuItem(
+        text = {
+            PriorityItem(priority = Priority.LOW,
+                enabled = priorityLow,
+                text = stringResource(id = Priority.LOW.label),
+                onclick = {
+                    onPrioritySelected(Priority.LOW)
+                }
+            )
+        },
+        onClick = {
+            onPrioritySelected(Priority.LOW)
+        })
+    DropdownMenuItem(
+        text = {
+            PriorityItem(priority = Priority.NONE,
+                enabled = priorityNone,
+                text = stringResource(id = Priority.NONE.label),
+                onclick = {
+                    onPrioritySelected(Priority.NONE)
+                }
+            )
+        },
+        onClick = {
+            onPrioritySelected(Priority.NONE)
+        })
+}
+
 
 @Composable
 fun StateMenuListItems(
@@ -298,6 +437,17 @@ fun StateMenuListItems(
         },
         onClick = {
             onStateSelected(State.COMPLETED)
+        })
+    DropdownMenuItem(
+        text = {
+            StateListItem(state = State.CANCELLED,
+                onclick = {
+                    onStateSelected(State.CANCELLED)
+                }
+            )
+        },
+        onClick = {
+            onStateSelected(State.CANCELLED)
         })
     DropdownMenuItem(
         text = {

@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import java.time.ZonedDateTime
@@ -18,8 +19,10 @@ abstract class TodoDAO {
     @Query("SELECT * FROM todo_table")
     abstract suspend fun allTasks(): List<TodoTask>
 
+    @Transaction
     @Query(
-        "SELECT * FROM todo_table " +
+        "SELECT *, " +
+                "( SELECT COUNT(*) FROM todo_table " +
                 "WHERE 1=1 " +
                 "AND ( " +
                 "       CASE :searchRangeAll " +
@@ -37,6 +40,10 @@ abstract class TodoDAO {
                 "           WHEN 1 THEN progression = 'COMPLETED'" +
                 "       END " +
                 "OR " +
+                "       CASE :stateCancelled " +
+                "           WHEN 1 THEN progression = 'CANCELLED' " +
+                "       END " +
+                "OR " +
                 "       CASE :stateActive " +
                 "           WHEN 1 THEN progression = 'ACTIVE' " +
                 "       END " +
@@ -52,6 +59,107 @@ abstract class TodoDAO {
                 "       CASE :stateNone " +
                 "           WHEN 1 THEN progression = 'NONE' " +
                 "       END" +
+                ") " +
+                "AND (" +
+                "       CASE :priorityHigh " +
+                "           WHEN 1 THEN priority = 'HIGH'" +
+                "       END " +
+                "OR " +
+                "       CASE :priorityMedium " +
+                "           WHEN 1 THEN priority = 'MEDIUM' " +
+                "       END " +
+                "OR " +
+                "       CASE :priorityLow " +
+                "           WHEN 1 THEN priority = 'LOW' " +
+                "       END " +
+                "OR " +
+                "       CASE :priorityNone " +
+                "           WHEN 1 THEN priority = 'NONE' " +
+                "       END " +
+                ") " +
+                "AND (" +
+                "       CASE :sortCondition " +
+                "           WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "           WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "           WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
+                "           WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
+                "       END) " +
+                "ORDER BY " +
+                "CASE :priority " +
+                "   WHEN 'LOW' THEN " +
+                "       CASE " +
+                "           WHEN priority LIKE 'L%' THEN 1 " +
+                "           WHEN priority LIKE 'M%' THEN 2 " +
+                "           WHEN priority LIKE 'H%' THEN 3 " +
+                "           WHEN priority LIKE 'N%' THEN 4 " +
+                "       END " +
+                "   WHEN 'HIGH' THEN" +
+                "       CASE " +
+                "           WHEN priority LIKE 'H%' THEN 1 " +
+                "           WHEN priority LIKE 'M%' THEN 2 " +
+                "           WHEN priority LIKE 'L%' THEN 3 " +
+                "           WHEN priority LIKE 'N%' THEN 4 " +
+                "       END " +
+                "   END, " +
+                "CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
+                "CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
+                "CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
+                "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
+                ") AS total " +
+                "FROM todo_table " +
+                "WHERE 1=1 " +
+                "AND ( " +
+                "       CASE :searchRangeAll " +
+                "           WHEN 0 THEN notebook_id = :notebookId " +
+                "           WHEN 1 THEN 1=1 " +
+                "       END) " +
+                "AND (title LIKE :query OR description LIKE :query) " +
+                "AND (" +
+                "       CASE :favorite " +
+                "           WHEN 0 THEN 1=1 " +
+                "           WHEN 1 THEN favorite = 1 " +
+                "       END) " +
+                "AND (" +
+                "       CASE :stateCompleted " +
+                "           WHEN 1 THEN progression = 'COMPLETED'" +
+                "       END " +
+                "OR " +
+                "       CASE :stateCancelled " +
+                "           WHEN 1 THEN progression = 'CANCELLED' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateActive " +
+                "           WHEN 1 THEN progression = 'ACTIVE' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateSuspended " +
+                "           WHEN 1 THEN progression = 'SUSPENDED' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateWaiting " +
+                "           WHEN 1 THEN progression = 'WAITING' " +
+                "       END " +
+                "OR " +
+                "       CASE :stateNone " +
+                "           WHEN 1 THEN progression = 'NONE' " +
+                "       END" +
+                ") " +
+                "AND (" +
+                "       CASE :priorityHigh " +
+                "           WHEN 1 THEN priority = 'HIGH'" +
+                "       END " +
+                "OR " +
+                "       CASE :priorityMedium " +
+                "           WHEN 1 THEN priority = 'MEDIUM' " +
+                "       END " +
+                "OR " +
+                "       CASE :priorityLow " +
+                "           WHEN 1 THEN priority = 'LOW' " +
+                "       END " +
+                "OR " +
+                "       CASE :priorityNone " +
+                "           WHEN 1 THEN priority = 'NONE' " +
+                "       END " +
                 ") " +
                 "AND (" +
                 "       CASE :sortCondition " +
@@ -83,7 +191,7 @@ abstract class TodoDAO {
                 "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 "LIMIT :pageSize OFFSET (:page - 1 ) * :pageSize"
     )
-    abstract suspend fun getTasks(
+    abstract suspend fun getMemosWithNotebooks(
         page: Int,
         pageSize: Int,
         query: String,
@@ -95,11 +203,17 @@ abstract class TodoDAO {
         favorite: Boolean = false,
         notebookId: Int = -1,
         stateCompleted: Boolean = true,
+        stateCancelled: Boolean = true,
         stateActive: Boolean = true,
         stateSuspended: Boolean = true,
         stateWaiting: Boolean = true,
         stateNone: Boolean = true,
-    ): List<TodoTask>
+        priorityHigh: Boolean = true,
+        priorityMedium: Boolean = true,
+        priorityLow: Boolean = true,
+        priorityNone: Boolean = true
+    ): List<MemoWithNotebook>
+
 
     @Query("SELECT * FROM todo_table WHERE id = :taskId")
     abstract fun getSelectedTask(taskId: Int): TodoTask
@@ -130,12 +244,20 @@ abstract class TodoDAO {
         }
     }
 
-    @Query("SELECT COUNT(*) AS total, " +
-            "SUM (CASE priority WHEN 'HIGH' THEN 1 END) AS high, " +
-            "SUM (CASE priority WHEN 'MEDIUM' THEN 1 END) AS medium, " +
-            "SUM (CASE priority WHEN 'LOW' THEN 1 END) AS low, " +
-            "SUM (CASE priority  WHEN 'NONE' THEN 1 END) AS none " +
-            "FROM todo_table WHERE notebook_id = :notebookId")
+    @Query(
+        "SELECT COUNT(*) AS total, " +
+                "SUM (CASE priority WHEN 'HIGH' THEN 1 END) AS high, " +
+                "SUM (CASE priority WHEN 'MEDIUM' THEN 1 END) AS medium, " +
+                "SUM (CASE priority WHEN 'LOW' THEN 1 END) AS low, " +
+                "SUM (CASE priority  WHEN 'NONE' THEN 1 END) AS none, " +
+                "SUM (CASE progression  WHEN 'COMPLETED' THEN 1 END) AS completed, " +
+                "SUM (CASE progression  WHEN 'CANCELLED' THEN 1 END) AS cancelled, " +
+                "SUM (CASE progression  WHEN 'ACTIVE' THEN 1 END) AS active, " +
+                "SUM (CASE progression  WHEN 'SUSPENDED' THEN 1 END) AS suspended, " +
+                "SUM (CASE progression  WHEN 'WAITING' THEN 1 END) AS waiting, " +
+                "SUM (CASE progression  WHEN 'NONE' THEN 1 END) AS not_assigned " +
+                "FROM todo_table WHERE notebook_id = :notebookId"
+    )
     abstract fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount>
 
     @Transaction
@@ -151,8 +273,11 @@ abstract class TodoDAO {
     @Transaction
     open suspend fun updateMultipleNotebookIds(todosIds: List<Int>, destinationNotebookId: Int) {
         todosIds.forEach { id ->
-            updateNotebookId(id, destinationNotebookId, ZonedDateTypeConverter.fromZonedDateTime(
-                ZonedDateTime.now()))
+            updateNotebookId(
+                id, destinationNotebookId, ZonedDateTypeConverter.fromZonedDateTime(
+                    ZonedDateTime.now()
+                )
+            )
         }
     }
 }

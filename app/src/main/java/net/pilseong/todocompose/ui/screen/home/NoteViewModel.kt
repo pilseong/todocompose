@@ -43,6 +43,13 @@ class NoteViewModel @Inject constructor(
 //    var notebookIdState by mutableStateOf(-1)
 
     var selectedNotebooks = mutableStateListOf<Int>()
+    var defaultNotebook = mutableStateOf<NotebookWithCount>(
+        NotebookWithCount.instance(
+            id = -1,
+            title = context.resources.getString(R.string.default_note_title),
+            description = context.resources.getString(R.string.default_note_description),
+        )
+    )
 
     var isLoading = true
 
@@ -168,22 +175,29 @@ class NoteViewModel @Inject constructor(
                         currentNotebook.value = it
                     }
             } else {
-                Log.i(
-                    "PHILIP",
-                    "[NoteViewModel] getCurrentNote() getMemoCount execute with $noteId and currentNote: $currentNotebook"
-                )
-
                 memoRepository.getMemoCount(-1)
                     .stateIn(
                         scope = viewModelScope,
                         started = SharingStarted.WhileSubscribed(),
                         initialValue = DefaultNoteMemoCount()
                     ).collectLatest {
-                        currentNotebook.value = NotebookWithCount.instance(
-                            id = -1,
-                            title = context.resources.getString(R.string.default_note_title),
-                            memoCount = it.total
+                        Log.i(
+                            "PHILIP",
+                            "[NoteViewModel] getCurrentNoteAsFlow() getMemoCount execute and currentNote: DefaultNoteMemoCount $it"
                         )
+                        currentNotebook.value = defaultNotebook.value.copy(
+                            memoTotalCount = it.total,
+                            highPriorityCount = it.high,
+                            mediumPriorityCount = it.medium,
+                            lowPriorityCount = it.low,
+                            nonePriorityCount = it.none,
+                            completedCount = it.completed,
+                            activeCount = it.active,
+                            suspendedCount = it.suspended,
+                            waitingCount = it.waiting,
+                            noneCount = it.not_assigned
+                        )
+                        defaultNotebook.value = currentNotebook.value
                     }
             }
         }
@@ -213,22 +227,29 @@ class NoteViewModel @Inject constructor(
                             )
                         }
                 } else {
-                    Log.i(
-                        "PHILIP",
-                        "[NoteViewModel] getFirstNote() getMemoCount execute with $noteId and firstNote ${firstRecentNotebook.value}"
-                    )
-
                     memoRepository.getMemoCount(-1)
                         .stateIn(
                             scope = viewModelScope,
                             started = SharingStarted.WhileSubscribed(),
                             initialValue = DefaultNoteMemoCount()
                         ).collectLatest {
-                            firstRecentNotebook.value = NotebookWithCount.instance(
-                                id = -1,
-                                title = context.resources.getString(R.string.default_note_title),
-                                memoCount = it.total
+                            Log.i(
+                                "PHILIP",
+                                "[NoteViewModel] getFirstNoteAsFlow() getMemoCount execute and DefaultNoteMemoCount $it"
                             )
+                            firstRecentNotebook.value = defaultNotebook.value.copy(
+                                memoTotalCount = it.total,
+                                highPriorityCount = it.high,
+                                mediumPriorityCount = it.medium,
+                                lowPriorityCount = it.low,
+                                nonePriorityCount = it.none,
+                                completedCount = it.completed,
+                                activeCount = it.active,
+                                suspendedCount = it.suspended,
+                                waitingCount = it.waiting,
+                                noneCount = it.not_assigned
+                            )
+                            defaultNotebook.value = firstRecentNotebook.value!!
                         }
                 }
             }
@@ -261,21 +282,30 @@ class NoteViewModel @Inject constructor(
                             secondRecentNotebook.value = it
                         }
                 } else {
-                    Log.i(
-                        "PHILIP",
-                        "[NoteViewModel] getSecondNote() getMemoCount execute with $noteId and secondNote: ${secondRecentNotebook.value}"
-                    )
                     memoRepository.getMemoCount(-1)
                         .stateIn(
                             scope = viewModelScope,
                             started = SharingStarted.WhileSubscribed(),
                             initialValue = DefaultNoteMemoCount()
                         ).collectLatest {
-                            secondRecentNotebook.value = NotebookWithCount.instance(
-                                id = -1,
-                                title = context.resources.getString(R.string.default_note_title),
-                                memoCount = it.total
+                            Log.i(
+                                "PHILIP",
+                                "[NoteViewModel] getSecondNoteAsFlow() getMemoCount execute and DefaultNoteMemoCount $it"
                             )
+                            secondRecentNotebook.value = defaultNotebook.value.copy(
+                                memoTotalCount = it.total,
+                                highPriorityCount = it.high,
+                                mediumPriorityCount = it.medium,
+                                lowPriorityCount = it.low,
+                                nonePriorityCount = it.none,
+                                completedCount = it.completed,
+                                activeCount = it.active,
+                                suspendedCount = it.suspended,
+                                waitingCount = it.waiting,
+                                noneCount = it.not_assigned
+                            )
+
+                            defaultNotebook.value = secondRecentNotebook.value!!
                         }
                 }
             }

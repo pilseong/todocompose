@@ -6,8 +6,8 @@ import androidx.paging.PagingState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.util.Constants
 import java.time.Instant
@@ -24,13 +24,18 @@ class TodoPagingSource(
     private val isFavoriteOn: Boolean = false,
     private val notebookId: Int = -1,
     private var stateCompleted: Boolean = true,
+    private var stateCancelled: Boolean = true,
     private var stateActive: Boolean = true,
     private var stateSuspended: Boolean = true,
     private var stateWaiting: Boolean = true,
     private var stateNone: Boolean = true,
-) : PagingSource<Int, TodoTask>() {
+    private var priorityHigh: Boolean = true,
+    private var priorityMedium: Boolean = true,
+    private var priorityLow: Boolean = true,
+    private var priorityNone: Boolean = true
+) : PagingSource<Int, MemoWithNotebook>() {
 
-    override fun getRefreshKey(state: PagingState<Int, TodoTask>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, MemoWithNotebook>): Int? {
         Log.i("PHILIP", "[TodoPagingSource] state.anchorPosition params ${state.anchorPosition}")
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
@@ -38,7 +43,7 @@ class TodoPagingSource(
         }
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TodoTask> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MemoWithNotebook> {
         Log.i("PHILIP", "[TodoPagingSource]load params ${params.key}")
         val currentPage = params.key ?: 1
 
@@ -46,7 +51,8 @@ class TodoPagingSource(
         return try {
             withContext(ioDispatcher) {
                 val todoList =
-                    todoDAO.getTasks(
+//                    todoDAO.getTasks(
+                    todoDAO.getMemosWithNotebooks(
                         page = currentPage,
                         pageSize = Constants.PAGE_SIZE,
                         query = "%$query%",
@@ -58,10 +64,15 @@ class TodoPagingSource(
                         favorite = isFavoriteOn,
                         notebookId = notebookId,
                         stateCompleted = stateCompleted,
+                        stateCancelled = stateCancelled,
                         stateActive = stateActive,
                         stateSuspended = stateSuspended,
                         stateWaiting = stateWaiting,
                         stateNone = stateNone,
+                        priorityHigh = priorityHigh,
+                        priorityMedium = priorityMedium,
+                        priorityLow = priorityLow,
+                        priorityNone = priorityNone
                     )
 
                 Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
