@@ -54,6 +54,7 @@ import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.getPriorityColor
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +77,9 @@ fun NoteContent(
         Configuration.ORIENTATION_LANDSCAPE -> {
 
             Row(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .padding(horizontal = XLARGE_PADDING)
+                    .fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(LARGE_PADDING)
             ) {
                 Column(
@@ -246,249 +249,19 @@ fun NoteContent(
         }
 
         else -> {
-            Column(
-                modifier = Modifier
-                    .padding(top = LARGE_PADDING)
-                    .fillMaxSize()
-            ) {
-                // 타이틀 + 날짜
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                ) {
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = XLARGE_PADDING,
-                            vertical = LARGE_PADDING
-                        ),
-                    ) {
-
-                        // 헤드 타이틀
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.note_screen_recent_notebooks),
-                                color = Color(
-                                    ColorUtils.blendARGB(
-                                        MaterialTheme.colorScheme.onSurface.toArgb(),
-                                        Color.White.toArgb(),
-                                        0.2f
-                                    )
-                                ).copy(0.9f),
-                                fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
-                                fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                            )
-                        }
-
-                        // 오늘 날짜
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                        ) {
-
-//                            Log.i("PHILIP", "locale ${Locale.current.language}")
-                            Text(
-                                modifier = Modifier.padding(start = 4.dp),
-//                                color = headlineYellow,
-                                color = Color(
-                                    ColorUtils.blendARGB(
-                                        MaterialTheme.colorScheme.onSurface.toArgb(),
-                                        Color.White.toArgb(),
-                                        0.2f
-                                    )
-                                ).copy(0.9f),
-                                text = stringResource(id = R.string.note_content_today) + ": ${
-                                    ZonedDateTime.now().toLocalDate().format(
-                                        DateTimeFormatter.ofPattern(stringResource(id = R.string.note_content_dateformat),
-                                        java.util.Locale.getDefault()))
-                                }",
-                                fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
-                                fontSize = MaterialTheme.typography.titleSmall.fontSize
-                            )
-                        }
-                    }
-                }
-
-                val recentNotebookSpace =
-                    ((LocalConfiguration.current.screenWidthDp - (2 * 16) - 115 - (2 * 6))
-                            - (3 * 6)) / 2
-                // 자주 사용하는 노트북 섹션
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = XLARGE_PADDING,
-                            end = XLARGE_PADDING,
-                            bottom = XLARGE_PADDING
-                        ),
-
-                    ) {
-                    Surface(
-                        modifier = Modifier.padding(end = MEDIUM_PADDING),
-                        shape = RoundedCornerShape(4.dp),
-                        tonalElevation = 2.dp,
-                        shadowElevation = 2.dp,
-                        color = MaterialTheme.colorScheme.surface
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(SMALL_PADDING)
-                        ) {
-                            CurrentNotebook(
-                                onSelectNotebook,
-                                onInfoClick,
-                                currentNotebook
-                            )
-                        }
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        tonalElevation = 2.dp,
-                        shadowElevation = 2.dp,
-                        color = MaterialTheme.colorScheme.surface
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(SMALL_PADDING)
-                        ) {
-                            if (firstRecentNotebook != null)
-                                RecentNotebook(
-                                    width = recentNotebookSpace,
-                                    onSelectNotebook,
-                                    onInfoClick,
-                                    firstRecentNotebook
-                                )
-                            else
-                                EmptyNotebook(recentNotebookSpace)
-
-                            if (secondRecentNotebook != null)
-                                RecentNotebook(
-                                    width = recentNotebookSpace,
-                                    onSelectNotebook,
-                                    onInfoClick,
-                                    secondRecentNotebook
-                                )
-                            else
-                                EmptyNotebook(recentNotebookSpace)
-                        }
-                    }
-                }
-
-                // 중간 타이틀
-                Surface(
-                    color = MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-                        modifier = Modifier
-//                            .padding(start = XLARGE_PADDING, top = XLARGE_PADDING, bottom = XLARGE_PADDING, end =)
-                            .padding(XLARGE_PADDING)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.note_screen_list_of_notebooks),
-                            color = Color(
-                                ColorUtils.blendARGB(
-                                    MaterialTheme.colorScheme.onSurface.toArgb(),
-                                    Color.White.toArgb(),
-                                    0.2f
-                                )
-                            ).copy(0.9f),
-                            fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
-                            fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                        )
-//                        Spacer(modifier = Modifier.width(SMALL_PADDING))
-                        Card(
-                            modifier = Modifier
-                                .padding(top = 4.dp)
-                                .clickable {
-                                    onSortMenuClick()
-                                },
-                            border =
-                            BorderStroke(
-                                0.5F.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
-                            ),
-                            shape = RoundedCornerShape(4.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Transparent
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(SMALL_PADDING),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    modifier = Modifier.width(12.dp),
-                                    imageVector = Icons.Default.Sort,
-                                    contentDescription = "Check list icon"
-                                )
-                                Spacer(modifier = Modifier.width(SMALL_PADDING))
-                                Text(
-                                    text = stringResource(id = noteSortingOption.label),
-                                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
-                }
-//                Spacer(modifier = Modifier.height(LARGE_PADDING))
-                Surface(
-                    modifier = Modifier
-//                        .clip(RoundedCornerShape(4.dp))
-                        .padding(start = XLARGE_PADDING, end = XLARGE_PADDING)
-                        .height(340.dp)
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-//                    border = BorderStroke(0.5.dp, DarkGreenBackground),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp,
-                    shadowElevation = 2.dp
-                ) {
-                    if (notebooks.isNotEmpty()) {
-                        BookShelf(
-                            notebooks = notebooks,
-                            selectedNotebookIds = selectedNotebookIds,
-                            noteSortingOption = noteSortingOption,
-                            onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
-                            onSelectNotebook = onSelectNotebook,
-                            onInfoClick = onInfoClick
-                        )
-                    } else {
-                        Row(
-                            modifier = Modifier.padding(SMALL_PADDING)
-                        ) {
-                            Card(
-                                modifier = Modifier
-                                    .width(110.dp)
-//                                    .weight(1F)
-                                    .height(130.dp)
-                                    .clickable {
-                                        onEmptyImageClick()
-                                    },
-//                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "add icon"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            VerticalContent(
+                onSelectNotebook,
+                onInfoClick,
+                currentNotebook,
+                firstRecentNotebook,
+                secondRecentNotebook,
+                onSortMenuClick,
+                noteSortingOption,
+                notebooks,
+                selectedNotebookIds,
+                onSelectNotebookWithLongClick,
+                onEmptyImageClick
+            )
         }
     }
 }

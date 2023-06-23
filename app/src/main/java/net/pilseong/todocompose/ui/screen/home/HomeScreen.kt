@@ -45,10 +45,6 @@ fun HomeScreen(
     onInfoClick: (Int) -> Unit,
     onSortMenuClick: () -> Unit,
 ) {
-
-
-//    Log.i("PHILIP", "notebooks $notebooks")
-
     val scrollBehavior = exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -82,16 +78,9 @@ fun HomeScreen(
                 .padding(
                     top = paddingValues.calculateTopPadding()
                 )
-//                .padding(
-//                    top = paddingValues.calculateTopPadding() + LARGE_PADDING,
-//                    start = XLARGE_PADDING,
-//                    end = XLARGE_PADDING,
-//                    bottom = SMALL_PADDING
-//                )
                 .fillMaxSize(),
         ) {
             Surface(
-//                color = LightGreenBackground
                 color = MaterialTheme.colorScheme.surface
             ) {
                 NoteContent(
@@ -141,20 +130,6 @@ private fun HomeAppBar(
             }
         }
     }
-//    } else {
-//        TopAppBar(
-//            scrollBehavior = scrollBehavior,
-//            title = {
-//                Text(
-//                    text = "",
-//                    //                        color = MaterialTheme.colorScheme.topBarContentColor
-//                )
-//            },
-//            colors = TopAppBarDefaults.topAppBarColors(
-//                //                    containerColor = MaterialTheme.colorScheme.topBarContainerColor
-//            ),
-//        )
-//    }
 }
 
 
