@@ -69,7 +69,7 @@ fun SimpleDateRangePickerSheet(
 ) {
     if (datePickerExpanded) {
         val state = rememberModalBottomSheetState(
-            skipPartiallyExpanded = false,
+            skipPartiallyExpanded = true
         )
         val dateRangePickerState = rememberDateRangePickerState(
             initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
@@ -101,6 +101,17 @@ fun SimpleDateRangePickerSheet(
             }
         }
     }
+}
+
+@Preview(widthDp = 720, heightDp = 360)
+@Composable
+fun PreviewSimpleDateRangePickerSheet() {
+    MaterialTheme {
+        SimpleDateRangePickerSheet(
+            datePickerExpanded = true,
+            onDismissRequest = { /*TODO*/ }, onConfirmClick = { _, _ -> })
+    }
+
 }
 
 @Composable
@@ -233,8 +244,8 @@ private fun convertToLocalEndTime(timestamp: Long?, isStart: Boolean): Long? {
         val mutated = Instant.ofEpochSecond(instant.epochSecond - zoned.offset.totalSeconds)
         mutated.toEpochMilli()
     } else {
-        val mutated = Instant.ofEpochSecond(instant.epochSecond - zoned.offset.totalSeconds -1)
-        val corrected =  ZonedDateTime.ofInstant(mutated, ZoneId.systemDefault()).plusDays(1)
+        val mutated = Instant.ofEpochSecond(instant.epochSecond - zoned.offset.totalSeconds - 1)
+        val corrected = ZonedDateTime.ofInstant(mutated, ZoneId.systemDefault()).plusDays(1)
         corrected.toInstant().toEpochMilli()
     }
 }
@@ -249,7 +260,7 @@ fun GreetingPreview16() {
             onDismissRequest = {},
             onConfirmClick = { a, b -> },
 
-        )
+            )
     }
 }
 
@@ -268,7 +279,7 @@ fun PreviewDateRangePickerSample() {
     MaterialTheme {
         CustomDateRangePicker(
             state = dateRangePickerState,
-            onConfirmClick = { a, b ->},
+            onConfirmClick = { a, b -> },
             onDismissRequest = {}
         )
     }

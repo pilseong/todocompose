@@ -247,13 +247,6 @@ fun ListAppBarActions(
 
 
     var datePickerExpanded by remember { mutableStateOf(false) }
-//    SimpleDatePickerDialog(
-//        enabled = datePickerExpanded,
-//        onDismiss = {
-//            datePickerExpanded = false
-//        },
-//        onConfirmClick = onDatePickConfirmed
-//    )
     SimpleDateRangePickerSheet(
         datePickerExpanded = datePickerExpanded,
         onDismissRequest = {
@@ -288,7 +281,6 @@ fun SearchAction(
         Icon(
             imageVector = Icons.Filled.Search,
             contentDescription = stringResource(R.string.search_bar_visible_action_icon),
-//            tint = MaterialTheme.colorScheme.topBarContentColor
         )
     }
 }
@@ -383,8 +375,6 @@ fun SearchAppBar(
                 },
                 label = {
                     Text(
-//                        modifier = Modifier
-//                            .alpha(ALPHA_NOT_FOCUSED),
                         text = if (searchRangeAll) "전체" else "노트",
                         fontSize = MaterialTheme.typography.labelSmall.fontSize
                     )
@@ -394,7 +384,6 @@ fun SearchAppBar(
                         modifier = Modifier
                             .alpha(ALPHA_NOT_FOCUSED),
                         text = stringResource(id = R.string.search_placeholder),
-//                    color = MaterialTheme.colorScheme.topBarContentColor
                     )
                 },
                 leadingIcon = {
@@ -403,19 +392,6 @@ fun SearchAppBar(
                         onCheckedChange = {
                             onSearchRangeAllClicked(!searchRangeAll)
                         })
-//                    IconButton(onClick = {
-//                        onSearchClicked()
-//                    }) {
-//                        Icon(
-//                            imageVector = Icons.Default.Search,
-//                            contentDescription = stringResource(
-//                                id = R.string.search_execution_icon
-//                            ),
-//                            modifier = if (text.isNotEmpty()) Modifier.alpha(ALPHA_FOCUSED)
-//                            else Modifier.alpha(ALPHA_NOT_FOCUSED),
-////                        tint = MaterialTheme.colorScheme.topBarContentColor
-//                        )
-//                    }
                 },
                 trailingIcon = {
                     IconButton(onClick = {
@@ -426,7 +402,6 @@ fun SearchAppBar(
                             contentDescription = stringResource(
                                 id = R.string.close_icon
                             ),
-//                        tint = MaterialTheme.colorScheme.topBarContentColor
                         )
                     }
                 },
@@ -439,11 +414,9 @@ fun SearchAppBar(
                     }
                 ),
                 colors = TextFieldDefaults.colors(
-//                    focusedTextColor = MaterialTheme.colorScheme.topBarContentColor,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
-//                    cursorColor = MaterialTheme.colorScheme.topBarContentColor,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -36,21 +35,25 @@ import java.time.format.DateTimeFormatter
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun CurrentNotebook(
+    notebookWidth: Float,
     onSelectNotebook: (Int) -> Unit,
     onInfoClick: (Int) -> Unit,
     currentNotebook: NotebookWithCount
 ) {
     Surface(
         modifier = Modifier
-            .width(115.dp)
-            .height(160.dp)
+            .width(notebookWidth.dp)
+            .height((notebookWidth * 4 / 3).dp)
             .padding(bottom = SMALL_PADDING)
             .combinedClickable(
                 onClick = {
+                    onSelectNotebook(currentNotebook.id)
                 },
                 onLongClick = {
                 }
             ),
+        color = currentNotebook.priority.color,
+        tonalElevation = 2.dp,
         shadowElevation = 6.dp,
         shape = RoundedCornerShape(
             topStart = 0.dp,
@@ -63,133 +66,105 @@ fun CurrentNotebook(
             MaterialTheme.colorScheme.surface
         )
     ) {
-        Card(
-            shape = RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 6.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 6.dp
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
         ) {
-            Row(
+            Surface(
+                color = Color(
+                    ColorUtils.blendARGB(
+                        currentNotebook.priority.color.toArgb(),
+                        Color.Black.toArgb(),
+                        0.5f
+                    )
+                ),
             ) {
-                Surface(
-                    modifier = Modifier.clickable {
-                        onSelectNotebook(currentNotebook.id)
-                    },
-                    color = currentNotebook.priority.color,
-                    tonalElevation = 2.dp,
+                Row(
+                    modifier = Modifier
+                        .padding(SMALL_PADDING)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 2.dp),
+                        text = stringResource(id = R.string.current_label),
+                        color = Color.White,
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize
+                    )
                     Column(
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .clickable {
+                                onInfoClick(currentNotebook.id)
+                            }
+                            .weight(1F),
+                        horizontalAlignment = Alignment.End
                     ) {
-                        Surface(
-                            color = Color(
-                                ColorUtils.blendARGB(
-                                    currentNotebook.priority.color.toArgb(),
-                                    Color.Black.toArgb(),
-                                    0.5f
-                                )
-                            ),
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(SMALL_PADDING)
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-//                                Badge {
-//                                    Icon(
-//                                        modifier = Modifier.size(8.dp),
-//                                        imageVector = Icons.Default.Check,
-//                                        contentDescription = "Checked Icon",
-//                                    )
-//                                }
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 2.dp),
-                                    text = stringResource(id = R.string.current_label),
-                                    color = Color.White,
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize
-                                )
-                                Column(
-                                    modifier = Modifier
-                                        .clickable {
-                                            onInfoClick(currentNotebook.id)
-                                        }
-                                        .weight(1F),
-                                    horizontalAlignment = Alignment.End
-                                ) {
-                                    Badge() {
-                                        Text(text = currentNotebook.memoTotalCount.toString())
-                                    }
-                                }
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .weight(1F),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = SMALL_PADDING),
-                                text = currentNotebook.title,
-                                color = Color(
-                                    ColorUtils.blendARGB(
-                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                        Color.Black.toArgb(),
-                                        0.8f
-                                    )
-                                ).copy(0.9f)
-//                                                                Color.White.copy(alpha = 0.9f)
-                            )
-                        }
-                        Surface(
-                            color = Color(
-                                ColorUtils.blendARGB(
-                                    currentNotebook.priority.color.toArgb(),
-                                    Color.Black.toArgb(),
-                                    0.3f
-                                )
-                            ),
-                            tonalElevation = 2.dp,
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(
-                                        horizontal = SMALL_PADDING,
-                                        vertical = 4.dp
-                                    )
-                                    .fillMaxWidth(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = currentNotebook.accessedAt.toLocalDateTime()
-                                        .format(
-                                            DateTimeFormatter.ofPattern(
-                                                stringResource(id = R.string.note_inside_dateformat)
-                                            )
-                                        ),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color.White.copy(alpha = 0.7f)
-                                )
-                                Text(
-                                    text = currentNotebook.accessedAt.toLocalDateTime()
-                                        .format(
-                                            DateTimeFormatter.ofPattern(
-                                                "HH:mm"
-                                            )
-                                        ),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    color = Color.White.copy(alpha = 0.7f)
-                                )
-                            }
+                        Badge() {
+                            Text(text = currentNotebook.memoTotalCount.toString())
                         }
                     }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1F),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier.padding(horizontal = SMALL_PADDING),
+                    text = currentNotebook.title,
+                    color = Color(
+                        ColorUtils.blendARGB(
+                            MaterialTheme.colorScheme.onPrimary.toArgb(),
+                            Color.Black.toArgb(),
+                            0.8f
+                        )
+                    ).copy(0.9f)
+                )
+            }
+            Surface(
+                color = Color(
+                    ColorUtils.blendARGB(
+                        currentNotebook.priority.color.toArgb(),
+                        Color.Black.toArgb(),
+                        0.3f
+                    )
+                ),
+                tonalElevation = 2.dp,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            horizontal = SMALL_PADDING,
+                            vertical = 2.dp
+                        )
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = currentNotebook.accessedAt.toLocalDateTime()
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    stringResource(id = R.string.note_inside_dateformat)
+                                )
+                            ),
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = currentNotebook.accessedAt.toLocalDateTime()
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    "HH:mm"
+                                )
+                            ),
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
                 }
             }
         }
@@ -200,8 +175,11 @@ fun CurrentNotebook(
 @Composable
 fun PreviewCurrentNotebook() {
     MaterialTheme {
-        CurrentNotebook(onSelectNotebook = {},
+        CurrentNotebook(
+            notebookWidth = 110F,
+            onSelectNotebook = {},
             onInfoClick = {},
-            currentNotebook = NotebookWithCount.instance())
+            currentNotebook = NotebookWithCount.instance()
+        )
     }
 }

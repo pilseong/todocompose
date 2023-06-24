@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgeDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,12 +55,14 @@ import java.time.format.DateTimeFormatter
 fun BookShelf(
     notebooks: List<NotebookWithCount>,
     selectedNotebookIds: SnapshotStateList<Int>,
+    notebookWidth: Float = 110F,
     noteSortingOption: NoteSortingOption,
     onSelectNotebookWithLongClick: (Int) -> Unit,
     onSelectNotebook: (Int) -> Unit,
     onInfoClick: (Int) -> Unit
 ) {
     Log.i("PHILIP", "noteOrder $noteSortingOption")
+
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),
         contentPadding = PaddingValues(
@@ -76,16 +77,7 @@ fun BookShelf(
                     note.id
                 }
             ) { notebook ->
-//            items(
-//                count = notebooks.size,
-//            ) { index ->
-
                 val selected = remember(selectedNotebookIds.size) {
-//                    Log.i(
-//                        "PHILIP", "[HomeContent] " +
-//                                "index = $index, ${selectedNotebookIds.toList()}, " +
-//                                "size = ${selectedNotebookIds.size}"
-//                    )
                     mutableStateOf(
                         selectedNotebookIds.contains(
                             notebook.id
@@ -95,9 +87,9 @@ fun BookShelf(
 
                 Surface(
                     modifier = Modifier
-                        .width(125.dp)
-                        .height(160.dp)
                         .padding(end = SMALL_PADDING, bottom = LARGE_PADDING)
+                        .width(notebookWidth.dp)
+                        .height((notebookWidth * 4 / 3).dp)
                         .combinedClickable(
                             onClick = {
                                 if (selectedNotebookIds.size > 0) {
@@ -110,7 +102,16 @@ fun BookShelf(
                                 onSelectNotebookWithLongClick(notebook.id)
                             }
                         ),
-                    shadowElevation = if (selected.value) 0.dp else 6.dp,
+//                    color = if (selected.value) {
+//                        MaterialTheme.colorScheme.surfaceColorAtElevation(
+//                            10000.dp
+//                        )
+//                    } else
+//                        getPriorityColor(notebook.priority).copy(
+//                            alpha = 0.4f
+//                        ),
+                    tonalElevation = if (selected.value) 12.dp else 2.dp,
+                    shadowElevation = if (!selected.value) 6.dp else 0.dp,
                     shape = RoundedCornerShape(
                         topStart = 0.dp,
                         topEnd = 6.dp,
@@ -124,198 +125,144 @@ fun BookShelf(
                     else BorderStroke(
                         0.dp,
                         MaterialTheme.colorScheme.surface
-                    )
+                    ),
                 ) {
-                    Card(
-                        shape = RoundedCornerShape(
-                            topStart = 0.dp,
-                            topEnd = 6.dp,
-                            bottomStart = 0.dp,
-                            bottomEnd = 6.dp
-                        )
+                    Surface(
+                        color = if (selected.value) {
+                            MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                10000.dp
+                            )
+                        } else
+                            getPriorityColor(notebook.priority).copy(
+                                alpha = 0.4f
+                            ),
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1F),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(
+                                        horizontal = SMALL_PADDING
+                                    ),
+                                    text = notebook.title,
+                                    fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.2f
+                                    )
+                                    else
+                                        Color(
+                                            ColorUtils.blendARGB(
+                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
+                                                Color.Black.toArgb(),
+                                                0.9f
+                                            )
+                                        ).copy(0.9f)
+                                )
+                            }
                             Surface(
                                 color = if (selected.value) {
                                     MaterialTheme.colorScheme.surfaceColorAtElevation(
                                         10000.dp
                                     )
                                 } else
-                                    getPriorityColor(notebook.priority).copy(
-                                        alpha = 0.4f
+                                    Color(
+                                        ColorUtils.blendARGB(
+                                            getPriorityColor(notebook.priority).toArgb(),
+                                            Color.Black.toArgb(),
+                                            0.5f
+                                        )
                                     ),
 //                                                    MaterialTheme.colorScheme.surface,
                                 tonalElevation = if (selected.value) 12.dp else 2.dp,
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
-                                        .fillMaxSize(),
+                                        .fillMaxWidth(),
+//                                                        .weight(1F),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
                                 ) {
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .weight(1F),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 2.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Text(
-                                            modifier = Modifier.padding(
-                                                horizontal = SMALL_PADDING
-                                            ),
-                                            text = notebook.title,
+                                            text = when (noteSortingOption) {
+                                                NoteSortingOption.ACCESS_AT -> {
+                                                    notebook.accessedAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                stringResource(id = R.string.note_inside_dateformat)
+                                                            )
+                                                        )
+                                                }
+
+                                                NoteSortingOption.UPDATED_AT -> {
+                                                    notebook.updatedAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                stringResource(id = R.string.note_inside_dateformat)
+                                                            )
+                                                        )
+                                                }
+
+                                                NoteSortingOption.CREATED_AT -> {
+                                                    notebook.createdAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                stringResource(id = R.string.note_inside_dateformat)
+                                                            )
+                                                        )
+                                                }
+                                            },
+                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                             color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
                                                 alpha = 0.2f
                                             )
-//                                                            else MaterialTheme.colorScheme.onSurface
-                                            else
-                                                Color(
-                                                    ColorUtils.blendARGB(
-                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                        Color.Black.toArgb(),
-                                                        0.9f
-                                                    )
-                                                ).copy(0.9f)
-//                                                                Color.White.copy(alpha = 0.9f)
+                                            else Color.White.copy(alpha = 0.7f)
                                         )
-                                    }
-                                    Surface(
-                                        color = if (selected.value) {
-                                            MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                                10000.dp
+                                        Text(
+                                            text = when (noteSortingOption) {
+                                                NoteSortingOption.ACCESS_AT -> {
+                                                    notebook.accessedAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                "HH:mm"
+                                                            )
+                                                        )
+                                                }
+
+                                                NoteSortingOption.UPDATED_AT -> {
+                                                    notebook.updatedAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                "HH:mm"
+                                                            )
+                                                        )
+                                                }
+
+                                                NoteSortingOption.CREATED_AT -> {
+                                                    notebook.createdAt.toLocalDateTime()
+                                                        .format(
+                                                            DateTimeFormatter.ofPattern(
+                                                                "HH:mm"
+                                                            )
+                                                        )
+                                                }
+                                            },
+                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                            color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
+                                                alpha = 0.2f
                                             )
-                                        } else
-                                            Color(
-                                                ColorUtils.blendARGB(
-                                                    getPriorityColor(notebook.priority).toArgb(),
-                                                    Color.Black.toArgb(),
-                                                    0.5f
-                                                )
-                                            ),
-//                                                    MaterialTheme.colorScheme.surface,
-                                        tonalElevation = if (selected.value) 12.dp else 2.dp,
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-//                                                        .weight(1F),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                Text(
-                                                    text = when (noteSortingOption) {
-                                                        NoteSortingOption.ACCESS_AT -> {
-                                                            notebook.accessedAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        stringResource(id = R.string.note_inside_dateformat)
-                                                                    )
-                                                                )
-                                                        }
-
-                                                        NoteSortingOption.UPDATED_AT -> {
-                                                            notebook.updatedAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        stringResource(id = R.string.note_inside_dateformat)
-                                                                    )
-                                                                )
-                                                        }
-
-                                                        NoteSortingOption.CREATED_AT -> {
-                                                            notebook.createdAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        stringResource(id = R.string.note_inside_dateformat)
-                                                                    )
-                                                                )
-                                                        }
-                                                    },
-                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-                                                        alpha = 0.2f
-                                                    )
-                                                    else Color.White.copy(alpha = 0.7f)
-//                                                color = Color(
-//                                                    ColorUtils.blendARGB(
-//                                                        MaterialTheme.colorScheme.onPrimary.toArgb(),
-//                                                        Color.Black.toArgb(),
-//                                                        0.1f
-//                                                    )
-//                                                ),
-                                                )
-                                                Text(
-                                                    text = when (noteSortingOption) {
-                                                        NoteSortingOption.ACCESS_AT -> {
-                                                            notebook.accessedAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        "HH:mm"
-                                                                    )
-                                                                )
-                                                        }
-
-                                                        NoteSortingOption.UPDATED_AT -> {
-                                                            notebook.updatedAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        "HH:mm"
-                                                                    )
-                                                                )
-                                                        }
-
-                                                        NoteSortingOption.CREATED_AT -> {
-                                                            notebook.createdAt.toLocalDateTime()
-                                                                .format(
-                                                                    DateTimeFormatter.ofPattern(
-                                                                        "HH:mm"
-                                                                    )
-                                                                )
-                                                        }
-                                                    },
-                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-                                                        alpha = 0.2f
-                                                    )
-                                                    else Color.White.copy(alpha = 0.7f)
-                                                )
-                                            }
-
-//                                            Icon(
-//                                                modifier = Modifier
-//                                                    .width(14.dp),
-////                                                                    .padding(top = 3.dp),
-////                                                                painter = painterResource(id = R.drawable.ic_create_note_icon),
-//                                                imageVector = Icons.Default.Update,
-//                                                contentDescription = "edit time",
-//                                                tint = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-//                                                    alpha = 0.2f
-//                                                )
-////                                                                    else MaterialTheme.colorScheme.onSurface
-//                                                else Color.White.copy(alpha = 0.7f)
-//                                            )
-//                                            Text(
-//                                                modifier = Modifier.padding(
-//                                                    vertical = SMALL_PADDING
-//                                                ),
-//                                                text = notebooks[index].updatedAt.toLocalDate()
-//                                                    .format(
-//                                                        DateTimeFormatter.ofPattern(
-//                                                            stringResource(id = R.string.note_inside_dateformat)
-//                                                        )
-//                                                    ),
-//                                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-//                                                fontWeight = FontWeight.Light,
-//                                                color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-//                                                    alpha = 0.2f
-//                                                )
-////                                                                    else MaterialTheme.colorScheme.onSurface
-//                                                else Color.White.copy(alpha = 0.7f)
-//                                            )
-                                        }
+                                            else Color.White.copy(alpha = 0.7f)
+                                        )
                                     }
                                 }
                             }
@@ -342,7 +289,6 @@ fun BookShelf(
                     if (selected.value) {
                         Row(
                             modifier = Modifier.fillMaxSize(),
-//                                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
@@ -364,7 +310,7 @@ fun BookShelf(
     )
 }
 
-@Preview
+@Preview(widthDp = 360, heightDp = 720)
 @Composable
 fun BookShelfPreview() {
     MaterialTheme {
@@ -385,7 +331,8 @@ fun BookShelfPreview() {
                 ),
                 NotebookWithCount(
                     id = 3,
-                    title = "test3", description = "desc3", priority = Priority.NONE)
+                    title = "test3", description = "desc3", priority = Priority.NONE
+                )
             ),
             selectedNotebookIds = SnapshotStateList<Int>(),
             onSelectNotebookWithLongClick = {},

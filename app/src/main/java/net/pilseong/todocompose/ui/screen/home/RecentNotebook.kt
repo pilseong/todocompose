@@ -33,17 +33,18 @@ import net.pilseong.todocompose.util.getPriorityColor
 import java.time.format.DateTimeFormatter
 
 @Composable
+
 @OptIn(ExperimentalMaterial3Api::class)
 fun RecentNotebook(
-    width: Int,
+    notebookWidth: Float,
     onSelectNotebook: (Int) -> Unit,
     onInfoClick: (Int) -> Unit,
     currentNotebook: NotebookWithCount
 ) {
     Surface(
         modifier = Modifier
-            .width(width.dp)
-            .height(160.dp)
+            .width(notebookWidth.dp)
+            .height((notebookWidth * 4 / 3).dp)
             .padding(end = SMALL_PADDING, bottom = SMALL_PADDING),
         shadowElevation = 6.dp,
         shape = RoundedCornerShape(
@@ -148,7 +149,7 @@ fun RecentNotebook(
                                 modifier = Modifier
                                     .padding(
                                         horizontal = SMALL_PADDING,
-                                        vertical = 4.dp
+                                        vertical = 2.dp
                                     )
                                     .fillMaxWidth(),
                                 verticalArrangement = Arrangement.Center,
@@ -191,7 +192,7 @@ fun RecentNotebook(
 fun PreviewRecentNotebook() {
     MaterialTheme {
         RecentNotebook(
-            100,
+            100F,
             onSelectNotebook = {},
             currentNotebook = NotebookWithCount.instance(),
             onInfoClick = {}

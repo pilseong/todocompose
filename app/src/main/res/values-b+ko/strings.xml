@@ -49,6 +49,7 @@
     <string name="sort_date_label">생성일자</string>
     <string name="task_content_updated_at_label">수정일자</string>
     <string name="badge_priority_label">우선순위</string>
+    <string name="badge_priority_filter_label">정렬우선순위</string>
     <string name="badge_order_label">정렬</string>
     <string name="badge_date_label">일자</string>
     <string name="badge_order_asc_label">오름차순</string>
@@ -56,8 +57,8 @@
     <string name="badge_date_created_at_label">생성일자</string>
     <string name="badge_date_updated_at_label">수정일자</string>
     <string name="badge_favorite_label">중요메모</string>
-    <string name="badge_search_range_all_label">범위설정</string>
-    <string name="badge_search_range_note_label">현재노트</string>
+    <string name="badge_search_range_all_label">전체노트</string>
+    <string name="badge_search_range_note_label">범위설정</string>
     <string name="badge_state_label">작업단계</string>
     <string name="snackbar_message_order_asc_change">오름차순으로 정렬합니다.</string>
     <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>

@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.i("PHILIP", "[MainActivity] onCreate called")
 
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
             noteViewModel.isLoading

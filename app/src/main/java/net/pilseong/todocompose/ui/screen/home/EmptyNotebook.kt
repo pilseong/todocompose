@@ -27,7 +27,7 @@ import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 
 @Composable
 fun EmptyNotebook(
-    width: Int
+    width: Float
 ) {
     Surface(
         modifier = Modifier
@@ -88,6 +88,6 @@ fun EmptyNotebook(
 @Composable
 fun PreviewEmptyNotebook() {
     MaterialTheme {
-        EmptyNotebook(100)
+        EmptyNotebook(100F)
     }
 }

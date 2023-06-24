@@ -74,7 +74,7 @@ fun PriorityDropDown(
                 modifier = Modifier.weight(1F),
                 text = stringResource(id = priority.label),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
             )
         } else {
             Text(
@@ -83,7 +83,7 @@ fun PriorityDropDown(
                     .weight(1F),
                 text = stringResource(id = R.string.badge_priority_label),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 

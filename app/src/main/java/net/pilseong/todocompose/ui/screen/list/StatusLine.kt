@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.twotone.Edit
@@ -80,29 +81,6 @@ fun StatusLine(
     onStateSelected: (State) -> Unit,
     onRangeAllEnabledClick: (Boolean) -> Unit,
 ) {
-    var containerColor = Color.Transparent
-    var priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
-    when (prioritySortState) {
-        Priority.HIGH -> {
-            containerColor = HighPriorityColor
-            priorityIcon = painterResource(id = R.drawable.baseline_priority_high_24)
-        }
-
-        Priority.MEDIUM -> {
-            containerColor = MediumPriorityColor
-            priorityIcon = painterResource(id = R.drawable.ic_baseline_menu_24)
-        }
-
-        Priority.LOW -> {
-            containerColor = LowPriorityColor
-            priorityIcon = painterResource(id = R.drawable.ic_baseline_low_priority_24)
-        }
-
-        else -> {
-
-        }
-    }
-
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
@@ -301,7 +279,23 @@ fun StatusLine(
                             ),
                         shape = RoundedCornerShape(4.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = containerColor,
+                            containerColor = when (prioritySortState) {
+                                Priority.HIGH -> {
+                                    HighPriorityColor
+                                }
+
+                                Priority.MEDIUM -> {
+                                    MediumPriorityColor
+                                }
+
+                                Priority.LOW -> {
+                                    LowPriorityColor
+                                }
+
+                                else -> {
+                                    Color.Transparent
+                                }
+                            },
                         ),
                     ) {
                         Row(
@@ -313,7 +307,7 @@ fun StatusLine(
                         ) {
                             Icon(
                                 modifier = Modifier.width(12.dp),
-                                painter = priorityIcon,
+                                imageVector = Icons.Default.Sort,
                                 contentDescription = "arrow"
                             )
                             Spacer(modifier = Modifier.width(SMALL_PADDING))
@@ -423,12 +417,11 @@ fun StatusLine(
                 offset = if (menuItemSwitch == 0) DpOffset(150.dp, 0.dp) else DpOffset(0.dp, 0.dp)
             ) {
                 when (menuItemSwitch) {
-                    0 -> {
-                        PriorityMenuItems { it ->
-                            expanded = false
-                            onPrioritySelected(Action.PRIORITY_CHANGE, it)
-                        }
+                    0 -> PriorityMenuItems { it ->
+                        expanded = false
+                        onPrioritySelected(Action.PRIORITY_CHANGE, it)
                     }
+
                     1 -> StateMenuItems(
                         stateCompleted = uiState.stateCompleted,
                         stateCancelled = uiState.stateCancelled,
@@ -439,6 +432,7 @@ fun StatusLine(
                         onStateSelected = { state ->
                             onStateSelected(state)
                         })
+
                     2 -> PriorityMenuItems(
                         priorityHigh = uiState.priorityHigh,
                         priorityMedium = uiState.priorityMedium,
@@ -533,7 +527,7 @@ fun PreviewStatusLine() {
             onFavoriteClick = { /*TODO*/ },
             onOrderEnabledClick = { /*TODO*/ },
             onDateEnabledClick = { /*TODO*/ },
-            onPrioritySelected = {_, _-> },
+            onPrioritySelected = { _, _ -> },
             onStateSelected = {},
             onRangeAllEnabledClick = {}
         )

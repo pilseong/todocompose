@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -15,19 +15,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
@@ -37,6 +43,7 @@ import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.util.Constants
 
 @Composable
 fun CreateEditNotebookDialog(
@@ -51,6 +58,13 @@ fun CreateEditNotebookDialog(
     onDismissRequest: () -> Unit,
     onOKClick: () -> Unit
 ) {
+
+    var titleState by remember {
+        mutableStateOf(title)
+    }.apply {
+        value = title
+    }
+
     if (visible) {
         CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
             Column(
@@ -86,67 +100,112 @@ fun CreateEditNotebookDialog(
                         .padding(vertical = LARGE_PADDING)
                         .fillMaxWidth()
                 ) {
-                    Card(
+                    TextField(
                         modifier = Modifier
-                            .padding(bottom = LARGE_PADDING)
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        TextField(
-                            modifier = Modifier.fillMaxWidth(),
-                            value = title,
-                            label = {
-                                Text(text = stringResource(id = R.string.new_task_title_placeholder))
-                            },
-                            onValueChange = { onTitleChange(it) },
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = Color.Transparent,
+                            .fillMaxWidth()
+                            .imePadding(),
+                        value = titleState,
+                        label = {
+                            Text(text = stringResource(id = R.string.new_task_title_placeholder))
+                        },
+                        onValueChange = { it ->
+                            if (it.length <= Constants.MAX_TITLE_LENGTH)
+                                titleState = it
+                        },
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                1.dp
+                            ),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                1.dp
                             )
-                        )
-                    }
-                    Card(
-                        modifier = Modifier.padding(bottom = LARGE_PADDING),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-
+                        ),
+                        singleLine = false,
+                        maxLines = 3,
+                        supportingText = {
+                            Text(
+                                text = "${title.length} / ${Constants.MAX_TITLE_LENGTH}",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
+                            )
+                        }
+                    )
+                    Surface(tonalElevation = 1.dp) {
                         PriorityDropDown(
+                            isNew = true,
                             priority = priority,
                             onPrioritySelected = {
                                 onPriorityChange(it)
                             }
                         )
                     }
-                    Row(
+                    Divider(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .height(0.7.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    TextField(
+                        modifier = Modifier
                             .height(160.dp)
-                            .padding(bottom = LARGE_PADDING),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            shape = RoundedCornerShape(4.dp),
-                        ) {
-                            TextField(
-                                label = {
-                                    Text(
-                                        text = stringResource(id = R.string.new_task_description_placeholder)
-                                    )
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent
-                                ),
-                                value = description,
-                                maxLines = 4,
-                                onValueChange = { onDescriptionChange(it) }
+                            .imePadding()
+                            .fillMaxWidth(),
+                        value = description,
+                        label = {
+                            Text(
+                                text = stringResource(id = R.string.new_task_description_placeholder)
+                            )
+                        },
+                        onValueChange = { it ->
+                            if (it.length <= Constants.MAX_CONTENT_LENGTH)
+                                onDescriptionChange(it)
+
+                        },
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                1.dp
+                            ),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                1.dp
+                            )
+                        ),
+                        supportingText = {
+                            Text(
+                                text = "${description.length} / ${Constants.MAX_CONTENT_LENGTH}",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End,
                             )
                         }
-                    }
+                    )
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(160.dp)
+//                            .padding(bottom = LARGE_PADDING),
+//                        horizontalArrangement = Arrangement.SpaceBetween,
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Card(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .fillMaxHeight(),
+//                            shape = RoundedCornerShape(4.dp),
+//                        ) {
+//                            TextField(
+//                                label = {
+//                                    Text(
+//                                        text = stringResource(id = R.string.new_task_description_placeholder)
+//                                    )
+//                                },
+//                                colors = TextFieldDefaults.colors(
+//                                    unfocusedIndicatorColor = Color.Transparent,
+//                                    focusedIndicatorColor = Color.Transparent
+//                                ),
+//                                value = description,
+//                                maxLines = 4,
+//                                onValueChange = { onDescriptionChange(it) }
+//                            )
+//                        }
+//                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -172,7 +231,6 @@ fun CreateEditNotebookDialog(
                         }
                     }
                 }
-
             }
         }
     }

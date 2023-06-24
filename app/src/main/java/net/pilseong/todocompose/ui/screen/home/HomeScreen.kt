@@ -15,9 +15,12 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
+import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
@@ -59,10 +62,11 @@ fun HomeScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(
-                onClick = onClickBottomNavBar,
-                currentDestination = Constants.HOME_SCREEN
-            )
+            if (LocalConfiguration.current.screenHeightDp > 500)
+                BottomNavBar(
+                    onClick = onClickBottomNavBar,
+                    currentDestination = Constants.HOME_SCREEN
+                )
         },
         floatingActionButton = {
             AddMemoFab(
@@ -133,7 +137,7 @@ private fun HomeAppBar(
 }
 
 
-@Preview
+@Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 @Composable
 fun PreviewHomeScreen() {
     MaterialTheme {
@@ -143,7 +147,25 @@ fun PreviewHomeScreen() {
             onSelectNotebook = {},
             onSelectNotebookWithLongClick = {},
             onBackButtonClick = {},
-            notebooks = listOf(),
+            listOf(
+                NotebookWithCount(
+                    id = 1,
+                    title = "My Love Note",
+                    description = "desc1",
+                    priority = Priority.NONE
+                ),
+                NotebookWithCount(
+                    id = 2,
+                    title = "first notebooksss",
+                    description = "desc2",
+                    priority = Priority.NONE
+                ),
+                NotebookWithCount(
+                    id = 3,
+                    title = "test3",
+                    description = "desc3", priority = Priority.NONE
+                )
+            ),
             currentNotebook = NotebookWithCount.instance(),
             selectedNotebookIds = SnapshotStateList(),
             onDeleteSelectedClicked = {},

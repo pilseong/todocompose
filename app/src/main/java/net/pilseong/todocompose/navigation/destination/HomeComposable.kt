@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.navigation.destination
 
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.util.Log
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.collectAsState
@@ -9,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -110,7 +112,11 @@ fun NavGraphBuilder.homeComposable(
         DropdownMenu(
             expanded = sortingOptionDialog.value,
             onDismissRequest = { sortingOptionDialog.value = false },
-            offset = DpOffset(290.dp, (-480).dp)
+            offset = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE)
+                DpOffset(LocalConfiguration.current.screenWidthDp.dp, (-200).dp)
+            else {
+                DpOffset(290.dp, (-480).dp)
+            }
         ) {
             SortMenuItems { option ->
                 Log.i("PHILIP", "sortMenuItem clicked $option")

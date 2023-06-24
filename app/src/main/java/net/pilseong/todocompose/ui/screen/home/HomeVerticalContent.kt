@@ -30,10 +30,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
+import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -123,7 +125,7 @@ fun VerticalContent(
 
         val recentNotebookSpace =
             ((LocalConfiguration.current.screenWidthDp - (2 * 16) - 115 - (2 * 6))
-                    - (3 * 6)) / 2
+                    - (3 * 6)) / 2.0F
         // 자주 사용하는 노트북 섹션
         Row(
             modifier = Modifier
@@ -146,6 +148,7 @@ fun VerticalContent(
                     modifier = Modifier.padding(SMALL_PADDING)
                 ) {
                     CurrentNotebook(
+                        notebookWidth = recentNotebookSpace,
                         onSelectNotebook,
                         onInfoClick,
                         currentNotebook
@@ -160,11 +163,15 @@ fun VerticalContent(
                 color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
-                    modifier = Modifier.padding(SMALL_PADDING)
+                    modifier = Modifier.padding(
+                        start = SMALL_PADDING,
+                        top = SMALL_PADDING,
+                        bottom = SMALL_PADDING
+                    )
                 ) {
                     if (firstRecentNotebook != null)
                         RecentNotebook(
-                            width = recentNotebookSpace,
+                            notebookWidth = recentNotebookSpace,
                             onSelectNotebook,
                             onInfoClick,
                             firstRecentNotebook
@@ -174,7 +181,7 @@ fun VerticalContent(
 
                     if (secondRecentNotebook != null)
                         RecentNotebook(
-                            width = recentNotebookSpace,
+                            notebookWidth = recentNotebookSpace,
                             onSelectNotebook,
                             onInfoClick,
                             secondRecentNotebook
@@ -246,10 +253,16 @@ fun VerticalContent(
                 }
             }
         }
+
+        val notebookWidth =
+            ((LocalConfiguration.current.screenWidthDp) - (2 * XLARGE_PADDING.value) - (4 * SMALL_PADDING.value)) / 3
+        val notebookHeight = notebookWidth * 4 / 3
+        val bookShelfHeight = notebookHeight * 2 + (2 * LARGE_PADDING.value) + SMALL_PADDING.value
         Surface(
             modifier = Modifier
                 .padding(start = XLARGE_PADDING, end = XLARGE_PADDING)
-                .height(340.dp)
+                .height(bookShelfHeight.dp)
+//                .height(340.dp)
                 .fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -260,6 +273,7 @@ fun VerticalContent(
                 BookShelf(
                     notebooks = notebooks,
                     selectedNotebookIds = selectedNotebookIds,
+                    notebookWidth = notebookWidth,
                     noteSortingOption = noteSortingOption,
                     onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
                     onSelectNotebook = onSelectNotebook,
@@ -293,4 +307,41 @@ fun VerticalContent(
             }
         }
     }
+}
+
+
+@Preview
+@Composable
+fun NoteContentVerticalPreview() {
+    NoteContent(
+        listOf(
+            NotebookWithCount(
+                id = 1,
+                title = "My Love Note",
+                description = "desc1",
+                priority = Priority.NONE
+            ),
+            NotebookWithCount(
+                id = 2,
+                title = "first notebooksss",
+                description = "desc2",
+                priority = Priority.NONE
+            ),
+            NotebookWithCount(
+                id = 3,
+                title = "test3",
+                description = "desc3", priority = Priority.NONE
+            )
+        ),
+        onSelectNotebook = {},
+        onSelectNotebookWithLongClick = {},
+        selectedNotebookIds = SnapshotStateList(),
+        onInfoClick = {},
+        currentNotebook = NotebookWithCount.instance(),
+        firstRecentNotebook = NotebookWithCount.instance(),
+        secondRecentNotebook = NotebookWithCount.instance(),
+        onEmptyImageClick = {},
+        onSortMenuClick = {},
+        noteSortingOption = NoteSortingOption.ACCESS_AT
+    )
 }
