@@ -71,7 +71,7 @@ class MemoViewModel @Inject constructor(
      * 화면의 state 를 관리 하는 변수들 선언
      */
 
-// 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
+    // 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
     var sortFavorite by mutableStateOf(false)
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
@@ -119,15 +119,15 @@ class MemoViewModel @Inject constructor(
     }
 
     // 명령어 의 흐름이 다른 경우 별도의 변수를 사용 하였다.
-// 맨 처음 로딩 시에 date store 에서 받아온 값으로 정렬을 하는데
-// 현재 3개의 값을 저장 하고 있다. observer 들은 이전 값에 변동이 없는 경우는 그리지 않는데
-// 맨 처음 에는 저장된 값이 같더 라도 그려 줘야 한다.
+    // 맨 처음 로딩 시에 date store 에서 받아온 값으로 정렬을 하는데
+    // 현재 3개의 값을 저장 하고 있다. observer 들은 이전 값에 변동이 없는 경우는 그리지 않는데
+    // 맨 처음 에는 저장된 값이 같더 라도 그려 줘야 한다.
     var firstFetch = true
 
     // 아래 두 변수는 snack bar 를 그려 줄 때 현재 Action 에 대한 처리를 하는데
-// 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
-// date store 에 저장된 경우는 persist 하고 읽는 것 까지 시간이 걸리기 때문에
-// 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
+    // 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
+    // date store 에 저장된 경우는 persist 하고 읽는 것 까지 시간이 걸리기 때문에
+    // 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
     var snackBarOrderEnabled = false
     var snackBarDateEnabled = false
 
@@ -873,18 +873,6 @@ fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
     createdAt = createdAt,
     updatedAt = updatedAt,
     notebookId = notebookId
-)
-
-fun MemoWithNotebook.toTaskDetails(): TaskDetails = TaskDetails(
-    id = memo.id,
-    title = memo.title,
-    description = memo.description,
-    priority = memo.priority,
-    favorite = memo.favorite,
-    progression = memo.progression,
-    createdAt = memo.createdAt,
-    updatedAt = memo.updatedAt,
-    notebookId = memo.notebookId
 )
 
 fun MemoWithNotebook.toTodoTask(): TodoTask = TodoTask(

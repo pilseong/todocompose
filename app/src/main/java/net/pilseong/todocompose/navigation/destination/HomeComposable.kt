@@ -20,7 +20,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.SortMenuItems
 import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
@@ -50,7 +49,7 @@ fun NavGraphBuilder.homeComposable(
             remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
-        val action = remember { mutableStateOf(NoteAction.ADD) }
+        var action by remember { mutableStateOf(NoteAction.ADD) }
         var indexSelected by remember { mutableIntStateOf(-1) }
 
         when (noteViewModel.uiState) {
@@ -69,7 +68,7 @@ fun NavGraphBuilder.homeComposable(
                         navHostController.navigate(route)
                     },
                     onFabClick = {
-                        action.value = NoteAction.ADD
+                        action = NoteAction.ADD
                         dialogTitle = R.string.note_screen_create_notebook_dialog_title
                         openDialog.value = true
                     },
@@ -90,7 +89,7 @@ fun NavGraphBuilder.homeComposable(
                     },
                     onEditClick = {
                         noteViewModel.setEditProperties(noteViewModel.selectedNotebooks[0])
-                        action.value = NoteAction.EDIT
+                        action = NoteAction.EDIT
                         dialogTitle = R.string.note_screen_edit_notebook_dialog_title
                         openDialog.value = true
                     },
@@ -106,7 +105,6 @@ fun NavGraphBuilder.homeComposable(
 
             }
         }
-
 
 
         DropdownMenu(
@@ -128,30 +126,19 @@ fun NavGraphBuilder.homeComposable(
         CreateEditNotebookDialog(
             dialogTitle = dialogTitle,
             visible = openDialog.value,
-            title = noteViewModel.title.value,
-            description = noteViewModel.description.value,
-            priority = noteViewModel.priority.value,
-            onTitleChange = {
-                noteViewModel.title.value = it
-            },
-            onDescriptionChange = {
-                noteViewModel.description.value = it
-            },
-            onPriorityChange = {
-                noteViewModel.priority.value = it
+            mode = action == NoteAction.ADD,
+            notebookInput = noteViewModel.notebookUserInput.value,
+            onInputChange = { notebook ->
+                noteViewModel.notebookUserInput.value = notebook
             },
             onDismissRequest = {
                 openDialog.value = false
-                noteViewModel.title.value = ""
-                noteViewModel.description.value = ""
-                noteViewModel.priority.value = Priority.NONE
+                noteViewModel.clearNotebookUserInput()
             },
             onOKClick = {
-                noteViewModel.handleActions(action.value)
+                noteViewModel.handleActions(action)
                 openDialog.value = false
-                noteViewModel.title.value = ""
-                noteViewModel.description.value = ""
-                noteViewModel.priority.value = Priority.NONE
+                noteViewModel.clearNotebookUserInput()
             }
         )
 
@@ -163,7 +150,7 @@ fun NavGraphBuilder.homeComposable(
             },
             onEditClick = { id ->
                 noteViewModel.setEditProperties(id)
-                action.value = NoteAction.EDIT
+                action = NoteAction.EDIT
                 dialogTitle = R.string.note_screen_edit_notebook_dialog_title
                 infoDialog.value = false
                 openDialog.value = true

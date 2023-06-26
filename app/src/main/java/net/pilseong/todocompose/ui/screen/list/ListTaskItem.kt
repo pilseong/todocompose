@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -96,6 +97,10 @@ fun TaskItem(
     var stateDialogExpanded by remember { mutableStateOf(false) }
 
     val primaryElevation = MaterialTheme.colorScheme.onPrimaryElevation
+
+    val drawEndEdgeState by remember {
+        mutableStateOf(drawEndEdge)
+    }
     Row(modifier = modifier) {
         Spacer(modifier = Modifier.width(0.dp))
         Box(modifier = Modifier
@@ -105,7 +110,8 @@ fun TaskItem(
                 val borderSize = 1.dp.toPx()
                 val y = size.height// - borderSize / 2
                 // 하나의 일자의 마지막 item 의 경우는 에지를 그린다
-                if (drawEndEdge) {
+                if (drawEndEdgeState) {
+                    Log.i("PHILIP", "Inner line draw")
                     drawLine(
                         color = primaryElevation,
                         start = Offset(0f, y),

@@ -28,8 +28,11 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -103,12 +106,21 @@ fun ListScreen(
         canScroll = {
             selectedItems.isEmpty()
         },
-        state = TopAppBarState(
+        state = rememberTopAppBarState (
             initialContentOffset = 0F,
             initialHeightOffset = 0F,
             initialHeightOffsetLimit = 0F
         )
     )
+
+     val offsetState by remember {
+        derivedStateOf {
+            selectedItems.isNotEmpty()
+        }
+    }
+
+    if (offsetState)
+        scrollBehavior.state.heightOffset = 0F
 
     Log.i("PHILIP", "size of ${tasks.itemCount}")
 

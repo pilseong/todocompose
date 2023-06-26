@@ -23,14 +23,11 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.ui.viewmodel.UiState
 import net.pilseong.todocompose.util.NoteSortingOption
-import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,6 +47,12 @@ class NoteViewModel @Inject constructor(
             description = context.resources.getString(R.string.default_note_description),
         )
     )
+
+    var notebookUserInput = mutableStateOf(NotebookWithCount.instance())
+
+    fun clearNotebookUserInput() {
+        notebookUserInput.value = NotebookWithCount.instance()
+    }
 
     var isLoading = true
 
@@ -92,15 +95,15 @@ class NoteViewModel @Inject constructor(
 
     var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
 
-    val id = mutableStateOf(Int.MIN_VALUE)
-
-    val title = mutableStateOf("")
-
-    val description = mutableStateOf("")
-
-    val priority = mutableStateOf(Priority.NONE)
-
-    private val createdAt = mutableStateOf(ZonedDateTime.now())
+//    val id = mutableStateOf(Int.MIN_VALUE)
+//
+//    val title = mutableStateOf("")
+//
+//    val description = mutableStateOf("")
+//
+//    val priority = mutableStateOf(Priority.NONE)
+//
+//    private val createdAt = mutableStateOf(ZonedDateTime.now())
 
     val currentNotebook = mutableStateOf(NotebookWithCount.instance())
     val firstRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
@@ -112,13 +115,7 @@ class NoteViewModel @Inject constructor(
             notebook.id == targetId
         }
 
-        notebook?.let { it ->
-            id.value = it.id
-            title.value = it.title
-            description.value = it.description
-            priority.value = notebook.priority
-            createdAt.value = notebook.createdAt
-        }
+        notebookUserInput.value = notebook!!.copy()
     }
 
     private fun getNotebooksWithCount(noteSortingOption: NoteSortingOption) {
@@ -142,13 +139,6 @@ class NoteViewModel @Inject constructor(
 
     }
 
-    private suspend fun getNotebooks(userData: UserData) {
-        Log.i("PHILIP", "[NoteViewModel] getNotebooks() called")
-        notebooks.value = notebookRepository.getNotebooks(userData.noteSortingOptionState)
-
-        if (isLoading) isLoading = false
-    }
-
     private fun getCurrentNoteAsFlow(noteId: Int) {
         Log.i(
             "PHILIP",
@@ -170,7 +160,7 @@ class NoteViewModel @Inject constructor(
                     ).collectLatest {
                         Log.i(
                             "PHILIP",
-                            "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with ${it?.id} and currentNote: $currentNotebook"
+                            "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
                         )
                         currentNotebook.value = it
                     }
@@ -333,11 +323,7 @@ class NoteViewModel @Inject constructor(
             NoteAction.ADD -> {
                 viewModelScope.launch {
                     notebookRepository.addNotebook(
-                        Notebook(
-                            title = title.value,
-                            description = description.value,
-                            priority = priority.value
-                        )
+                        notebookUserInput.value.toNotebook()
                     )
                 }
             }
@@ -383,31 +369,10 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun editNotebook() {
-        val userData = (uiState as UiState.Success).userData
         viewModelScope.launch {
             notebookRepository.updateNotebook(
-                Notebook(
-                    id = id.value,
-                    title = title.value,
-                    description = description.value,
-                    priority = priority.value,
-                    createdAt = createdAt.value
-                )
+                notebookUserInput.value.toNotebook()
             )
-
-            val fetched = notebookRepository.getNotebookWithCount(id.value)
-
-            if (userData.notebookIdState == id.value) {
-                currentNotebook.value = fetched
-            }
-
-            if (userData.firstRecentNotebookId == id.value) {
-                firstRecentNotebook.value = fetched
-            }
-
-            if (userData.secondRecentNotebookId == id.value) {
-                secondRecentNotebook.value = fetched
-            }
         }
         selectedNotebooks.clear()
     }
@@ -471,3 +436,12 @@ class NoteViewModel @Inject constructor(
 }
 
 
+fun NotebookWithCount.toNotebook() = Notebook(
+    id = id,
+    title = title,
+    description = description,
+    priority = priority,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    accessedAt = accessedAt
+)

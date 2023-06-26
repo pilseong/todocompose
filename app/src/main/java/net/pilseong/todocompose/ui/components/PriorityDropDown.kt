@@ -49,7 +49,7 @@ fun PriorityDropDown(
         targetValue = if (expanded) 180F else 0F
     )
     val focusManager = LocalFocusManager.current
-    var showInitalValue by remember { mutableStateOf(isNew) }
+    var showInitialValue by remember { mutableStateOf(isNew) }
 
     Row(
         modifier = Modifier
@@ -61,7 +61,7 @@ fun PriorityDropDown(
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (!showInitalValue) {
+        if (!showInitialValue) {
             Canvas(
                 modifier = Modifier
                     .padding(horizontal = LARGE_PADDING)
@@ -113,21 +113,21 @@ fun PriorityDropDown(
                 onClick = {
                     expanded = false
                     onPrioritySelected(Priority.HIGH)
-                    if (showInitalValue) showInitalValue = false
+                    if (showInitialValue) showInitialValue = false
                 })
             DropdownMenuItem(
                 text = { PriorityItem(priority = Priority.MEDIUM) },
                 onClick = {
                     expanded = false
                     onPrioritySelected(Priority.MEDIUM)
-                    if (showInitalValue) showInitalValue = false
+                    if (showInitialValue) showInitialValue = false
                 })
             DropdownMenuItem(
                 text = { PriorityItem(priority = Priority.LOW) },
                 onClick = {
                     expanded = false
                     onPrioritySelected(Priority.LOW)
-                    if (showInitalValue) showInitalValue = false
+                    if (showInitialValue) showInitialValue = false
                 })
         }
     }

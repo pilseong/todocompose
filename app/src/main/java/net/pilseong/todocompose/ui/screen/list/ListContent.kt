@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.ui.screen.list
 
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,9 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -167,21 +167,24 @@ fun LazyItemList(
 
     // lazy Column 의 화면 데이터 사용
     val listState = rememberLazyListState()
-    val date: MutableState<String> = remember { mutableStateOf("") }
-
-    val task = if (tasks.itemCount > listState.firstVisibleItemIndex)
-        tasks.peek(listState.firstVisibleItemIndex) else tasks.peek(tasks.itemCount - 1)
-
-    val currentDate: ZonedDateTime? = if (dateEnabled) {
-        task?.memo?.createdAt
-    } else {
-        task?.memo?.updatedAt
-    }
-
-    date.value = currentDate?.toLocalDate().toString()
-
     if (header) {
-        StatusHeader(currentDate, task?.total)
+        val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+        // 100개의 리스트의 50번째가 firstVisibleItem이었다가 20개 짜리 리스트로 노트를 변경할 경우
+        // index가 리스트보다 많아지는 경우가 일시적으로 발생한다. 예외처리
+        val realIndex =
+            if (headerIndex >= tasks.itemCount) tasks.itemCount -1 else headerIndex
+
+        val timeData = remember(dateEnabled, realIndex) {
+            if (dateEnabled) {
+                tasks.peek(realIndex)?.memo?.createdAt
+            } else {
+                tasks.peek(realIndex)?.memo?.updatedAt
+            }
+        }
+
+        Log.i("PHILIP", "headerIndex: $headerIndex, realIndex $realIndex, itemCount: ${tasks.itemCount}")
+
+        StatusHeader(timeData!!, tasks.peek(realIndex)?.total)
     }
 
     LazyColumn(
@@ -193,12 +196,15 @@ fun LazyItemList(
             key = tasks.itemKey(key = { item -> item.memo.id }),
             contentType = tasks.itemContentType(null)
         ) { index ->
-//            if (header && index != 0) {
+
+            val taskInside = remember(index) { tasks[index]!! }
+
             if (header && index != 0) {
                 TaskItemHeader(dateEnabled, tasks, index)
             }
 
-            val drawEndEdge = remember(dateEnabled, tasks, index) {
+            val drawEndEdge = remember(dateEnabled, index) {
+                Log.i("PHILIP", "calculated")
                 val today: ZonedDateTime?
                 val nextDate: ZonedDateTime?
 
@@ -215,7 +221,7 @@ fun LazyItemList(
                 today?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
             }
 
-            val dismissState = rememberDismissState(
+            @Suppress("UNUSED_EXPRESSION") val dismissState = rememberDismissState(
                 confirmValueChange = {
                     when (it) {
                         DismissValue.Default -> false
@@ -257,20 +263,15 @@ fun LazyItemList(
                 dismissContent = {
                     TaskItem(
                         modifier = Modifier.animateItemPlacement(),
-                        todoTask = tasks[index]!!,
+                        todoTask = taskInside,
                         drawEndEdge = drawEndEdge,
                         toTaskScreen = {
                             toTaskScreen(index)
                         },
-//                        onLongClick = {
-//                            Toast.makeText(context, "long click activated", Toast.LENGTH_SHORT)
-//                                .show()
-//                        },
-//                        onDeselectedClick = {
-//
-//                        },
-                        datetime = if (dateEnabled) tasks[index]!!.memo!!.createdAt
-                        else tasks.peek(index)!!.memo!!.updatedAt,
+                        datetime = remember(dateEnabled) {
+                            if (dateEnabled) taskInside.memo.createdAt
+                            else tasks.peek(index)!!.memo.updatedAt
+                        },
                         // favorite 을 클릭했을 때 화면에만 반영하기 위해서 snapshot의 상태만 변경한다.
                         // list가 이동하는 순간 snapshot이 그려지기 때문에 snapshot을 변경해야 한다.
                         // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
@@ -297,7 +298,7 @@ fun LazyItemList(
 
 @Composable
 private fun StatusHeader(
-    currentDate: ZonedDateTime?,
+    currentDate: ZonedDateTime,
     total: Int?,
 ) {
     Surface(
@@ -313,7 +314,7 @@ private fun StatusHeader(
                 .fillMaxSize()
                 .padding(horizontal = XLARGE_PADDING)
         ) {
-            DateHeader(currentDate!!)
+            DateHeader(currentDate)
             Column(
                 modifier = Modifier.weight(1F),
             ) {
@@ -339,6 +340,7 @@ fun StatusHeaderPreview() {
 
 @Composable
 fun DateHeader(time: ZonedDateTime) {
+    Log.i("PHILIP", "DateHeader redrawn")
     val backColor = if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
         time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
     ) {
@@ -408,17 +410,17 @@ private fun TaskItemHeader(
     tasks: LazyPagingItems<MemoWithNotebook>,
     index: Int
 ) {
-    val currentDate: ZonedDateTime?
-    val prevDate: ZonedDateTime?
-
-    if (dateEnabled) {
-        currentDate = tasks.peek(index)?.memo?.createdAt
-        prevDate = if (index == 0) null
-        else tasks.peek(index - 1)?.memo?.createdAt
-    } else {
-        currentDate = tasks.peek(index)?.memo?.updatedAt
-        prevDate = if (index == 0) null
-        else tasks.peek(index - 1)?.memo?.updatedAt
+    val currentDate = remember(dateEnabled, index) {
+        if (dateEnabled) tasks.peek(index)?.memo?.createdAt else tasks.peek(index)?.memo?.updatedAt
+    }
+    val prevDate = remember(dateEnabled, index) {
+        if (dateEnabled) {
+            if (index == 0) null
+            else tasks.peek(index - 1)?.memo?.createdAt
+        } else {
+            if (index == 0) null
+            else tasks.peek(index - 1)?.memo?.updatedAt
+        }
     }
 
     if (currentDate?.toLocalDate().toString() != prevDate?.toLocalDate().toString()) {

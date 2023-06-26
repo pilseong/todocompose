@@ -71,7 +71,6 @@ fun InfoDialog(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(4.dp))
-//                        .background(MaterialTheme.colorScheme.surface),
                 ) {
                     Row(
                         modifier = Modifier
