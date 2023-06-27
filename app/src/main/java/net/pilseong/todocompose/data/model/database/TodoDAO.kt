@@ -9,6 +9,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.MemoWithNotebook
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import java.time.ZonedDateTime
@@ -278,6 +279,16 @@ abstract class TodoDAO {
                     ZonedDateTime.now()
                 )
             )
+        }
+    }
+
+    @Query("UPDATE todo_table SET progression = :state WHERE id = :taskId")
+    abstract suspend fun updateState(taskId: Int, state: State)
+
+    @Transaction
+    open suspend fun updateStateForMultipleMemos(todosIds: List<Int>, state: State) {
+        todosIds.forEach { id ->
+            updateState(id, state)
         }
     }
 }

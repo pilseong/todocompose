@@ -287,6 +287,12 @@ fun NavGraphBuilder.memoNavGraph(
                 onLongClickApplied = {
                     memoViewModel.appendMultiSelectedItem(it)
                 },
+                onStateSelectedForMultipleItems = { state ->
+                    memoViewModel.handleActions(
+                        action = Action.STATE_CHANGE_MULTIPLE,
+                        state = state
+                    )
+                }
             )
 
             NotebooksPickerDialog(
@@ -344,16 +350,16 @@ fun NavGraphBuilder.memoNavGraph(
                     memoViewModel.selectedItems.clear()
 
                     // 검색바 조절
+                }
+
+                if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
+                    memoViewModel.searchTextString = ""
+                    memoViewModel.handleActions(
+                        Action.SEARCH_RANGE_CHANGE,
+                        searchRangeAll = false
+                    )
                 } else {
-                    if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
-                        memoViewModel.searchTextString = ""
-                        memoViewModel.handleActions(
-                            Action.SEARCH_RANGE_CHANGE,
-                            searchRangeAll = false
-                        )
-                    } else {
-                        memoViewModel.onCloseSearchBar()
-                    }
+                    memoViewModel.onCloseSearchBar()
                 }
             }
 

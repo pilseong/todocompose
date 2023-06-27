@@ -93,7 +93,7 @@
     <string name="bottom_nav_label_settings">설정</string>
     <string name="bottom_nav_label_memo">메모</string>
     <string name="bottom_nav_label_home">홈</string>
-    <string name="note_content_dateformat">yyyy년 LLL dd일 E요일</string>
+    <string name="note_content_dateformat">yyyy년 LLL d일 E요일</string>
     <string name="note_content_today">오늘</string>
     <string name="note_inside_dateformat">yy년MM월dd일</string>
     <string name="default_note_title">기본 노트</string>
@@ -130,4 +130,6 @@
     <string name="note_sort_created_at_label">생성일 기준</string>
     <string name="note_sort_updated_at_label">수정일 기준</string>
     <string name="note_sort_accessed_at_label">사용일 기준</string>
+    <string name="day_of_week_label">E</string>
+    <string name="total_label">전체</string>
 </resources>

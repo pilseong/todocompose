@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -42,7 +41,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoWithNotebook
@@ -82,6 +80,7 @@ fun TaskItem(
         mutableStateOf(selectedItemsIds.contains(todoTask.memo.id))
     }
 
+    // 현재 리스트에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot을 변경하고 있다.
     var favoriteOn by remember { mutableStateOf(todoTask.memo.favorite) }
         .apply {
             value = todoTask.memo.favorite
@@ -102,7 +101,6 @@ fun TaskItem(
         mutableStateOf(drawEndEdge)
     }
     Row(modifier = modifier) {
-        Spacer(modifier = Modifier.width(0.dp))
         Box(modifier = Modifier
             .width(10.dp)
             .height(LARGE_PADDING + componentHeight)
@@ -111,7 +109,6 @@ fun TaskItem(
                 val y = size.height// - borderSize / 2
                 // 하나의 일자의 마지막 item 의 경우는 에지를 그린다
                 if (drawEndEdgeState) {
-                    Log.i("PHILIP", "Inner line draw")
                     drawLine(
                         color = primaryElevation,
                         start = Offset(0f, y),
@@ -293,22 +290,21 @@ fun TaskItem(
                                 )
                             }
                         }
+                        DropdownMenu(
+                            expanded = stateDialogExpanded,
+                            onDismissRequest = { stateDialogExpanded = false },
+                        ) {
+                            StateMenuListItems(
+                                onStateSelected = { state ->
+                                    stateState = state
+                                    onStateSelected(todoTask, state)
+                                    stateDialogExpanded = false
+                                })
+                        }
                     }
                 }
             }
         }
-    }
-    DropdownMenu(
-        expanded = stateDialogExpanded,
-        onDismissRequest = { stateDialogExpanded = false },
-        offset = DpOffset(300.dp, (-20).dp)
-    ) {
-        StateMenuListItems(
-            onStateSelected = { state ->
-                stateState = state
-                onStateSelected(todoTask, state)
-                stateDialogExpanded = false
-            })
     }
 }
 

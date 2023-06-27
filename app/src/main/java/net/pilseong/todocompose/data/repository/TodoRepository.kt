@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.model.database.TodoDAO
 import net.pilseong.todocompose.data.paging.TodoPagingSource
@@ -121,6 +122,12 @@ class TodoRepository @Inject constructor(
     suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
         withContext(Dispatchers.IO) {
             todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
+        }
+    }
+
+    suspend fun updateMultipleMemosWithoutUpdatedAt(tasksIds: List<Int>, state: State) {
+        withContext(Dispatchers.IO) {
+            todoDAO.updateStateForMultipleMemos(tasksIds, state)
         }
     }
 

@@ -27,7 +27,7 @@ data class NotebookWithCount(
 ) {
     companion object {
         fun instance(
-            id: Int = Int.MIN_VALUE,
+            id: Int = 0,
             title: String = "",
             description: String = "",
             priority: Priority = Priority.NONE,

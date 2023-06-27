@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -47,10 +48,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.components.SimpleDateRangePickerSheet
+import net.pilseong.todocompose.ui.components.StateMenuListItems
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -81,19 +84,29 @@ fun ListAppBar(
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean) -> Unit,
+    onStateSelectedForMultipleItems: (State) -> Unit,
 ) {
-//    Log.i("PHILIP", "selectedItems $selectedItemsCount")
+
     if (selectedItemsCount > 0) {
+
         MultiSelectAppbar(
             scrollBehavior = scrollBehavior,
             selectedItemsCount = selectedItemsCount,
             onBackButtonClick = onBackButtonClick,
         ) {
+            var expanded by remember { mutableStateOf(false) }
             MultiSelectAppbarActions(
                 onDeleteTitle = R.string.delete_selected_task_dialog_title,
                 onDeleteDescription = R.string.delete_seleccted_tasks_dialog_confirmation,
                 onDeleteSelectedClicked = onDeleteSelectedClicked,
                 actions = {
+                    CommonAction(
+                        icon = Icons.Default.PlaylistAddCheck,
+                        onClicked = {
+                            expanded = true
+                        },
+                        description = "Move to other box"
+                    )
                     CommonAction(
                         icon = Icons.Default.DriveFileMove,
                         onClicked = onMoveMemoClicked,
@@ -101,44 +114,34 @@ fun ListAppBar(
                     )
                 }
             )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                StateMenuListItems(
+                    onStateSelected = { state ->
+                        onStateSelectedForMultipleItems(state)
+                        expanded = false
+                    })
+            }
         }
     } else {
         when (searchAppBarState) {
             SearchAppBarState.CLOSE -> {
-                if (selectedItemsCount == 0) {
-                    DefaultListAppBar(
-                        scrollBehavior = scrollBehavior,
-                        appbarTitle = appbarTitle,
-                        notebookColor = notebookColor,
-                        onSearchIconClicked = onSearchIconClicked,
-                        onDeleteAllClicked = onDeleteAllClicked,
-                        onDateRangePickerConfirmed = onDateRangePickerConfirmed,
-                        onImportClick = {
-                            onImportClick()
-                        },
-                        onExportClick = onExportClick,
-                        onAppBarTitleClick = onAppBarTitleClick
-                    )
-                } else {
-                    MultiSelectAppbar(
-                        scrollBehavior = scrollBehavior,
-                        selectedItemsCount = selectedItemsCount,
-                        onBackButtonClick = onBackButtonClick,
-                    ) {
-                        MultiSelectAppbarActions(
-                            onDeleteTitle = R.string.delete_selected_task_dialog_title,
-                            onDeleteDescription = R.string.delete_seleccted_tasks_dialog_confirmation,
-                            onDeleteSelectedClicked = onDeleteSelectedClicked,
-                            actions = {
-                                CommonAction(
-                                    icon = Icons.Default.DriveFileMove,
-                                    onClicked = onMoveMemoClicked,
-                                    description = "Move to other box"
-                                )
-                            }
-                        )
-                    }
-                }
+                DefaultListAppBar(
+                    scrollBehavior = scrollBehavior,
+                    appbarTitle = appbarTitle,
+                    notebookColor = notebookColor,
+                    onSearchIconClicked = onSearchIconClicked,
+                    onDeleteAllClicked = onDeleteAllClicked,
+                    onDateRangePickerConfirmed = onDateRangePickerConfirmed,
+                    onImportClick = {
+                        onImportClick()
+                    },
+                    onExportClick = onExportClick,
+                    onAppBarTitleClick = onAppBarTitleClick
+                )
             }
 
             else -> {

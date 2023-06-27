@@ -100,6 +100,7 @@ fun ListScreen(
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickReleased: (Int) -> Unit,
     onLongClickApplied: (Int) -> Unit,
+    onStateSelectedForMultipleItems: (State) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -167,6 +168,7 @@ fun ListScreen(
                 onDateRangePickerConfirmed = onDateRangePickerConfirmed,
                 onExportClick = onExportClick,
                 onSearchRangeAllClicked = onSearchRangeAllClicked,
+                onStateSelectedForMultipleItems = onStateSelectedForMultipleItems,
             )
         },
         bottomBar = {
@@ -341,13 +343,13 @@ private fun ListScreenPreview() {
         onDeleteSelectedClicked = {},
         onMoveMemoClicked = {},
         onStateSelected = {},
-        onStateChange = { TodoTask, State -> },
+        onStateChange = { _, _ -> },
         onImportClick = {},
         onFabClicked = {},
         onDeleteAllClicked = {},
         onExportClick = {},
         onSearchRangeAllClicked = {},
-        onDateRangePickerConfirmed = { a, b -> },
+        onDateRangePickerConfirmed = { _, _ -> },
         onDateRangeCloseClick = {},
         onFavoriteSortClick = {},
         onOrderEnabledClick = {},
@@ -356,7 +358,8 @@ private fun ListScreenPreview() {
         onFavoriteClick = {},
         onLongClickReleased = {},
         onLongClickApplied = {},
-        onSwipeToEdit = { a, todo -> },
+        onSwipeToEdit = { _, _ -> },
+        onStateSelectedForMultipleItems = {},
 
         )
 }

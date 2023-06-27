@@ -32,7 +32,7 @@ fun EmptyNotebook(
     Surface(
         modifier = Modifier
             .width(width.dp)
-            .height(160.dp)
+            .height((width * 4 / 3).dp)
             .padding(end = SMALL_PADDING, bottom = SMALL_PADDING),
         shape = RoundedCornerShape(
             topStart = 0.dp,

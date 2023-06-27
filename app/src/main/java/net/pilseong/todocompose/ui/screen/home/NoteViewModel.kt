@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.ui.viewmodel.UiState
 import net.pilseong.todocompose.util.NoteSortingOption
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -95,16 +97,6 @@ class NoteViewModel @Inject constructor(
 
     var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
 
-//    val id = mutableStateOf(Int.MIN_VALUE)
-//
-//    val title = mutableStateOf("")
-//
-//    val description = mutableStateOf("")
-//
-//    val priority = mutableStateOf(Priority.NONE)
-//
-//    private val createdAt = mutableStateOf(ZonedDateTime.now())
-
     val currentNotebook = mutableStateOf(NotebookWithCount.instance())
     val firstRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
     val secondRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
@@ -133,7 +125,10 @@ class NoteViewModel @Inject constructor(
                 ).collectLatest {
                     Log.i("PHILIP", "[NoteViewModel] getNotebooksWithCount() executed with $it")
                     notebooks.value = it
-                    if (isLoading) isLoading = false
+                    if (isLoading) {
+                        delay(50)
+                        isLoading = false
+                    }
                 }
         }
 
@@ -162,7 +157,9 @@ class NoteViewModel @Inject constructor(
                             "PHILIP",
                             "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
                         )
-                        currentNotebook.value = it
+                        // 현재 노트북을 삭제할 경우, flow를 통해 순간적으로 null을 수신하게 된다.
+                        if (it != null)
+                            currentNotebook.value = it
                     }
             } else {
                 memoRepository.getMemoCount(-1)
@@ -210,11 +207,12 @@ class NoteViewModel @Inject constructor(
                             started = SharingStarted.WhileSubscribed(5000),
                             initialValue = null
                         ).collectLatest {
-                            firstRecentNotebook.value = it
                             Log.i(
                                 "PHILIP",
                                 "[NoteViewModel] getFirstNoteAsFlow() getNotebookWithCountAsFlow execute with ${it?.id} and firstNote ${firstRecentNotebook.value}"
                             )
+                            if (noteId == it?.id)
+                                firstRecentNotebook.value = it
                         }
                 } else {
                     memoRepository.getMemoCount(-1)
@@ -251,7 +249,7 @@ class NoteViewModel @Inject constructor(
     private suspend fun getSecondNoteAsFlow(noteId: Int?) {
         Log.i(
             "PHILIP",
-            "[NoteViewModel] getSecondNote() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
+            "[NoteViewModel] getSecondNoteAsFlow() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
         )
 
         if (secondNoteJob != null) secondNoteJob!!.cancel()
@@ -269,7 +267,8 @@ class NoteViewModel @Inject constructor(
                                 "PHILIP",
                                 "[NoteViewModel] getSecondNoteAsFlow() getNotebookWithCountAsFlow execute with ${it?.id} and secondNote: ${secondRecentNotebook.value}"
                             )
-                            secondRecentNotebook.value = it
+                            if (noteId == it?.id)
+                                secondRecentNotebook.value = it
                         }
                 } else {
                     memoRepository.getMemoCount(-1)
@@ -322,8 +321,13 @@ class NoteViewModel @Inject constructor(
         when (action) {
             NoteAction.ADD -> {
                 viewModelScope.launch {
+                    // 실제 저장할 때 시각으로 저장해야 한다. 추가 이므로 세 시간 모두 현재로 설정
                     notebookRepository.addNotebook(
-                        notebookUserInput.value.toNotebook()
+                        notebookUserInput.value.toNotebook().copy(
+                            createdAt = ZonedDateTime.now(),
+                            updatedAt = ZonedDateTime.now(),
+                            accessedAt = ZonedDateTime.now()
+                        )
                     )
                 }
             }
@@ -333,7 +337,6 @@ class NoteViewModel @Inject constructor(
             }
 
             NoteAction.SELECT_NOTEBOOK -> {
-
                 if (userData.notebookIdState != notebookId) {
                     val noteIdsList = mutableListOf<String>()
                     noteIdsList.add(notebookId.toString())
@@ -344,6 +347,9 @@ class NoteViewModel @Inject constructor(
                     }
 
                     viewModelScope.launch {
+                        // 아래의 delay는 노트화면에서 리스트로 전환될 때 순간적으로 recent가 빠르게 변환되는 것을 지연하기 위한 것이다.
+                        // 현재 flow로 되어 있어 클릭하는 순간 바로 데이터를 받게 되어 제어가 불가능하다.
+                        delay(20)
                         persistNotebookIdState(noteIdsList)
                     }
                 }

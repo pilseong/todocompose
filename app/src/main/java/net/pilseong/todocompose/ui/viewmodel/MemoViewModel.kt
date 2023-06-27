@@ -190,7 +190,7 @@ class MemoViewModel @Inject constructor(
 //                    initialValue = PagingData.empty()
 //                )
                 .cachedIn(viewModelScope)
-                .collect {
+                .collectLatest {
                     Log.i(
                         "PHILIP",
                         "[MemoViewModel] refreshAllTasks how many"
@@ -481,6 +481,10 @@ class MemoViewModel @Inject constructor(
                 updateState(todoTask, state)
             }
 
+            Action.STATE_CHANGE_MULTIPLE -> {
+                updateStateForMultiple(state)
+            }
+
             Action.PRIORITY_FILTER_CHANGE -> {
                 val result = priorityBinaryCalculation(priority)
                 persistPriorityFilterState(result)
@@ -657,6 +661,19 @@ class MemoViewModel @Inject constructor(
             todoRepository.updateTaskWithoutUpdatedAt(todo)
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
             if (sortFavorite) refreshAllTasks()
+        }
+    }
+
+    private fun updateStateForMultiple(state: State) {
+        viewModelScope.launch {
+            Log.i(
+                "PHILIP",
+                "[MemoViewModel] updateStateForMultiple performed with ${selectedItems.toList()} to state $state "
+            )
+
+            todoRepository.updateMultipleMemosWithoutUpdatedAt(selectedItems.toList(), state)
+            selectedItems.clear()
+            refreshAllTasks()
         }
     }
 

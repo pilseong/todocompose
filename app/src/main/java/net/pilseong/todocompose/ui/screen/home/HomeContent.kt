@@ -31,13 +31,11 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -311,28 +309,28 @@ fun NoteContent(
 }
 
 
-@Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
+@Preview//(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 @Composable
 fun NoteContentPreview() {
     NoteContent(
         listOf(
-            NotebookWithCount(
-                id = 1,
-                title = "My Love Note",
-                description = "desc1",
-                priority = Priority.NONE
-            ),
-            NotebookWithCount(
-                id = 2,
-                title = "first notebooksss",
-                description = "desc2",
-                priority = Priority.NONE
-            ),
-            NotebookWithCount(
-                id = 3,
-                title = "test3",
-                description = "desc3", priority = Priority.NONE
-            )
+//            NotebookWithCount(
+//                id = 1,
+//                title = "My Love Note",
+//                description = "desc1",
+//                priority = Priority.NONE
+//            ),
+//            NotebookWithCount(
+//                id = 2,
+//                title = "first notebooksss",
+//                description = "desc2",
+//                priority = Priority.NONE
+//            ),
+//            NotebookWithCount(
+//                id = 3,
+//                title = "test3",
+//                description = "desc3", priority = Priority.NONE
+//            )
         ),
         onSelectNotebook = {},
         onSelectNotebookWithLongClick = {},

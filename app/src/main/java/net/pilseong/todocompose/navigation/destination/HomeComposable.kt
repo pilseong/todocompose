@@ -73,10 +73,10 @@ fun NavGraphBuilder.homeComposable(
                         openDialog.value = true
                     },
                     onSelectNotebook = { id ->
-                        noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = id)
                         scope.launch {
                             navHostController.navigate(Screen.MemoList.route)
                         }
+                        noteViewModel.handleActions(NoteAction.SELECT_NOTEBOOK, notebookId = id)
                     },
                     onSelectNotebookWithLongClick = { id ->
                         noteViewModel.appendMultiSelectedNotebook(id)

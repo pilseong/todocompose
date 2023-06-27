@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -74,6 +76,8 @@ import net.pilseong.todocompose.ui.theme.WEEKEND_COLOR
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @Composable
@@ -172,7 +176,7 @@ fun LazyItemList(
         // 100개의 리스트의 50번째가 firstVisibleItem이었다가 20개 짜리 리스트로 노트를 변경할 경우
         // index가 리스트보다 많아지는 경우가 일시적으로 발생한다. 예외처리
         val realIndex =
-            if (headerIndex >= tasks.itemCount) tasks.itemCount -1 else headerIndex
+            if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
 
         val timeData = remember(dateEnabled, realIndex) {
             if (dateEnabled) {
@@ -182,7 +186,10 @@ fun LazyItemList(
             }
         }
 
-        Log.i("PHILIP", "headerIndex: $headerIndex, realIndex $realIndex, itemCount: ${tasks.itemCount}")
+        Log.i(
+            "PHILIP",
+            "headerIndex: $headerIndex, realIndex $realIndex, itemCount: ${tasks.itemCount}"
+        )
 
         StatusHeader(timeData!!, tasks.peek(realIndex)?.total)
     }
@@ -197,7 +204,8 @@ fun LazyItemList(
             contentType = tasks.itemContentType(null)
         ) { index ->
 
-            val taskInside = remember(index) { tasks[index]!! }
+            // index를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
+            val taskInside = remember(index, tasks[index]!!.toString()) { tasks[index]!! }
 
             if (header && index != 0) {
                 TaskItemHeader(dateEnabled, tasks, index)
@@ -272,8 +280,8 @@ fun LazyItemList(
                             if (dateEnabled) taskInside.memo.createdAt
                             else tasks.peek(index)!!.memo.updatedAt
                         },
-                        // favorite 을 클릭했을 때 화면에만 반영하기 위해서 snapshot의 상태만 변경한다.
-                        // list가 이동하는 순간 snapshot이 그려지기 때문에 snapshot을 변경해야 한다.
+                        // favorite 을 클릭 했을 때 화면에 만 반영 하기 위해서 snapshot 의 상태만 변경 한다.
+                        // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
                         // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
                         // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
                         onFavoriteClick = {
@@ -303,10 +311,10 @@ private fun StatusHeader(
 ) {
     Surface(
         modifier = Modifier
-            .padding(
-                top = LARGE_PADDING,
-                bottom = SMALL_PADDING
-            )
+//            .padding(
+//                top = LARGE_PADDING,
+//                bottom = SMALL_PADDING
+//            )
             .height(IntrinsicSize.Max),
     ) {
         Row(
@@ -319,11 +327,17 @@ private fun StatusHeader(
                 modifier = Modifier.weight(1F),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .padding(bottom = SMALL_PADDING)
+                        .fillMaxSize(),
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.End
                 ) {
-                    Text(text = "Total: $total")
+                    Text(
+                        text = stringResource(id = R.string.total_label) + ": $total",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6F),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
@@ -341,58 +355,87 @@ fun StatusHeaderPreview() {
 @Composable
 fun DateHeader(time: ZonedDateTime) {
     Log.i("PHILIP", "DateHeader redrawn")
-    val backColor = if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
-        time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
-    ) {
-        WEEKEND_COLOR
-    } else {
-        WEEKDAY_COLOR
+    val backColor = remember(time.toEpochSecond()) {
+        if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
+            time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
+        ) {
+            WEEKEND_COLOR
+        } else {
+            WEEKDAY_COLOR
+        }
     }
 
     Row(
+        modifier = Modifier.padding(
+            top = LARGE_PADDING,
+            bottom = SMALL_PADDING
+        ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-            modifier = Modifier.width(42.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = String.format("%02d", time.toLocalDate().dayOfMonth),
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Light
-                ),
-                color = backColor
-            )
-            Text(
-                text = time.toLocalDate().dayOfWeek.toString().take(3),
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Light
-                ),
-                color = backColor
-            )
-        }
-        Spacer(modifier = Modifier.width(14.dp))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = time.toLocalDate().month.toString().lowercase().replaceFirstChar {
-                    it.titlecase()
-                },
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Light
-                ),
-                color = backColor
-            )
-            Text(
-                text = time.toLocalDate().year.toString(),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Light
+        if (Locale.getDefault().language == "ko") {
+            Column(
+//                modifier = Modifier.padding(top = XLARGE_PADDING),
+            ) {
+                Text(
+                    color = Color(
+                        ColorUtils.blendARGB(
+                            backColor.toArgb(),
+                            Color.White.toArgb(),
+                            0.1f
+                        )
+                    ).copy(0.9f),
+                    text = time.toLocalDate().format(
+                        DateTimeFormatter.ofPattern(
+                            stringResource(id = R.string.note_content_dateformat)
+                        )
+                    ),
+                    fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize
                 )
-            )
+            }
+        } else {
+            Column(
+                modifier = Modifier.width(42.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = String.format("%02d", time.toLocalDate().dayOfMonth),
+                    style = TextStyle(
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.Light
+                    ),
+                    color = backColor
+                )
+                Text(
+                    text = time.toLocalDate().dayOfWeek.toString().take(3),
+                    style = TextStyle(
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.Light
+                    ),
+                    color = backColor
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = time.toLocalDate().month.toString().lowercase().replaceFirstChar {
+                        it.titlecase()
+                    },
+                    style = TextStyle(
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.Light
+                    ),
+                    color = backColor
+                )
+                Text(
+                    text = time.toLocalDate().year.toString(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = TextStyle(
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.Light
+                    )
+                )
+            }
         }
     }
 }
