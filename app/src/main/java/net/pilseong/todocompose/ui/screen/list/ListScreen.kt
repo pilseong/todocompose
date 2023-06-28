@@ -123,7 +123,7 @@ fun ListScreen(
     if (offsetState)
         scrollBehavior.state.heightOffset = 0F
 
-    Log.i("PHILIP", "size of ${tasks.itemCount}")
+    Log.d("PHILIP", "size of ${tasks.itemCount}")
 
     /**
      * view model 을 통제 코드 종료

@@ -81,7 +81,7 @@ fun SimpleDateRangePickerSheet(
 
         ModalBottomSheet(
             onDismissRequest = {
-                Log.i("PHILIP", "SimpleDateRangePickerSheet onDismissRequest")
+                Log.d("PHILIP", "SimpleDateRangePickerSheet onDismissRequest")
                 onDismissRequest()
             },
             sheetState = state,
@@ -258,7 +258,7 @@ fun GreetingPreview16() {
         SimpleDateRangePickerSheet(
             datePickerExpanded = true,
             onDismissRequest = {},
-            onConfirmClick = { a, b -> },
+            onConfirmClick = { _, _ -> },
 
             )
     }
@@ -279,7 +279,7 @@ fun PreviewDateRangePickerSample() {
     MaterialTheme {
         CustomDateRangePicker(
             state = dateRangePickerState,
-            onConfirmClick = { a, b -> },
+            onConfirmClick = { _, _ -> },
             onDismissRequest = {}
         )
     }

@@ -20,8 +20,8 @@ class NotebookRepository @Inject constructor(
 //    }
 
     suspend fun getNotebooks(sortingOption: NoteSortingOption): List<NotebookWithCount> {
-        Log.i("PHILIP", "[NotebookRepository] getNotebooks with $sortingOption")
-        var notebooks: List<NotebookWithCount> = emptyList()
+        Log.d("PHILIP", "[NotebookRepository] getNotebooks with $sortingOption")
+        var notebooks: List<NotebookWithCount>
         withContext(Dispatchers.IO) {
             notebooks = notebookDAO.getNotebooksWithCount(sortingOption)
         }
@@ -29,7 +29,7 @@ class NotebookRepository @Inject constructor(
     }
 
     fun getNotebooksAsFlow(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>> {
-        Log.i("PHILIP", "[NotebookRepository] getNotebooksAsFlow with $sortingOption")
+        Log.d("PHILIP", "[NotebookRepository] getNotebooksAsFlow with $sortingOption")
         return notebookDAO.getNotebooksWithCountAsFlow(sortingOption)
     }
 
@@ -66,7 +66,7 @@ class NotebookRepository @Inject constructor(
     }
 
     suspend fun updateAccessTime(id: Int) {
-        Log.i("PHILIP","[NotebookRepository] updateAccessTime $id")
+        Log.d("PHILIP","[NotebookRepository] updateAccessTime $id")
         notebookDAO.updateAccessTime(id)
     }
 }

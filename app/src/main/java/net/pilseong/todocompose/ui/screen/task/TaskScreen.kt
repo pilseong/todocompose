@@ -46,7 +46,7 @@ fun TaskScreen(
     val clipboardMessage = stringResource(id = R.string.viewer_appbar_clipboard_copied_popup)
     val scope = rememberCoroutineScope()
 
-    Log.i(
+    Log.d(
         "PHILIP",
         "[TaskScreen] index is $taskIndex size is ${tasks.itemCount} ${tasks.itemSnapshotList.size}"
     )

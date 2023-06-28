@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.home
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +18,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +42,7 @@ import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.ui.components.SortMenuItems
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -52,7 +59,7 @@ fun VerticalContent(
     currentNotebook: NotebookWithCount,
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,
-    onSortMenuClick: () -> Unit,
+    onSortMenuClick: (NoteSortingOption) -> Unit,
     noteSortingOption: NoteSortingOption,
     notebooks: List<NotebookWithCount>,
     selectedNotebookIds: SnapshotStateList<Int>,
@@ -74,52 +81,45 @@ fun VerticalContent(
                     vertical = LARGE_PADDING
                 ),
             ) {
-
                 // 헤드 타이틀
-                Row(
+                Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.note_screen_recent_notebooks),
-                        color = Color(
-                            ColorUtils.blendARGB(
-                                MaterialTheme.colorScheme.onSurface.toArgb(),
-                                Color.White.toArgb(),
-                                0.2f
-                            )
-                        ).copy(0.9f),
-                        fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
-                        fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                    )
-                }
+                    text = stringResource(id = R.string.note_screen_recent_notebooks),
+                    color = Color(
+                        ColorUtils.blendARGB(
+                            MaterialTheme.colorScheme.onSurface.toArgb(),
+                            Color.White.toArgb(),
+                            0.2f
+                        )
+                    ).copy(0.9f),
+                    fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
+                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                )
 
                 // 오늘 날짜
-                Row(
+                Text(
                     modifier = Modifier
+                        .padding(start = 4.dp)
                         .fillMaxWidth(),
-                ) {
-                    Text(
-                        modifier = Modifier.padding(start = 4.dp),
-                        color = Color(
-                            ColorUtils.blendARGB(
-                                MaterialTheme.colorScheme.onSurface.toArgb(),
-                                Color.White.toArgb(),
-                                0.2f
+                    color = Color(
+                        ColorUtils.blendARGB(
+                            MaterialTheme.colorScheme.onSurface.toArgb(),
+                            Color.White.toArgb(),
+                            0.2f
+                        )
+                    ).copy(0.9f),
+                    text = stringResource(id = R.string.note_content_today) + ": ${
+                        ZonedDateTime.now().toLocalDate().format(
+                            DateTimeFormatter.ofPattern(
+                                stringResource(id = R.string.note_content_dateformat),
+                                Locale.getDefault()
                             )
-                        ).copy(0.9f),
-                        text = stringResource(id = R.string.note_content_today) + ": ${
-                            ZonedDateTime.now().toLocalDate().format(
-                                DateTimeFormatter.ofPattern(
-                                    stringResource(id = R.string.note_content_dateformat),
-                                    Locale.getDefault()
-                                )
-                            )
-                        }",
-                        fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
-                        fontSize = MaterialTheme.typography.titleSmall.fontSize
-                    )
-                }
+                        )
+                    }",
+                    fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize
+                )
             }
         }
 
@@ -196,6 +196,8 @@ fun VerticalContent(
         Surface(
             color = MaterialTheme.colorScheme.surface
         ) {
+            var sortingOptionDialog by remember { mutableStateOf(false) }
+
             Row(
                 modifier = Modifier
                     .padding(XLARGE_PADDING)
@@ -216,11 +218,13 @@ fun VerticalContent(
                     fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
                     fontSize = MaterialTheme.typography.headlineSmall.fontSize
                 )
+
+                // sort 순서 선택
                 Card(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .clickable {
-                            onSortMenuClick()
+                            sortingOptionDialog = !sortingOptionDialog
                         },
                     border =
                     BorderStroke(
@@ -249,6 +253,16 @@ fun VerticalContent(
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             overflow = TextOverflow.Ellipsis
                         )
+                    }
+                    DropdownMenu(
+                        expanded = sortingOptionDialog,
+                        onDismissRequest = { sortingOptionDialog = false },
+                    ) {
+                        SortMenuItems { option ->
+                            Log.d("PHILIP", "sortMenuItem clicked $option")
+                            onSortMenuClick(option)
+                            sortingOptionDialog = false
+                        }
                     }
                 }
             }

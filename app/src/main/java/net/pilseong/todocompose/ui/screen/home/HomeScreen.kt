@@ -46,7 +46,7 @@ fun HomeScreen(
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
     onInfoClick: (Int) -> Unit,
-    onSortMenuClick: () -> Unit,
+    onSortMenuClick: (NoteSortingOption) -> Unit,
 ) {
     val scrollBehavior = exitUntilCollapsedScrollBehavior()
 

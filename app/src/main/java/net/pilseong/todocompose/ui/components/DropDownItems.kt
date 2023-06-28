@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
@@ -280,84 +279,28 @@ fun StateMenuItems(
     stateNone: Boolean = true,
     onStateSelected: (State) -> Unit
 ) {
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.COMPLETED,
-                enabled = stateCompleted,
-                text = stringResource(id = State.COMPLETED.label),
-                onclick = {
-                    onStateSelected(State.COMPLETED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.COMPLETED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.CANCELLED,
-                enabled = stateCancelled,
-                text = stringResource(id = State.CANCELLED.label),
-                onclick = {
-                    onStateSelected(State.CANCELLED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.COMPLETED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.ACTIVE,
-                enabled = stateActive,
-                text = stringResource(id = State.ACTIVE.label),
-                onclick = {
-                    onStateSelected(State.ACTIVE)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.ACTIVE)
-        })
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.SUSPENDED,
-                enabled = stateSuspended,
-                text = stringResource(id = State.SUSPENDED.label),
-                onclick = {
-                    onStateSelected(State.SUSPENDED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.SUSPENDED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.WAITING,
-                enabled = stateWaiting,
-                text = stringResource(id = State.WAITING.label),
-                onclick = {
-                    onStateSelected(State.WAITING)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.WAITING)
-        })
-    DropdownMenuItem(
-        text = {
-            StateItem(state = State.NONE,
-                enabled = stateNone,
-                text = stringResource(id = State.NONE.label),
-                onclick = {
-                    onStateSelected(State.NONE)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.NONE)
-        })
+    State.values().reversed().forEach { state ->
+        DropdownMenuItem(
+            text = {
+                StateItem(state = state,
+                    enabled = when (state) {
+                        State.NONE -> stateNone
+                        State.WAITING -> stateWaiting
+                        State.SUSPENDED -> stateSuspended
+                        State.ACTIVE -> stateActive
+                        State.CANCELLED -> stateCancelled
+                        State.COMPLETED -> stateCompleted
+                    },
+                    text = stringResource(id = state.label),
+                    onclick = {
+                        onStateSelected(state)
+                    }
+                )
+            },
+            onClick = {
+                onStateSelected(state)
+            })
+    }
 }
 
 @Composable
@@ -424,102 +367,15 @@ fun PriorityMenuItems(
 
 
 @Composable
-fun StateMenuListItems(
-    onStateSelected: (State) -> Unit
-) {
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.COMPLETED,
-                onclick = {
-                    onStateSelected(State.COMPLETED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.COMPLETED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.CANCELLED,
-                onclick = {
-                    onStateSelected(State.CANCELLED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.CANCELLED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.ACTIVE,
-                onclick = {
-                    onStateSelected(State.ACTIVE)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.ACTIVE)
-        })
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.SUSPENDED,
-                onclick = {
-                    onStateSelected(State.SUSPENDED)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.SUSPENDED)
-        })
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.WAITING,
-                onclick = {
-                    onStateSelected(State.WAITING)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.WAITING)
-        })
-    DropdownMenuItem(
-        text = {
-            StateListItem(state = State.NONE,
-                onclick = {
-                    onStateSelected(State.NONE)
-                }
-            )
-        },
-        onClick = {
-            onStateSelected(State.NONE)
-        })
-}
-
-
-@Composable
 fun StateListItem(
     state: State,
-    onclick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.clickable {
-            onclick()
-        },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-//                modifier = Modifier.padding(start = LARGE_PADDING),
-                text = stringResource(id = state.label),
-                style = MaterialTheme.typography.labelMedium,
-                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
+    Text(
+        text = stringResource(id = state.label),
+        style = MaterialTheme.typography.labelMedium,
+        fontSize = MaterialTheme.typography.labelMedium.fontSize,
+        color = MaterialTheme.colorScheme.onSurface
+    )
 }
 
 @Composable
@@ -527,6 +383,5 @@ fun StateListItem(
 fun StateListItemPreview() {
     StateListItem(
         state = State.COMPLETED,
-        onclick = {}
     )
 }

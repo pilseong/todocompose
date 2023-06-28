@@ -97,7 +97,7 @@ fun RecentNotebook(
                                 Text(
 //                                    modifier = Modifier.padding(horizontal = 2.dp),
                                     text = stringResource(id = R.string.note_screen_recent_notebooks_label),
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = Color.Black.copy(alpha = 0.7f),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
                                 Column(

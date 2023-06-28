@@ -111,7 +111,7 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun getNotebooksWithCount(noteSortingOption: NoteSortingOption) {
-        Log.i("PHILIP", "[NoteViewModel] getNotebooksWithCount() called")
+        Log.d("PHILIP", "[NoteViewModel] getNotebooksWithCount() called")
         if (notebooksJob != null) {
             notebooksJob!!.cancel()
         }
@@ -123,7 +123,7 @@ class NoteViewModel @Inject constructor(
                     started = SharingStarted.WhileSubscribed(5000),
                     initialValue = emptyList()
                 ).collectLatest {
-                    Log.i("PHILIP", "[NoteViewModel] getNotebooksWithCount() executed with $it")
+                    Log.d("PHILIP", "[NoteViewModel] getNotebooksWithCount() executed with $it")
                     notebooks.value = it
                     if (isLoading) {
                         delay(50)
@@ -135,7 +135,7 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun getCurrentNoteAsFlow(noteId: Int) {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
         )
@@ -153,7 +153,7 @@ class NoteViewModel @Inject constructor(
                         started = SharingStarted.WhileSubscribed(5000),
                         initialValue = NotebookWithCount.instance()
                     ).collectLatest {
-                        Log.i(
+                        Log.d(
                             "PHILIP",
                             "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
                         )
@@ -168,7 +168,7 @@ class NoteViewModel @Inject constructor(
                         started = SharingStarted.WhileSubscribed(),
                         initialValue = DefaultNoteMemoCount()
                     ).collectLatest {
-                        Log.i(
+                        Log.d(
                             "PHILIP",
                             "[NoteViewModel] getCurrentNoteAsFlow() getMemoCount execute and currentNote: DefaultNoteMemoCount $it"
                         )
@@ -191,7 +191,7 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun getFirstNoteAsFlow(noteId: Int?) {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[NoteViewModel] getFirstNote() start observing with $noteId and firstNote ${firstRecentNotebook.value}"
         )
@@ -207,7 +207,7 @@ class NoteViewModel @Inject constructor(
                             started = SharingStarted.WhileSubscribed(5000),
                             initialValue = null
                         ).collectLatest {
-                            Log.i(
+                            Log.d(
                                 "PHILIP",
                                 "[NoteViewModel] getFirstNoteAsFlow() getNotebookWithCountAsFlow execute with ${it?.id} and firstNote ${firstRecentNotebook.value}"
                             )
@@ -221,7 +221,7 @@ class NoteViewModel @Inject constructor(
                             started = SharingStarted.WhileSubscribed(),
                             initialValue = DefaultNoteMemoCount()
                         ).collectLatest {
-                            Log.i(
+                            Log.d(
                                 "PHILIP",
                                 "[NoteViewModel] getFirstNoteAsFlow() getMemoCount execute and DefaultNoteMemoCount $it"
                             )
@@ -247,7 +247,7 @@ class NoteViewModel @Inject constructor(
     }
 
     private suspend fun getSecondNoteAsFlow(noteId: Int?) {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[NoteViewModel] getSecondNoteAsFlow() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
         )
@@ -263,7 +263,7 @@ class NoteViewModel @Inject constructor(
                             started = SharingStarted.WhileSubscribed(5000),
                             initialValue = null
                         ).collectLatest {
-                            Log.i(
+                            Log.d(
                                 "PHILIP",
                                 "[NoteViewModel] getSecondNoteAsFlow() getNotebookWithCountAsFlow execute with ${it?.id} and secondNote: ${secondRecentNotebook.value}"
                             )
@@ -277,7 +277,7 @@ class NoteViewModel @Inject constructor(
                             started = SharingStarted.WhileSubscribed(),
                             initialValue = DefaultNoteMemoCount()
                         ).collectLatest {
-                            Log.i(
+                            Log.d(
                                 "PHILIP",
                                 "[NoteViewModel] getSecondNoteAsFlow() getMemoCount execute and DefaultNoteMemoCount $it"
                             )
@@ -311,7 +311,7 @@ class NoteViewModel @Inject constructor(
         noteSortingOption: NoteSortingOption = NoteSortingOption.ACCESS_AT,
         notebookId: Int = -1
     ) {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[NoteViewModel] handleActions performed with $action, notebookId $notebookId"
         )
@@ -386,7 +386,7 @@ class NoteViewModel @Inject constructor(
 
     private fun persistNotebookIdState(noteIds: List<String>) {
         viewModelScope.launch {
-            Log.i("PHILIP", "[NoteViewModel] persistNotebookIdState $dataStoreRepository")
+            Log.d("PHILIP", "[NoteViewModel] persistNotebookIdState $dataStoreRepository")
             dataStoreRepository.persistRecentNoteIds(noteIds)
         }
     }
@@ -404,7 +404,7 @@ class NoteViewModel @Inject constructor(
 
 
     private fun observeUiState() {
-        Log.i("PHILIP", "[NoteViewModel] observeUiState() called")
+        Log.d("PHILIP", "[NoteViewModel] observeUiState() called")
         viewModelScope.launch {
             uiStateFlow
                 .stateIn(
@@ -413,7 +413,7 @@ class NoteViewModel @Inject constructor(
                     initialValue = UiState.Loading
                 )
                 .collect {
-                    Log.i("PHILIP", "[NoteViewModel] observeUiState() executed with $it")
+                    Log.d("PHILIP", "[NoteViewModel] observeUiState() executed with $it")
                     when (it) {
                         is UiState.Success -> {
                             uiState = it
@@ -437,7 +437,7 @@ class NoteViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.i("PHILIP", "[NoteViewModel] onCleared called")
+        Log.d("PHILIP", "[NoteViewModel] onCleared called")
     }
 }
 

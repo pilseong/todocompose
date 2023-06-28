@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -11,15 +12,19 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,33 +33,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.ui.components.StateMenuListItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
-import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
-import net.pilseong.todocompose.ui.theme.LowPriorityColor
-import net.pilseong.todocompose.ui.theme.MediumPriorityColor
-import net.pilseong.todocompose.ui.theme.NonePriorityColor
+import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.onPrimaryElevation
@@ -76,19 +82,22 @@ fun TaskItem(
     selectedItemsIds: SnapshotStateList<Int>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
+
+    val todoInside by rememberUpdatedState(todoTask)
+
     val selected = remember(selectedItemsIds.size) {
-        mutableStateOf(selectedItemsIds.contains(todoTask.memo.id))
+        mutableStateOf(selectedItemsIds.contains(todoInside.memo.id))
     }
 
-    // 현재 리스트에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot을 변경하고 있다.
-    var favoriteOn by remember { mutableStateOf(todoTask.memo.favorite) }
+    // 현재 리스트 에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot을 변경하고 있다.
+    var favoriteOn by remember { mutableStateOf(todoInside.memo.favorite) }
         .apply {
-            value = todoTask.memo.favorite
+            value = todoInside.memo.favorite
         }
 
-    var stateState by remember { mutableStateOf(todoTask.memo.progression) }
+    var stateState by remember { mutableStateOf(todoInside.memo.progression) }
         .apply {
-            value = todoTask.memo.progression
+            value = todoInside.memo.progression
         }
 
     val localDensity = LocalDensity.current
@@ -100,7 +109,9 @@ fun TaskItem(
     val drawEndEdgeState by remember {
         mutableStateOf(drawEndEdge)
     }
+
     Row(modifier = modifier) {
+        // item 을 감싸는 라인을 그려 준다
         Box(modifier = Modifier
             .width(10.dp)
             .height(LARGE_PADDING + componentHeight)
@@ -125,22 +136,22 @@ fun TaskItem(
         Spacer(modifier = Modifier.width(10.dp))
         Surface(
             modifier = Modifier
-                .onGloballyPositioned {
+                .onGloballyPositioned { layoutPosition ->
                     componentHeight = with(localDensity) {
-                        it.size.height.toDp()
+                        layoutPosition.size.height.toDp()
                     }
                 }
                 .combinedClickable(
                     onClick = {
                         if (selectedItemsIds.size > 0) {
-                            onLongClickApplied(todoTask.memo.id)
+                            onLongClickApplied(todoInside.memo.id)
                         } else {
-                            toTaskScreen(todoTask.memo.id)
+                            toTaskScreen(todoInside.memo.id)
                         }
                     },
                     onLongClick = {
                         selected.value = !selected.value
-                        onLongClickApplied(todoTask.memo.id)
+                        onLongClickApplied(todoInside.memo.id)
                     }
                 ),
             shape = RoundedCornerShape(4.dp),
@@ -149,105 +160,100 @@ fun TaskItem(
             color = if (selected.value) MaterialTheme.colorScheme.primaryContainer
             else if (stateState == State.NONE) MaterialTheme.colorScheme.surface
             else stateState.color.copy(alpha = 0.5F)
-//            else MaterialTheme.colorScheme.surface,
         ) {
-            val tintColor = when (todoTask.memo.priority) {
-                Priority.HIGH -> HighPriorityColor
-                Priority.MEDIUM -> MediumPriorityColor
-                Priority.LOW -> LowPriorityColor
-                Priority.NONE -> NonePriorityColor
-            }
             Row(
                 modifier = Modifier
                     .padding(vertical = LARGE_PADDING)
                     .fillMaxWidth()
                     .height(50.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = CenterVertically
             ) {
+                // 시간 + 중요성
                 Column(
                     modifier = Modifier
-                        .weight(2f)
+                        .weight(2 / 12f)
                         .fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .weight(1F)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier,
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                text = datetime.toLocalTime()
-                                    .format(DateTimeFormatter.ofPattern("HH:mm"))
-                                //                            text = "${datetime.month.name} ${datetime.dayOfMonth}"
+                    Text(
+                        modifier = Modifier
+                            .weight(6 / 12F)
+                            .fillMaxSize()
+                            .wrapContentHeight(CenterVertically),
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        textAlign = TextAlign.Center,
+                        text = datetime.toLocalTime()
+                            .format(DateTimeFormatter.ofPattern("HH:mm")),
+                        color = Color(
+                            ColorUtils.blendARGB(
+                                MaterialTheme.colorScheme.onSurface.toArgb(),
+                                Color.White.toArgb(),
+                                0.1f
                             )
-                        }
-                        Icon(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = {
-                                        if (selected.value) {
-                                            selected.value = false
-                                            onLongClickReleased(todoTask.memo.id)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        selected.value = !selected.value
-                                        onLongClickApplied(todoTask.memo.id)
+                        ).copy(0.9f),
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .weight(6 / 12F)
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    if (selected.value) {
+                                        selected.value = false
+                                        onLongClickReleased(todoInside.memo.id)
                                     }
-                                ),
-//                                .clickable(enabled = selected.value) {
-//                                    selected.value = false
-//                                    onLongClickReleased(todoTask.id)
-//                                },
-                            painter = if (selected.value)
-                                painterResource(id = R.drawable.ic_baseline_check_circle_24)
-                            else
-                                painterResource(id = R.drawable.ic_baseline_circle_24),
-                            contentDescription = if (selected.value) "Checked Circle" else "Circle",
-                            tint = if (selected.value) MaterialTheme.colorScheme.primary else tintColor
-                        )
-                    }
+                                },
+                                onLongClick = {
+                                    selected.value = !selected.value
+                                    onLongClickApplied(todoInside.memo.id)
+                                }
+                            ),
+                        painter = if (selected.value)
+                            painterResource(id = R.drawable.ic_baseline_check_circle_24)
+                        else
+                            painterResource(id = R.drawable.ic_baseline_circle_24),
+                        contentDescription = if (selected.value) "Checked Circle" else "Circle",
+                        tint = if (selected.value) MaterialTheme.colorScheme.primary else todoInside.memo.priority.color
+                    )
                 }
+
+                //  제목 내용
                 Column(
                     modifier = Modifier
-                        .weight(10f),
+                        .weight(7 / 12f),
                 ) {
                     Text(
-                        text = todoTask.memo.title,
+                        text = todoInside.memo.title,
                         color = MaterialTheme.colorScheme.taskItemContentColor,
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1,
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = todoTask.memo.description,
+                        text = todoInside.memo.description,
                         color = MaterialTheme.colorScheme.taskItemContentColor,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                // favorite and state
                 Column(
                     modifier = Modifier
                         .padding(PaddingValues(end = SMALL_PADDING))
-                        .fillMaxHeight()
-                        .weight(3f),
+                        .weight(3 / 12f)
+                        .fillMaxHeight(),
                     verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Row(
                         modifier = Modifier
-                            .weight(1F)
+                            .weight(6 / 12F)
                             .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
@@ -265,39 +271,55 @@ fun TaskItem(
                     }
                     Row(
                         modifier = Modifier
-                            .weight(1F)
-                            .fillMaxWidth()
-                            .clickable {
-                                stateDialogExpanded = !stateDialogExpanded
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                            .weight(6 / 12F)
+                            .fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
+                        Surface(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .clickable {
+                                    stateDialogExpanded = !stateDialogExpanded
+                                },
                             shape = RoundedCornerShape(4.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    modifier = Modifier.padding(vertical = 2.dp),
-                                    text = stringResource(id = stateState.label),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                )
-                            }
+                            Text(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                text = stringResource(id = stateState.label),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            )
                         }
-                        DropdownMenu(
-                            expanded = stateDialogExpanded,
-                            onDismissRequest = { stateDialogExpanded = false },
-                        ) {
-                            StateMenuListItems(
-                                onStateSelected = { state ->
+                    }
+                    // 상태를 선택할 수 있는 DropDownMenu
+                    DropdownMenu(
+                        expanded = stateDialogExpanded,
+                        onDismissRequest = { stateDialogExpanded = false },
+                    ) {
+                        State.values().reversed().forEach { state ->
+                            DropdownMenuItem(
+                                leadingIcon = {
+                                    Canvas(
+                                        modifier = Modifier
+                                            .offset(0.dp, 0.8.dp)
+                                            .size(PRIORITY_INDICATOR_SIZE)
+                                    ) {
+                                        drawCircle(color = state.color)
+                                    }
+                                },
+                                text = {
+                                    Text(
+                                        text = stringResource(id = state.label),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                onClick = {
                                     stateState = state
-                                    onStateSelected(todoTask, state)
+                                    onStateSelected(todoInside, state)
                                     stateDialogExpanded = false
                                 })
                         }
@@ -320,7 +342,7 @@ fun TaskItemPreview() {
                     "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                     Priority.HIGH,
                     notebookId = -1,
-                    progression = State.SUSPENDED
+                    progression = State.COMPLETED
                 ),
                 notebook = Notebook.instance(),
                 total = 1,

@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Priority
@@ -143,11 +142,11 @@ fun StatusLine(
                 }
 
                 item {
+                    var priorityMenuExpanded by remember { mutableStateOf(false) }
                     Card(
                         modifier = Modifier
                             .clickable {
-                                menuItemSwitch = 2
-                                expanded = true
+                                priorityMenuExpanded = true
                             },
                         border =
                         BorderStroke(
@@ -177,16 +176,30 @@ fun StatusLine(
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }
+                        DropdownMenu(
+                            expanded = priorityMenuExpanded,
+                            onDismissRequest = { priorityMenuExpanded = false },
+                        ) {
+                            PriorityMenuItems(
+                                priorityHigh = uiState.priorityHigh,
+                                priorityMedium = uiState.priorityMedium,
+                                priorityLow = uiState.priorityLow,
+                                priorityNone = uiState.priorityNone,
+                                onPrioritySelected = { priority ->
+                                    onPrioritySelected(Action.PRIORITY_FILTER_CHANGE, priority)
+                                }
+                            )
+                        }
                     }
                 }
 
 
                 item {
+                    var stateMenuExpanded by remember { mutableStateOf(false) }
                     Card(
                         modifier = Modifier
                             .clickable {
-                                menuItemSwitch = 1
-                                expanded = true
+                                stateMenuExpanded = true
                             },
                         border =
                         BorderStroke(
@@ -216,7 +229,23 @@ fun StatusLine(
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }
+                        DropdownMenu(
+                            expanded = stateMenuExpanded,
+                            onDismissRequest = { stateMenuExpanded = false },
+                        ) {
+                            StateMenuItems(
+                                stateCompleted = uiState.stateCompleted,
+                                stateCancelled = uiState.stateCancelled,
+                                stateActive = uiState.stateActive,
+                                stateSuspended = uiState.stateSuspended,
+                                stateWaiting = uiState.stateWaiting,
+                                stateNone = uiState.stateNone,
+                                onStateSelected = { state ->
+                                    onStateSelected(state)
+                                })
+                        }
                     }
+
                 }
 
                 item {
@@ -264,11 +293,11 @@ fun StatusLine(
 
                 // 우선 순위 설정
                 item {
+                    var priortySortMemuExpanded by remember { mutableStateOf(false) }
                     Card(
                         modifier = Modifier
                             .clickable {
-                                menuItemSwitch = 0
-                                expanded = true
+                                priortySortMemuExpanded = true
                             },
                         border = if (prioritySortState != Priority.NONE)
                             BorderStroke(color = Color.Transparent, width = 0.dp)
@@ -319,7 +348,17 @@ fun StatusLine(
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                             )
                         }
+                        DropdownMenu(
+                            expanded = priortySortMemuExpanded,
+                            onDismissRequest = { priortySortMemuExpanded = false },
+                        ) {
+                            PriorityMenuItems { it ->
+                                priortySortMemuExpanded = false
+                                onPrioritySelected(Action.PRIORITY_CHANGE, it)
+                            }
+                        }
                     }
+
                 }
 
                 item {
@@ -411,39 +450,7 @@ fun StatusLine(
                 }
             }
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                offset = if (menuItemSwitch == 0) DpOffset(150.dp, 0.dp) else DpOffset(0.dp, 0.dp)
-            ) {
-                when (menuItemSwitch) {
-                    0 -> PriorityMenuItems { it ->
-                        expanded = false
-                        onPrioritySelected(Action.PRIORITY_CHANGE, it)
-                    }
 
-                    1 -> StateMenuItems(
-                        stateCompleted = uiState.stateCompleted,
-                        stateCancelled = uiState.stateCancelled,
-                        stateActive = uiState.stateActive,
-                        stateSuspended = uiState.stateSuspended,
-                        stateWaiting = uiState.stateWaiting,
-                        stateNone = uiState.stateNone,
-                        onStateSelected = { state ->
-                            onStateSelected(state)
-                        })
-
-                    2 -> PriorityMenuItems(
-                        priorityHigh = uiState.priorityHigh,
-                        priorityMedium = uiState.priorityMedium,
-                        priorityLow = uiState.priorityLow,
-                        priorityNone = uiState.priorityNone,
-                        onPrioritySelected = { priority ->
-                            onPrioritySelected(Action.PRIORITY_FILTER_CHANGE, priority)
-                        }
-                    )
-                }
-            }
             // 날짜 검색 부분 표출
             if (startDate != null || endDate != null) {
                 Row(

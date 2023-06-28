@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("PHILIP", "[MainActivity] onCreate called")
+        Log.d("PHILIP", "[MainActivity] onCreate called")
 
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
         val splashScreen = installSplashScreen()
@@ -49,28 +49,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        Log.i("PHILIP", "[MainActivity]onPause is called")
+        Log.d("PHILIP", "[MainActivity]onPause is called")
 
     }
 
     override fun onStop() {
         super.onStop()
-        Log.i("PHILIP", "[MainActivity]onStop is called")
+        Log.d("PHILIP", "[MainActivity]onStop is called")
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.i("PHILIP", "[MainActivity]onRestart is called")
+        Log.d("PHILIP", "[MainActivity]onRestart is called")
     }
 
 
     override fun onResume() {
         super.onResume()
-        Log.i("PHILIP", "[MainActivity]onResume is called")
+        Log.d("PHILIP", "[MainActivity]onResume is called")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i("PHILIP", "[MainActivity]onDestory is called")
+        Log.d("PHILIP", "[MainActivity]onDestory is called")
     }
 }

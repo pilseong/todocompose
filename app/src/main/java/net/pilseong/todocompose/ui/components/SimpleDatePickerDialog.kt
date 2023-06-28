@@ -55,12 +55,12 @@ fun SimpleDatePickerDialog(
                 }
             },
             confirmButton = {
-                Log.i("PHILIP", "start ${dateRangePickerState.selectedStartDateMillis}")
-                Log.i("PHILIP", "end ${dateRangePickerState.selectedEndDateMillis}")
+                Log.d("PHILIP", "start ${dateRangePickerState.selectedStartDateMillis}")
+                Log.d("PHILIP", "end ${dateRangePickerState.selectedEndDateMillis}")
                 Button(
                     onClick = {
-//                        Log.i("PHILIP", "${dateRangePickerState.selectedStartDateMillis}")
-//                        Log.i("PHILIP", "${dateRangePickerState.selectedEndDateMillis}")
+//                        Log.d("PHILIP", "${dateRangePickerState.selectedStartDateMillis}")
+//                        Log.d("PHILIP", "${dateRangePickerState.selectedEndDateMillis}")
 //                        if (dateRangePickerState.selectedStartDateMillis != null &&
 //                            dateRangePickerState.selectedEndDateMillis != null
 //                        ) {
@@ -119,7 +119,7 @@ fun PreviewSimpleDatePickerDialog() {
             enabled = true,
             onDismiss = { /*TODO*/ },
             onConfirmClick = { a, b ->
-                Log.i("test", "test")
+                Log.d("test", "test")
             })
     }
 }

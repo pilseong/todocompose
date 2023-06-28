@@ -106,7 +106,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             delay(100)
             index++
-            Log.i("PHILIP", "[MemoViewModel] incrementIndex $index")
+            Log.d("PHILIP", "[MemoViewModel] incrementIndex $index")
         }
     }
 
@@ -114,7 +114,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             delay(300)
             index--
-            Log.i("PHILIP", "[MemoViewModel] decrementIndex $index")
+            Log.d("PHILIP", "[MemoViewModel] decrementIndex $index")
         }
     }
 
@@ -159,7 +159,7 @@ class MemoViewModel @Inject constructor(
     }
 
     fun refreshAllTasks() {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[MemoViewModel] refreshAllTasks condition with ${uiState.dateOrderState}, notebook_id: $uiState.notebookIdState"
         )
@@ -191,7 +191,7 @@ class MemoViewModel @Inject constructor(
 //                )
                 .cachedIn(viewModelScope)
                 .collectLatest {
-                    Log.i(
+                    Log.d(
                         "PHILIP",
                         "[MemoViewModel] refreshAllTasks how many"
                     )
@@ -275,7 +275,7 @@ class MemoViewModel @Inject constructor(
 
     fun updateAction(action: Action) {
         this.action = action
-        Log.i("PHILIP", "[MemoViewModel] updateAction to ${action.name}")
+        Log.d("PHILIP", "[MemoViewModel] updateAction to ${action.name}")
     }
 
     private fun updateActionPerformed() {
@@ -310,7 +310,7 @@ class MemoViewModel @Inject constructor(
         state: State = State.NONE,
         searchRangeAll: Boolean = false,
     ) {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[MemoViewModel] handleActions performed with $action"
         )
@@ -377,7 +377,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.SORT_ORDER_CHANGE -> {
-                Log.i(
+                Log.d(
                     "PHILIP",
                     "[MemoViewModel] handleActions performed with $uiState.dateOrderState, $sortOrderEnabled"
                 )
@@ -418,7 +418,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.SORT_DATE_CHANGE -> {
-                Log.i(
+                Log.d(
                     "PHILIP",
                     "[MemoViewModel] handleActions performed with ${uiState.dateOrderState}, $sortDateEnabled"
                 )
@@ -594,7 +594,7 @@ class MemoViewModel @Inject constructor(
     private fun addTask() {
         savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
         viewModelScope.launch {
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[MemoViewModel] addTask performed with $taskUiState"
             )
@@ -605,7 +605,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun updateTask() {
-        Log.i(
+        Log.d(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
@@ -629,7 +629,7 @@ class MemoViewModel @Inject constructor(
 
     private fun moveToTask(destinationNoteId: Int) {
         viewModelScope.launch {
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[MemoViewModel] moveToTask performed with ${selectedItems.toList()} to notebook id with $destinationNoteId "
             )
@@ -642,7 +642,7 @@ class MemoViewModel @Inject constructor(
 
     private fun undoTask() {
         viewModelScope.launch {
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[MemoViewModel] undoTask - undo with $savedLastTodoTask"
             )
@@ -656,7 +656,7 @@ class MemoViewModel @Inject constructor(
 
     private fun updateFavorite(todo: TodoTask) {
         viewModelScope.launch {
-            Log.i("PHILIP", "updateFavorite ${todo.favorite}")
+            Log.d("PHILIP", "updateFavorite ${todo.favorite}")
 //            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(favorite = !todo.favorite))
             todoRepository.updateTaskWithoutUpdatedAt(todo)
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
@@ -666,7 +666,7 @@ class MemoViewModel @Inject constructor(
 
     private fun updateStateForMultiple(state: State) {
         viewModelScope.launch {
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[MemoViewModel] updateStateForMultiple performed with ${selectedItems.toList()} to state $state "
             )
@@ -752,7 +752,7 @@ class MemoViewModel @Inject constructor(
             val memos = gson.fromJson<List<TodoTask>>(dbTables[0], memoListType)
             val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
 
-            Log.i("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
+            Log.d("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
 
             viewModelScope.launch {
                 todoRepository.insertMultipleMemos(memos)
@@ -785,7 +785,7 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun sendEmail(file: Uri) {
-        Log.i("PHILIP", "Sending Log ...###### ")
+        Log.d("PHILIP", "Sending Log ...###### ")
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "message/rfc822"
         intent.putExtra(Intent.EXTRA_SUBJECT, "Export Memos")
@@ -801,7 +801,7 @@ class MemoViewModel @Inject constructor(
         try {
             context.startActivity(intent)
         } catch (ex: ActivityNotFoundException) {
-            Log.i("PHILIP", "No Intent matcher found")
+            Log.d("PHILIP", "No Intent matcher found")
         }
     }
 
@@ -834,7 +834,7 @@ class MemoViewModel @Inject constructor(
 
     private fun observeUiState() {
         if (firstFetch) firstFetch = false
-        Log.i("PHILIP", "[MemoViewModel] observeUiState() executed")
+        Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
         viewModelScope.launch {
             uiStateFlow
                 .onEach {

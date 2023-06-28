@@ -86,9 +86,9 @@ fun DisplaySnackBar(
 
     // enabled 는 이벤트 가 발생한 경우를 정확 하게 구분 하기 위한 변수
     LaunchedEffect(key1 = enabled) {
-        Log.i("PHILIP", "[DisplaySnackBar]snack bar with $action")
+        Log.d("PHILIP", "[DisplaySnackBar]snack bar with $action")
         if (action != Action.NO_ACTION) {
-            Log.i("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
+            Log.d("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
             actionAfterPopup(Action.NO_ACTION)
             val snackBarResult = snackBarHostState.showSnackbar(
                 message = message,

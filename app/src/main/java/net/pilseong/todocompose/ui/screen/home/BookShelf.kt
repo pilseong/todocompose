@@ -61,7 +61,7 @@ fun BookShelf(
     onSelectNotebook: (Int) -> Unit,
     onInfoClick: (Int) -> Unit
 ) {
-    Log.i("PHILIP", "noteOrder $noteSortingOption")
+    Log.d("PHILIP", "noteOrder $noteSortingOption")
 
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),
@@ -87,6 +87,7 @@ fun BookShelf(
 
                 Surface(
                     modifier = Modifier
+                        .animateItemPlacement()
                         .padding(end = SMALL_PADDING, bottom = LARGE_PADDING)
                         .width(notebookWidth.dp)
                         .height((notebookWidth * 4 / 3).dp)

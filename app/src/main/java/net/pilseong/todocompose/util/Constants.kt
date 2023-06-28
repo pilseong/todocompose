@@ -27,5 +27,5 @@ object Constants {
     const val NEW_ITEM_ID = 0
     const val NEW_ITEM_INDEX = -1
 
-    const val PAGE_SIZE = 20
+    const val PAGE_SIZE = 40
 }

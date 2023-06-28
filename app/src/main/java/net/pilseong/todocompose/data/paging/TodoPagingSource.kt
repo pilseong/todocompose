@@ -36,7 +36,7 @@ class TodoPagingSource(
 ) : PagingSource<Int, MemoWithNotebook>() {
 
     override fun getRefreshKey(state: PagingState<Int, MemoWithNotebook>): Int? {
-        Log.i("PHILIP", "[TodoPagingSource] state.anchorPosition params ${state.anchorPosition}")
+        Log.d("PHILIP", "[TodoPagingSource] state.anchorPosition params ${state.anchorPosition}")
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
                 ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
@@ -44,10 +44,10 @@ class TodoPagingSource(
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MemoWithNotebook> {
-        Log.i("PHILIP", "[TodoPagingSource]load params ${params.key}")
+        Log.d("PHILIP", "[TodoPagingSource]load params ${params.key}")
         val currentPage = params.key ?: 1
 
-        Log.i("PHILIP", "[TodoPagingSource]start: $startDate, end: $endDate")
+        Log.d("PHILIP", "[TodoPagingSource]start: $startDate, end: $endDate")
         return try {
             withContext(ioDispatcher) {
                 val todoList =
@@ -75,7 +75,7 @@ class TodoPagingSource(
                         priorityNone = priorityNone
                     )
 
-                Log.i("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
+                Log.d("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 
                 if (todoList.isNotEmpty()) {
                     LoadResult.Page(

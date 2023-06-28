@@ -1,10 +1,13 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,9 +56,9 @@ import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.components.SimpleDateRangePickerSheet
-import net.pilseong.todocompose.ui.components.StateMenuListItems
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.ui.theme.ALPHA_NOT_FOCUSED
+import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TOP_BAR_HEIGHT
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -119,11 +122,30 @@ fun ListAppBar(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
             ) {
-                StateMenuListItems(
-                    onStateSelected = { state ->
-                        onStateSelectedForMultipleItems(state)
-                        expanded = false
-                    })
+                State.values().reversed().forEach { state ->
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Canvas(
+                                modifier = Modifier
+                                    .offset(0.dp, 0.8.dp)
+                                    .size(PRIORITY_INDICATOR_SIZE)
+                            ) {
+                                drawCircle(color = state.color)
+                            }
+                        },
+                        text = {
+                            Text(
+                                text = stringResource(id = state.label),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        onClick = {
+                            onStateSelectedForMultipleItems(state)
+                            expanded = false
+                        })
+                }
             }
         }
     } else {

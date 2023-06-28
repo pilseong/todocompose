@@ -11,12 +11,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -36,7 +34,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,7 +77,6 @@ import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.mediumGray
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 
 @Composable
@@ -150,9 +149,7 @@ fun DisplayTasks(
     }
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LazyItemList(
     tasks: LazyPagingItems<MemoWithNotebook>,
@@ -167,35 +164,36 @@ fun LazyItemList(
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
     // 화면 의 크기의 반을 swipe 한 경우 처리
-    val threshold = LocalConfiguration.current.screenWidthDp / 3
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val threshold = remember(LocalConfiguration.current.screenWidthDp) { screenWidth / 3 }
 
     // lazy Column 의 화면 데이터 사용
     val listState = rememberLazyListState()
-    if (header) {
-        val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
-        // 100개의 리스트의 50번째가 firstVisibleItem이었다가 20개 짜리 리스트로 노트를 변경할 경우
-        // index가 리스트보다 많아지는 경우가 일시적으로 발생한다. 예외처리
-        val realIndex =
-            if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
+    val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    val realIndex = remember(tasks.itemCount, headerIndex) {
+        if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
+    }
 
-        val timeData = remember(dateEnabled, realIndex) {
+    // 100개의 리스트의 50번째가 firstVisibleItem이었다가 20개 짜리 리스트로 노트를 변경할 경우
+    // index가 리스트보다 많아지는 경우가 일시적으로 발생한다. 예외처리
+    val timeData by remember(dateEnabled, realIndex) {
+        mutableStateOf(
             if (dateEnabled) {
                 tasks.peek(realIndex)?.memo?.createdAt
             } else {
                 tasks.peek(realIndex)?.memo?.updatedAt
             }
-        }
-
-        Log.i(
-            "PHILIP",
-            "headerIndex: $headerIndex, realIndex $realIndex, itemCount: ${tasks.itemCount}"
         )
-
-        StatusHeader(timeData!!, tasks.peek(realIndex)?.total)
     }
 
+    val totalData by remember(tasks.peek(0)?.total) {
+        mutableIntStateOf(tasks.peek(0)?.total ?: 0)
+    }
+    StatusHeader(timeData, totalData)
+
     LazyColumn(
-        modifier = Modifier.padding(horizontal = XLARGE_PADDING),
+        modifier = Modifier
+            .padding(horizontal = XLARGE_PADDING),
         state = listState
     ) {
         items(
@@ -203,7 +201,6 @@ fun LazyItemList(
             key = tasks.itemKey(key = { item -> item.memo.id }),
             contentType = tasks.itemContentType(null)
         ) { index ->
-
             // index를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
             val taskInside = remember(index, tasks[index]!!.toString()) { tasks[index]!! }
 
@@ -211,8 +208,7 @@ fun LazyItemList(
                 TaskItemHeader(dateEnabled, tasks, index)
             }
 
-            val drawEndEdge = remember(dateEnabled, index) {
-                Log.i("PHILIP", "calculated")
+            val drawEndEdge by remember(dateEnabled, index) {
                 val today: ZonedDateTime?
                 val nextDate: ZonedDateTime?
 
@@ -226,7 +222,7 @@ fun LazyItemList(
                     else tasks[index + 1]?.memo?.updatedAt
                 }
 
-                today?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
+                mutableStateOf( today?.toLocalDate().toString() != nextDate?.toLocalDate().toString())
             }
 
             @Suppress("UNUSED_EXPRESSION") val dismissState = rememberDismissState(
@@ -258,6 +254,7 @@ fun LazyItemList(
             }
 
             SwipeToDismiss(
+                modifier = Modifier.animateItemPlacement(),
                 state = dismissState,
                 background = {
                     ColorBackGround(
@@ -270,7 +267,6 @@ fun LazyItemList(
                 },
                 dismissContent = {
                     TaskItem(
-                        modifier = Modifier.animateItemPlacement(),
                         todoTask = taskInside,
                         drawEndEdge = drawEndEdge,
                         toTaskScreen = {
@@ -306,15 +302,18 @@ fun LazyItemList(
 
 @Composable
 private fun StatusHeader(
-    currentDate: ZonedDateTime,
-    total: Int?,
+    time: ZonedDateTime?,
+    total: Int,
 ) {
+    Log.d(
+        "PHILIP",
+        "headerIndex: ${time.toString()}, $total"
+    )
+
+    val innerTime by rememberUpdatedState(time)
+
     Surface(
         modifier = Modifier
-//            .padding(
-//                top = LARGE_PADDING,
-//                bottom = SMALL_PADDING
-//            )
             .height(IntrinsicSize.Max),
     ) {
         Row(
@@ -322,7 +321,7 @@ private fun StatusHeader(
                 .fillMaxSize()
                 .padding(horizontal = XLARGE_PADDING)
         ) {
-            DateHeader(currentDate)
+            DateHeader(innerTime!!)
             Column(
                 modifier = Modifier.weight(1F),
             ) {
@@ -348,21 +347,26 @@ private fun StatusHeader(
 @Composable
 fun StatusHeaderPreview() {
     MaterialTheme {
-        StatusHeader(currentDate = ZonedDateTime.now(), total = 1)
+        StatusHeader(time = ZonedDateTime.now(), total = 1)
     }
 }
 
 @Composable
-fun DateHeader(time: ZonedDateTime) {
-    Log.i("PHILIP", "DateHeader redrawn")
-    val backColor = remember(time.toEpochSecond()) {
-        if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
-            time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
-        ) {
-            WEEKEND_COLOR
-        } else {
-            WEEKDAY_COLOR
-        }
+fun DateHeader(
+    time: ZonedDateTime
+) {
+    val innerTime by rememberUpdatedState(newValue = time)
+
+    val backColor by remember(innerTime) {
+        mutableStateOf(
+            if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
+                time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
+            ) {
+                WEEKEND_COLOR
+            } else {
+                WEEKDAY_COLOR
+            }
+        )
     }
 
     Row(
@@ -372,70 +376,24 @@ fun DateHeader(time: ZonedDateTime) {
         ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (Locale.getDefault().language == "ko") {
-            Column(
-//                modifier = Modifier.padding(top = XLARGE_PADDING),
-            ) {
-                Text(
-                    color = Color(
-                        ColorUtils.blendARGB(
-                            backColor.toArgb(),
-                            Color.White.toArgb(),
-                            0.1f
-                        )
-                    ).copy(0.9f),
-                    text = time.toLocalDate().format(
-                        DateTimeFormatter.ofPattern(
-                            stringResource(id = R.string.note_content_dateformat)
-                        )
-                    ),
-                    fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
-                    fontSize = MaterialTheme.typography.titleSmall.fontSize
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier.width(42.dp),
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = String.format("%02d", time.toLocalDate().dayOfMonth),
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Light
-                    ),
-                    color = backColor
-                )
-                Text(
-                    text = time.toLocalDate().dayOfWeek.toString().take(3),
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Light
-                    ),
-                    color = backColor
-                )
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = time.toLocalDate().month.toString().lowercase().replaceFirstChar {
-                        it.titlecase()
-                    },
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Light
-                    ),
-                    color = backColor
-                )
-                Text(
-                    text = time.toLocalDate().year.toString(),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Light
+        Column(
+        ) {
+            Text(
+                color = Color(
+                    ColorUtils.blendARGB(
+                        backColor.toArgb(),
+                        Color.White.toArgb(),
+                        0.1f
                     )
-                )
-            }
+                ).copy(0.9f),
+                text = innerTime.toLocalDate().format(
+                    DateTimeFormatter.ofPattern(
+                        stringResource(id = R.string.note_content_dateformat)
+                    )
+                ),
+                fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
+                fontSize = MaterialTheme.typography.titleSmall.fontSize
+            )
         }
     }
 }
@@ -608,7 +566,7 @@ fun ListContentPreview() {
     MaterialTheme {
         ListContent(
             tasks = flowOf(
-                PagingData.from<MemoWithNotebook>(
+                PagingData.from(
                     listOf(
                         MemoWithNotebook(
                             memo = TodoTask(
@@ -625,13 +583,13 @@ fun ListContentPreview() {
                 )
             ).collectAsLazyPagingItems(),
             toTaskScreen = {},
-//            onSwipeToDelete = { a, b -> },
-            onSwipeToEdit = { a, b -> },
+//            onSwipeToDelete = { _, _ -> },
+            onSwipeToEdit = { _, _ -> },
             onFavoriteClick = {},
             onLongClickReleased = {},
             onLongClickApplied = {},
             selectedItemsIds = SnapshotStateList(),
-            onStateSelected = { todotask, state -> }
+            onStateSelected = { _, _ -> }
         )
     }
 }

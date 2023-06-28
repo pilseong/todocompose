@@ -1,8 +1,6 @@
 package net.pilseong.todocompose.navigation.destination
 
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.util.Log
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -10,9 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
@@ -21,7 +16,6 @@ import androidx.navigation.compose.composable
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
-import net.pilseong.todocompose.ui.components.SortMenuItems
 import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
 import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.InfoDialog
@@ -43,10 +37,9 @@ fun NavGraphBuilder.homeComposable(
 
         val openDialog = remember { mutableStateOf(false) }
         val infoDialog = remember { mutableStateOf(false) }
-        val sortingOptionDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
         var dialogTitle by
-            remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
+        remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         var action by remember { mutableStateOf(NoteAction.ADD) }
@@ -54,8 +47,9 @@ fun NavGraphBuilder.homeComposable(
 
         when (noteViewModel.uiState) {
             UiState.Loading -> {
-                Log.i("PHILIP", "Ui is loading")
+                Log.d("PHILIP", "Ui is loading")
             }
+
             is UiState.Success -> {
                 HomeScreen(
                     notebooks = noteViewModel.notebooks.collectAsState().value,
@@ -98,28 +92,12 @@ fun NavGraphBuilder.homeComposable(
                         infoDialog.value = true
 
                     },
-                    onSortMenuClick = {
-                        sortingOptionDialog.value = !sortingOptionDialog.value
+                    onSortMenuClick = { option ->
+                        noteViewModel.handleActions(NoteAction.SORT_BY_TIME, option)
+
                     }
                 )
 
-            }
-        }
-
-
-        DropdownMenu(
-            expanded = sortingOptionDialog.value,
-            onDismissRequest = { sortingOptionDialog.value = false },
-            offset = if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE)
-                DpOffset(LocalConfiguration.current.screenWidthDp.dp, (-200).dp)
-            else {
-                DpOffset(290.dp, (-480).dp)
-            }
-        ) {
-            SortMenuItems { option ->
-                Log.i("PHILIP", "sortMenuItem clicked $option")
-                noteViewModel.handleActions(NoteAction.SORT_BY_TIME, option)
-                sortingOptionDialog.value = false
             }
         }
 
@@ -144,7 +122,8 @@ fun NavGraphBuilder.homeComposable(
 
         InfoDialog(
             visible = infoDialog.value,
-            notebook = noteViewModel.notebooks.collectAsState().value.find { it.id == indexSelected } ?: noteViewModel.defaultNotebook.value,
+            notebook = noteViewModel.notebooks.collectAsState().value.find { it.id == indexSelected }
+                ?: noteViewModel.defaultNotebook.value,
             onDismissRequest = {
                 infoDialog.value = false
             },

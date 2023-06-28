@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,10 +21,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -83,8 +86,8 @@ fun CurrentNotebook(
                     modifier = Modifier
                         .padding(SMALL_PADDING)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = CenterVertically
                 ) {
                     Text(
                         modifier = Modifier.padding(horizontal = 2.dp),
@@ -92,39 +95,30 @@ fun CurrentNotebook(
                         color = Color.White,
                         fontSize = MaterialTheme.typography.labelSmall.fontSize
                     )
-                    Column(
-                        modifier = Modifier
-                            .clickable {
-                                onInfoClick(currentNotebook.id)
-                            }
-                            .weight(1F),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Badge() {
-                            Text(text = currentNotebook.memoTotalCount.toString())
+                    Badge(
+                        modifier = Modifier.clickable {
+                            onInfoClick(currentNotebook.id)
                         }
+                    ) {
+                        Text(text = currentNotebook.memoTotalCount.toString())
                     }
                 }
             }
-            Row(
+            Text(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1F),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    modifier = Modifier.padding(horizontal = SMALL_PADDING),
-                    text = currentNotebook.title,
-                    color = Color(
-                        ColorUtils.blendARGB(
-                            MaterialTheme.colorScheme.onPrimary.toArgb(),
-                            Color.Black.toArgb(),
-                            0.8f
-                        )
-                    ).copy(0.9f)
-                )
-            }
+                    .padding(horizontal = SMALL_PADDING)
+                    .weight(1F)
+                    .wrapContentHeight(CenterVertically),
+                text = currentNotebook.title,
+                textAlign = TextAlign.Center,
+                color = Color(
+                    ColorUtils.blendARGB(
+                        MaterialTheme.colorScheme.onPrimary.toArgb(),
+                        Color.Black.toArgb(),
+                        0.8f
+                    )
+                ).copy(0.9f)
+            )
             Surface(
                 color = Color(
                     ColorUtils.blendARGB(

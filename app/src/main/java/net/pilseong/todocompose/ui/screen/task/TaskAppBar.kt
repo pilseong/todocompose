@@ -50,7 +50,7 @@ fun TaskAppBar(
 ) {
     when (taskAppBarState) {
         TaskAppBarState.VIEWER -> {
-            Log.i("PHILIP", "[TaskAppBar] todo received ${taskUiState.taskDetails.title}")
+            Log.d("PHILIP", "[TaskAppBar] todo received ${taskUiState.taskDetails.title}")
             DetailTaskBar(
                 task = task,
                 toListScreen = toListScreen,
@@ -148,7 +148,7 @@ fun DetailTaskBar(
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
 ) {
-    Log.i("PHILIP", "[DetailTaskBar] todo received $task")
+    Log.d("PHILIP", "[DetailTaskBar] todo received $task")
     TopAppBar(
         navigationIcon = {
             CommonAction(

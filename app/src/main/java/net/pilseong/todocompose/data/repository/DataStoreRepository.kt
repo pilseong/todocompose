@@ -58,7 +58,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistPrioritySortState $priority")
+                Log.d("PHILIP", "[DataStoreRepository]persistPrioritySortState $priority")
                 preferences[PreferenceKeys.sortState] = priority.name
             }
         }
@@ -69,7 +69,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistDateEnabledState $favorite")
+                Log.d("PHILIP", "[DataStoreRepository]persistDateEnabledState $favorite")
                 preferences[PreferenceKeys.favoriteState] = favorite.toString()
             }
         }
@@ -84,7 +84,7 @@ class DataStoreRepository @Inject constructor(
             }
         }
         .map { preferences ->
-            Log.i("PHILIP", "[DataStoreRepository]reading $preferences")
+            Log.d("PHILIP", "[DataStoreRepository]reading $preferences")
 
             val noteIdsStr = preferences[PreferenceKeys.recentNoteIdsState]
             val noteIds = noteIdsStr?.split(",")
@@ -124,7 +124,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
+                Log.d("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
                 preferences[PreferenceKeys.recentNoteIdsState] = noteIds.joinToString(",")
             }
         }
@@ -134,7 +134,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistStateState $stateState")
+                Log.d("PHILIP", "[DataStoreRepository]persistStateState $stateState")
                 preferences[PreferenceKeys.stateState] = stateState
             }
         }
@@ -144,7 +144,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistPriorityFilterState $priorityFilterState")
+                Log.d("PHILIP", "[DataStoreRepository]persistPriorityFilterState $priorityFilterState")
                 preferences[PreferenceKeys.priorityFilterState] = priorityFilterState
             }
         }
@@ -154,7 +154,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i("PHILIP", "[DataStoreRepository]persistDateOrderState $dateOrderState")
+                Log.d("PHILIP", "[DataStoreRepository]persistDateOrderState $dateOrderState")
                 preferences[PreferenceKeys.dateOrderState] = dateOrderState
             }
         }
@@ -165,7 +165,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.i(
+                Log.d(
                     "PHILIP",
                     "[DataStoreRepository]persistNoteSortingOrderState $noteSortingOption"
                 )

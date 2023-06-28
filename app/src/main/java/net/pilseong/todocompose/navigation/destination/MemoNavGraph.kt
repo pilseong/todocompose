@@ -112,7 +112,7 @@ fun NavGraphBuilder.memoNavGraph(
                 // 노트북을 변경하거나 노트북을 이동할 경우 MemoNavGraph가 실행이 된다. 이 경우 이전에 home에서 온 경우에도 이전 것이 남아 있어
                 // 중복적으로 NO_ACTION이 실행되게 되는데 이것을 막기 위해서 사용하였다.
                 LaunchedEffect(key1 = route) {
-                    Log.i("PHILIP", "[MemoNavGraph] NO_ACTION called $route")
+                    Log.d("PHILIP", "[MemoNavGraph] NO_ACTION called $route")
                     memoViewModel.updateAction(Action.NO_ACTION)
                 }
             }
@@ -135,7 +135,7 @@ fun NavGraphBuilder.memoNavGraph(
             val snackBarHostState = remember { SnackbarHostState() }
 
 
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[memoNavGraph] ListScreen called with " +
                         "${backStackEntry.arguments?.getInt(NOTE_ID_ARGUMENT)}"
@@ -198,7 +198,7 @@ fun NavGraphBuilder.memoNavGraph(
                     memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
                 },
                 onMoveMemoClicked = {
-                    Log.i("PHILIP", "onMoveMemoClicked")
+                    Log.d("PHILIP", "onMoveMemoClicked")
                     memoViewModel.getDefaultNoteCount()
                     action.value = Action.MOVE_TO
                     dialogTitle.value = moveToNotebookStr
@@ -225,7 +225,7 @@ fun NavGraphBuilder.memoNavGraph(
                     toTaskScreen()
                 },
                 onDeleteAllClicked = {
-                    Log.i("PHILIP", "onDeleteAllClicked")
+                    Log.d("PHILIP", "onDeleteAllClicked")
                     memoViewModel.handleActions(Action.DELETE_ALL)
                 },
                 onDateRangePickerConfirmed = { start, end ->
@@ -269,7 +269,7 @@ fun NavGraphBuilder.memoNavGraph(
                     )
                 },
                 onPrioritySelected = { priorityAction, priority ->
-                    Log.i("PHILIP", "$priorityAction, $priority")
+                    Log.d("PHILIP", "$priorityAction, $priority")
                     memoViewModel.handleActions(
                         priorityAction,
                         priority = priority
@@ -307,7 +307,7 @@ fun NavGraphBuilder.memoNavGraph(
                     openDialog.value = false
                 },
                 onNotebookClick = { id ->
-                    Log.i("PHILIP", "[MemoNavGraph] onNotebookClick $id")
+                    Log.d("PHILIP", "[MemoNavGraph] onNotebookClick $id")
                     memoViewModel.handleActions(action.value, notebookId = id)
                     openDialog.value = false
                 }
@@ -321,12 +321,12 @@ fun NavGraphBuilder.memoNavGraph(
                 enabled = memoViewModel.actionPerformed,
                 title = memoViewModel.savedLastTodoTask.title,
                 buttonClicked = { selectedAction, result ->
-                    Log.i("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
+                    Log.d("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
                     if (result == SnackbarResult.ActionPerformed
                         && selectedAction == Action.DELETE
                     ) {
-                        Log.i("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
+                        Log.d("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
                         memoViewModel.handleActions(Action.UNDO)
                     } else {
                         memoViewModel.updateAction(Action.NO_ACTION)
@@ -373,7 +373,7 @@ fun NavGraphBuilder.memoNavGraph(
                 viewModelStoreOwner = viewModelStoreOwner
             )
 
-            Log.i(
+            Log.d(
                 "PHILIP",
                 "[memoNavGraph] TaskScreen called"
             )
@@ -386,14 +386,14 @@ fun NavGraphBuilder.memoNavGraph(
             val taskIndex = memoViewModel.index
 
 
-            Log.i("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
+            Log.d("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
             val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
-            Log.i("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
+            Log.d("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
 
 
             // activity  destroy 되고 다시 생성된 경우는 List 화면으로 forwarding - 샤오미 종특
             if (taskIndex >= tasks.itemCount) {
-                Log.i("PHILIP", "[MemoNavGraph] memoViewModel value $memoViewModel")
+                Log.d("PHILIP", "[MemoNavGraph] memoViewModel value $memoViewModel")
                 navHostController.navigate(Screen.MemoList.route)
             } else {
                 TaskScreen(

@@ -48,7 +48,7 @@ class TodoRepository @Inject constructor(
         priorityLow: Boolean = true,
         priorityNone: Boolean = true
     ): Flow<PagingData<MemoWithNotebook>> {
-        Log.i("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
+        Log.d("PHILIP", "[TodoRepository] getAllTasks performed notebook_id = $notebookId")
         return Pager(
             config = PagingConfig(pageSize = PAGE_SIZE),
             pagingSourceFactory = {

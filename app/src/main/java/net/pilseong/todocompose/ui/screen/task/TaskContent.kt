@@ -2,8 +2,10 @@ package net.pilseong.todocompose.ui.screen.task
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -77,7 +79,7 @@ fun TaskContent(
     onSwipeLeftOnViewer: () -> Unit
 ) {
 
-    Log.i("PHILIP", "size : $taskSize, taskInded : $taskIndex")
+    Log.d("PHILIP", "size : $taskSize, taskInded : $taskIndex")
     if (taskAppBarState == TaskAppBarState.VIEWER) {
 
         // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
@@ -106,7 +108,7 @@ fun TaskContent(
         // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
         // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
         LaunchedEffect(key1 = taskIndex) {
-            Log.i("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
+            Log.d("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
             if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
                 dismissState.snapTo(DismissValue.DismissedToStart)
             } else {
@@ -162,12 +164,11 @@ private fun ViewerContent(
     task: MemoWithNotebook
 ) {
     val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
             .verticalScroll(scrollState)
-
     ) {
         Surface {
             Column(
@@ -175,16 +176,16 @@ private fun ViewerContent(
                     .padding(start = XLARGE_PADDING, end = XLARGE_PADDING, bottom = SMALL_PADDING)
                     .fillMaxWidth()
             ) {
-                Row(
-                ) {
-                    Column(modifier = Modifier.weight(1.5F)) {
+                // 헤더 부분
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1.5F / 12)) {
                         Icon(
                             Icons.Filled.Info,
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                         )
                     }
-                    Column(modifier = Modifier.weight(5F)) {
+                    Column(modifier = Modifier.weight(3.5F / 12)) {
                         Column {
                             Text(
                                 stringResource(id = R.string.task_content_notebook_name),
@@ -209,7 +210,7 @@ private fun ViewerContent(
                         }
                     }
                     Column(
-                        modifier = Modifier.weight(5F),
+                        modifier = Modifier.weight(7F / 12),
                         horizontalAlignment = Alignment.End
                     ) {
                         Column(
@@ -251,27 +252,36 @@ private fun ViewerContent(
                         }
                     }
                 }
-                Row(modifier = Modifier.padding(top = SMALL_PADDING)) {
-                    Column(modifier = Modifier.weight(1.5F)) {
+                // 제목
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = SMALL_PADDING),
+                    horizontalArrangement = Arrangement.Start,
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1.5F / 12),
+                    ) {
                         Icon(
-                            Icons.Filled.Title,
+                            imageVector = Icons.Filled.Title,
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                         )
                     }
-                    Column(modifier = Modifier.weight(10F)) {
-                        Text(text = task.memo.title)
-                    }
+                    Text(
+                        modifier = Modifier.weight(10.5F / 12),
+                        text = task.memo.title
+                    )
 
                 }
             }
         }
         Divider()
 
-        Divider(
+        Spacer(
             modifier = Modifier.height(MEDIUM_PADDING),
-            color = MaterialTheme.colorScheme.background,
         )
+
         Card(
             shape = RoundedCornerShape(4.dp)
         ) {
@@ -291,8 +301,6 @@ private fun EditorContent(
     taskUiState: TaskUiState,
     onValueChange: (TaskDetails) -> Unit,
 ) {
-
-
     Column(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surface)
@@ -323,7 +331,6 @@ private fun EditorContent(
                 .height(0.7.dp),
             color = MaterialTheme.colorScheme.onSurface,
         )
-//        Card {
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -355,8 +362,7 @@ private fun EditorContent(
                 )
             }
         )
-//        }
-        Surface() {
+        Surface {
             TextField(
                 modifier = Modifier
                     .imePadding()
