@@ -9,11 +9,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
-import net.pilseong.todocompose.data.model.database.TodoDAO
+import net.pilseong.todocompose.data.model.database.MemoDAO
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject
@@ -21,11 +21,11 @@ import javax.inject.Inject
 //@ViewModelScoped
 @ActivityRetainedScoped
 class TodoRepository @Inject constructor(
-    private val todoDAO: TodoDAO
+    private val memoDAO: MemoDAO
 ) {
     // export 를 위해 작성
-    suspend fun getAllTasks(): List<TodoTask> {
-        return todoDAO.allTasks()
+    suspend fun getAllTasks(): List<MemoTask> {
+        return memoDAO.allMemos()
     }
 
     fun getTasks(
@@ -53,7 +53,7 @@ class TodoRepository @Inject constructor(
             config = PagingConfig(pageSize = PAGE_SIZE),
             pagingSourceFactory = {
                 TodoPagingSource(
-                    todoDAO = todoDAO,
+                    memoDAO = memoDAO,
                     query = query,
                     searchRangeAll = searchRangeAll,
                     sortCondition = sortCondition,
@@ -77,61 +77,60 @@ class TodoRepository @Inject constructor(
         ).flow
     }
 
-
-    suspend fun addTask(todoTask: TodoTask) {
+    suspend fun addMemo(memo: MemoTask) {
         withContext(Dispatchers.IO) {
-            todoDAO.addTask(todoTask)
+            memoDAO.addMemo(memo)
         }
     }
 
-    suspend fun updateTask(todoTask: TodoTask) {
+    suspend fun updateMemo(memoTask: MemoTask) {
         withContext(Dispatchers.IO) {
-            todoDAO.updateTaskWithTimestamp(todoTask)
+            memoDAO.updateTaskWithTimestamp(memoTask)
         }
     }
 
-    suspend fun updateTaskWithoutUpdatedAt(todoTask: TodoTask) {
-        todoDAO.updateTask(todoTask)
+    suspend fun updateMemoWithoutUpdatedAt(memoTask: MemoTask) {
+        memoDAO.updateMemo(memoTask)
     }
 
 
-    suspend fun deleteTask(todoId: Int) {
+    suspend fun deleteMemo(memoId: Int) {
         withContext(Dispatchers.IO) {
-            todoDAO.deleteTask(todoId)
+            memoDAO.deleteMemo(memoId)
         }
     }
 
-    suspend fun deleteAllTasks() {
+    suspend fun deleteAllMemos() {
         withContext(Dispatchers.IO) {
-            todoDAO.deleteAllTasks()
+            memoDAO.deleteAllMemos()
         }
     }
 
-    suspend fun deleteSelectedTasks(notesIds: List<Int>) {
+    suspend fun deleteSelectedMemos(notesIds: List<Int>) {
         withContext(Dispatchers.IO) {
-            todoDAO.deleteSelectedTasks(notesIds)
+            memoDAO.deleteSelectedMemos(notesIds)
         }
     }
 
-    suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
+    suspend fun insertMultipleMemos(tasks: List<MemoTask>) {
         withContext(Dispatchers.IO) {
-            todoDAO.insertMultipleMemos(tasks)
+            memoDAO.insertMultipleMemos(tasks)
         }
     }
 
     suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
         withContext(Dispatchers.IO) {
-            todoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
+            memoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
         }
     }
 
     suspend fun updateMultipleMemosWithoutUpdatedAt(tasksIds: List<Int>, state: State) {
         withContext(Dispatchers.IO) {
-            todoDAO.updateStateForMultipleMemos(tasksIds, state)
+            memoDAO.updateStateForMultipleMemos(tasksIds, state)
         }
     }
 
     fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount> =
-        todoDAO.getMemoCount(notebookId)
+        memoDAO.getMemoCount(notebookId)
 
 }

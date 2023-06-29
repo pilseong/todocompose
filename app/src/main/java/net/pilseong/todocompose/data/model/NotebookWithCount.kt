@@ -16,6 +16,7 @@ data class NotebookWithCount(
     val accessedAt: ZonedDateTime = ZonedDateTime.now(),
     val memoTotalCount: Int = 0,
     val completedCount: Int = 0,
+    val cancelledCount: Int = 0,
     val activeCount: Int = 0,
     val suspendedCount: Int = 0,
     val waitingCount: Int = 0,

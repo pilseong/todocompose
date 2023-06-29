@@ -1,54 +1,24 @@
 package net.pilseong.todocompose.ui.screen.home
 
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgeDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
-import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.util.NoteSortingOption
-import net.pilseong.todocompose.util.getPriorityColor
-import java.time.format.DateTimeFormatter
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -77,7 +47,7 @@ fun BookShelf(
                     note.id
                 }
             ) { notebook ->
-                val selected = remember(selectedNotebookIds.size) {
+                val selected by remember(selectedNotebookIds.size) {
                     mutableStateOf(
                         selectedNotebookIds.contains(
                             notebook.id
@@ -85,227 +55,17 @@ fun BookShelf(
                     )
                 }
 
-                Surface(
-                    modifier = Modifier
-                        .animateItemPlacement()
-                        .padding(end = SMALL_PADDING, bottom = LARGE_PADDING)
-                        .width(notebookWidth.dp)
-                        .height((notebookWidth * 4 / 3).dp)
-                        .combinedClickable(
-                            onClick = {
-                                if (selectedNotebookIds.size > 0) {
-                                    onSelectNotebookWithLongClick(notebook.id)
-                                } else {
-                                    onSelectNotebook(notebook.id)
-                                }
-                            },
-                            onLongClick = {
-                                onSelectNotebookWithLongClick(notebook.id)
-                            }
-                        ),
-//                    color = if (selected.value) {
-//                        MaterialTheme.colorScheme.surfaceColorAtElevation(
-//                            10000.dp
-//                        )
-//                    } else
-//                        getPriorityColor(notebook.priority).copy(
-//                            alpha = 0.4f
-//                        ),
-                    tonalElevation = if (selected.value) 12.dp else 2.dp,
-                    shadowElevation = if (!selected.value) 6.dp else 0.dp,
-                    shape = RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 6.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 6.dp
-                    ),
-                    border = if (selected.value) BorderStroke(
-                        0.5.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    else BorderStroke(
-                        0.dp,
-                        MaterialTheme.colorScheme.surface
-                    ),
-                ) {
-                    Surface(
-                        color = if (selected.value) {
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                10000.dp
-                            )
-                        } else
-                            getPriorityColor(notebook.priority).copy(
-                                alpha = 0.4f
-                            ),
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1F),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    modifier = Modifier.padding(
-                                        horizontal = SMALL_PADDING
-                                    ),
-                                    text = notebook.title,
-                                    fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
-                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                    color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-                                        alpha = 0.2f
-                                    )
-                                    else
-                                        Color(
-                                            ColorUtils.blendARGB(
-                                                MaterialTheme.colorScheme.onPrimary.toArgb(),
-                                                Color.Black.toArgb(),
-                                                0.9f
-                                            )
-                                        ).copy(0.9f)
-                                )
-                            }
-                            Surface(
-                                color = if (selected.value) {
-                                    MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                        10000.dp
-                                    )
-                                } else
-                                    Color(
-                                        ColorUtils.blendARGB(
-                                            getPriorityColor(notebook.priority).toArgb(),
-                                            Color.Black.toArgb(),
-                                            0.5f
-                                        )
-                                    ),
-//                                                    MaterialTheme.colorScheme.surface,
-                                tonalElevation = if (selected.value) 12.dp else 2.dp,
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-//                                                        .weight(1F),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 2.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = when (noteSortingOption) {
-                                                NoteSortingOption.ACCESS_AT -> {
-                                                    notebook.accessedAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                stringResource(id = R.string.note_inside_dateformat)
-                                                            )
-                                                        )
-                                                }
-
-                                                NoteSortingOption.UPDATED_AT -> {
-                                                    notebook.updatedAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                stringResource(id = R.string.note_inside_dateformat)
-                                                            )
-                                                        )
-                                                }
-
-                                                NoteSortingOption.CREATED_AT -> {
-                                                    notebook.createdAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                stringResource(id = R.string.note_inside_dateformat)
-                                                            )
-                                                        )
-                                                }
-                                            },
-                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                            color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-                                                alpha = 0.2f
-                                            )
-                                            else Color.White.copy(alpha = 0.7f)
-                                        )
-                                        Text(
-                                            text = when (noteSortingOption) {
-                                                NoteSortingOption.ACCESS_AT -> {
-                                                    notebook.accessedAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                "HH:mm"
-                                                            )
-                                                        )
-                                                }
-
-                                                NoteSortingOption.UPDATED_AT -> {
-                                                    notebook.updatedAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                "HH:mm"
-                                                            )
-                                                        )
-                                                }
-
-                                                NoteSortingOption.CREATED_AT -> {
-                                                    notebook.createdAt.toLocalDateTime()
-                                                        .format(
-                                                            DateTimeFormatter.ofPattern(
-                                                                "HH:mm"
-                                                            )
-                                                        )
-                                                }
-                                            },
-                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                            color = if (selected.value) MaterialTheme.colorScheme.onSurface.copy(
-                                                alpha = 0.2f
-                                            )
-                                            else Color.White.copy(alpha = 0.7f)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = Color.Transparent
-                    ) {
-                        Row(horizontalArrangement = Arrangement.End) {
-                            Badge(
-                                modifier = Modifier
-                                    .clickable {
-                                        onInfoClick(notebook.id)
-                                    },
-                                containerColor = if (selected.value) BadgeDefaults.containerColor
-                                    .copy(alpha = 0.2f)
-                                else BadgeDefaults.containerColor
-                            ) {
-                                Text(text = notebook.memoTotalCount.toString())
-                            }
-                        }
-                    }
-                    if (selected.value) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(top = 20.dp)
-                                    .clickable {
-                                        onInfoClick(notebook.id)
-                                    }
-                                    .size(30.dp),
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "selected",
-                                tint = Color.White
-                            )
-                        }
-                    }
-                }
+                NotebookCover(
+                    modifier = Modifier.animateItemPlacement(),
+                    notebookWidth = notebookWidth,
+                    isMultiSelectionMode = selectedNotebookIds.size > 0,
+                    onSelectNotebookWithLongClick,
+                    notebook,
+                    onSelectNotebook,
+                    selected,
+                    noteSortingOption,
+                    onInfoClick
+                )
             }
         }
     )

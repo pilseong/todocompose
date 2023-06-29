@@ -118,7 +118,7 @@ fun PreviewSimpleDatePickerDialog() {
         SimpleDatePickerDialog(
             enabled = true,
             onDismiss = { /*TODO*/ },
-            onConfirmClick = { a, b ->
+            onConfirmClick = { _, _ ->
                 Log.d("test", "test")
             })
     }

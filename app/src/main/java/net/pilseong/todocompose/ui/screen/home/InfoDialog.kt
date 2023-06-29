@@ -327,13 +327,13 @@ fun InfoDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = stringResource(id = R.string.info_completed_count),
+                                text = stringResource(id = R.string.info_done_count),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = notebook?.completedCount.toString(),
+                                text = "${notebook?.completedCount.toString()}/${notebook?.cancelledCount.toString()}",
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -359,8 +359,7 @@ fun InfoDialog(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "" + (notebook?.activeCount.toString()) + "/" +
-                                        (notebook?.waitingCount.toString()),
+                                text = "${notebook?.activeCount.toString()}/${notebook?.waitingCount.toString()}",
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )

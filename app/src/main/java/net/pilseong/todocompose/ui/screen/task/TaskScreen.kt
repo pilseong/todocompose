@@ -15,9 +15,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -55,7 +55,7 @@ fun TaskScreen(
         topBar = {
             TaskAppBar(
                 task = if (taskIndex >= 0) tasks[taskIndex]!!
-                else MemoWithNotebook(memo = TodoTask.instance(),
+                else MemoWithNotebook(memo = MemoTask.instance(),
                     notebook = Notebook.instance(), total = 1),
                 taskAppBarState = taskAppBarState,
                 taskUiState = taskUiState,
@@ -85,7 +85,7 @@ fun TaskScreen(
             ) {
                 TaskContent(
                     task = if (taskIndex >= 0) tasks[taskIndex]!!
-                    else MemoWithNotebook(memo = TodoTask.instance(),
+                    else MemoWithNotebook(memo = MemoTask.instance(),
                         notebook = Notebook.instance(), total = 1),
                     taskUiState = taskUiState,
                     taskSize = tasks.itemCount,

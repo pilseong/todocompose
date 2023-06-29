@@ -13,13 +13,11 @@ import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
-import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val noteViewModel: NoteViewModel by viewModels()
-    val memoViewModel: MemoViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

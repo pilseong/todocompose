@@ -45,11 +45,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.screen.list.ColorBackGround
@@ -199,6 +199,12 @@ private fun ViewerContent(
                                 text = stringResource(id = R.string.info_updated_at),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             )
+                            if (task.memo.finishedAt != null) {
+                                Text(
+                                    stringResource(id = R.string.info_finished_at),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                )
+                            }
                             Text(
                                 stringResource(id = R.string.badge_priority_label),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -241,6 +247,17 @@ private fun ViewerContent(
                                         )
                                     )
                             )
+                            if (task.memo.finishedAt != null) {
+                                Text(
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    text = task.memo.finishedAt.toLocalDateTime()
+                                        .format(
+                                            DateTimeFormatter.ofPattern(
+                                                stringResource(id = R.string.task_content_dateformat)
+                                            )
+                                        )
+                                )
+                            }
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 text = stringResource(id = task.memo.priority.label)
@@ -339,7 +356,7 @@ private fun EditorContent(
             label = {
                 Text(text = stringResource(id = R.string.new_task_title_placeholder))
             },
-            onValueChange = { it ->
+            onValueChange = {
                 if (it.length <= MAX_TITLE_LENGTH)
                     onValueChange(taskUiState.taskDetails.copy(title = it))
 
@@ -373,7 +390,7 @@ private fun EditorContent(
                         text = stringResource(id = R.string.new_task_description_placeholder)
                     )
                 },
-                onValueChange = { it ->
+                onValueChange = {
                     if (it.length <= MAX_CONTENT_LENGTH)
                         onValueChange(taskUiState.taskDetails.copy(description = it))
 
@@ -404,7 +421,7 @@ fun ViewerContentPreview() {
     TodoComposeTheme {
         TaskContent(
             task = MemoWithNotebook(
-                memo = TodoTask(
+                memo = MemoTask(
                     id = -1,
                     title = "필성 힘내!!!",
                     description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",

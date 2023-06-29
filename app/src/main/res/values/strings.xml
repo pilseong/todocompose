@@ -111,11 +111,12 @@
     <string name="save_label">Save</string>
     <string name="info_created_at">Created At</string>
     <string name="info_updated_at">Updated At</string>
+    <string name="info_finished_at">Finished At</string>
     <string name="info_accessed_at">Accessed At</string>
     <string name="info_priority">Notebook Priority</string>
     <string name="info_priority_memos_count">Memos Priority(H/M/L/N)</string>
     <string name="info_total_memos">Total Memos</string>
-    <string name="info_completed_count">Completed Memos</string>
+    <string name="info_done_count">Done Memos(Completed/Cancelled)</string>
     <string name="info_in_process_count">In-Process Memos(Active/Waiting)</string>
     <string name="info_suspended_count">Suspended Memos</string>
     <string name="info_waiting_count">Waiting Memos</string>
@@ -131,5 +132,5 @@
     <string name="note_sort_updated_at_label">Updated At</string>
     <string name="note_sort_accessed_at_label">Accessed At</string>
     <string name="day_of_week_label">EEE</string>
-    <string name="total_label">Total</string>
+    <string name="total_label">Total: %1$s</string>
 </resources>

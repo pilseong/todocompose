@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
@@ -84,19 +86,19 @@ fun RecentNotebook(
                     ) {
                         Surface(
                             color = getPriorityColor(currentNotebook.priority).copy(
-                                    alpha = 0.4f
-                                )
+                                alpha = 0.4f
+                            )
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .padding(SMALL_PADDING)
+                                    .padding(horizontal = SMALL_PADDING)
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-//                                    modifier = Modifier.padding(horizontal = 2.dp),
                                     text = stringResource(id = R.string.note_screen_recent_notebooks_label),
+                                    lineHeight = TextUnit(20F, TextUnitType.Sp),
                                     color = Color.Black.copy(alpha = 0.7f),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
@@ -147,10 +149,7 @@ fun RecentNotebook(
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(
-                                        horizontal = SMALL_PADDING,
-                                        vertical = 2.dp
-                                    )
+                                    .padding(horizontal = SMALL_PADDING)
                                     .fillMaxWidth(),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -162,6 +161,7 @@ fun RecentNotebook(
                                                 stringResource(id = R.string.note_inside_dateformat)
                                             )
                                         ),
+                                    lineHeight = TextUnit(16F, TextUnitType.Sp),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     color = Color.White.copy(alpha = 0.7f)
                                 )
@@ -172,6 +172,7 @@ fun RecentNotebook(
                                                 "HH:mm"
                                             )
                                         ),
+                                    lineHeight = TextUnit(16F, TextUnitType.Sp),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     color = Color.White.copy(alpha = 0.7f)
                                 )
@@ -184,7 +185,6 @@ fun RecentNotebook(
 //        RecentNoteLayoutImage()
     }
 }
-
 
 
 @Preview

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,10 +35,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import androidx.paging.LoadState
+import androidx.paging.LoadState.NotLoading.*
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -61,11 +64,11 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
@@ -94,24 +97,19 @@ fun ListContent(
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
 
-    if (tasks.loadState.refresh is LoadState.NotLoading) {
-        DisplayTasks(
-            tasks = tasks,
-            toTaskScreen = toTaskScreen,
+    DisplayTasks(
+        tasks = tasks,
+        toTaskScreen = toTaskScreen,
 //            onSwipeToDelete = onSwipeToDelete,
-            onSwipeToEdit = onSwipeToEdit,
-            header = header,
-            dateEnabled = dateEnabled,
-            onFavoriteClick = onFavoriteClick,
-            onLongClickReleased = onLongClickReleased,
-            onLongClickApplied = onLongClickApplied,
-            selectedItemsIds = selectedItemsIds,
-            onStateSelected = onStateSelected,
-        )
-    }
-//    } else {
-//        LoadingContent()
-//    }
+        onSwipeToEdit = onSwipeToEdit,
+        header = header,
+        dateEnabled = dateEnabled,
+        onFavoriteClick = onFavoriteClick,
+        onLongClickReleased = onLongClickReleased,
+        onLongClickApplied = onLongClickApplied,
+        selectedItemsIds = selectedItemsIds,
+        onStateSelected = onStateSelected,
+    )
 }
 
 // tasks 가 있는 경우에 표출
@@ -163,10 +161,6 @@ fun LazyItemList(
     selectedItemsIds: SnapshotStateList<Int>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
-    // 화면 의 크기의 반을 swipe 한 경우 처리
-    val screenWidth = LocalConfiguration.current.screenWidthDp
-    val threshold = remember(LocalConfiguration.current.screenWidthDp) { screenWidth / 3 }
-
     // lazy Column 의 화면 데이터 사용
     val listState = rememberLazyListState()
     val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
@@ -222,18 +216,28 @@ fun LazyItemList(
                     else tasks[index + 1]?.memo?.updatedAt
                 }
 
-                mutableStateOf( today?.toLocalDate().toString() != nextDate?.toLocalDate().toString())
+                mutableStateOf(
+                    today?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
+                )
             }
 
-            @Suppress("UNUSED_EXPRESSION") val dismissState = rememberDismissState(
+            // 화면 의 크기의 반을 swipe 한 경우 처리
+            val screenWidth = LocalConfiguration.current.screenWidthDp
+            val threshold = remember(screenWidth) { screenWidth * (3/5F) }
+            var currentFraction by remember { mutableFloatStateOf(0f) }
+
+            val dismissState = rememberDismissState(
                 confirmValueChange = {
                     when (it) {
                         DismissValue.Default -> false
                         DismissValue.DismissedToEnd -> {
-                            onSwipeToEdit(
-                                index,
-                                tasks.peek(index)!!,
-                            )
+                            Log.d("PHILIP", "current $currentFraction")
+                            if (currentFraction >= 0.4f && currentFraction < 1f) {
+                                onSwipeToEdit(
+                                    index,
+                                    tasks.peek(index)!!,
+                                )
+                            }
                         }
 
                         DismissValue.DismissedToStart -> {}
@@ -253,6 +257,7 @@ fun LazyItemList(
                 }
             }
 
+            currentFraction = dismissState.progress
             SwipeToDismiss(
                 modifier = Modifier.animateItemPlacement(),
                 state = dismissState,
@@ -262,7 +267,7 @@ fun LazyItemList(
                         leftToRightColor = MediumPriorityColor,
                         rightToLeftColor = HighPriorityColor,
                         leftIcon = Icons.Default.Edit,
-                        rightIcon = Icons.Default.Delete
+                        rightIcon = Icons.Default.Delete,
                     )
                 },
                 dismissContent = {
@@ -333,7 +338,7 @@ private fun StatusHeader(
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(
-                        text = stringResource(id = R.string.total_label) + ": $total",
+                        text = stringResource(id = R.string.total_label, total),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6F),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -440,6 +445,7 @@ fun ColorBackGround(
     rightIcon: ImageVector
 ) {
     val dismissDirection = dismissState.dismissDirection ?: return
+
     val color by animateColorAsState(
         when (dismissState.targetValue) {
             DismissValue.Default -> MaterialTheme.colorScheme.surface
@@ -464,9 +470,11 @@ fun ColorBackGround(
         targetValue = if (dismissState.targetValue == DismissValue.Default) 0F
         else -45F
     )
+
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .height(80.dp)
             .background(color)
             .padding(horizontal = 24.dp),
         contentAlignment = alignment
@@ -567,9 +575,10 @@ fun ListContentPreview() {
         ListContent(
             tasks = flowOf(
                 PagingData.from(
+                    data =
                     listOf(
                         MemoWithNotebook(
-                            memo = TodoTask(
+                            memo = MemoTask(
                                 1,
                                 "필성 힘내!!!",
                                 "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
@@ -579,7 +588,7 @@ fun ListContentPreview() {
                             notebook = Notebook.instance(),
                             total = 1
                         )
-                    )
+                    ),
                 )
             ).collectAsLazyPagingItems(),
             toTaskScreen = {},

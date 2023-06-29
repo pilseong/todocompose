@@ -71,6 +71,8 @@ fun VerticalContent(
             .padding(top = LARGE_PADDING)
             .fillMaxSize()
     ) {
+
+        val screenWidth = (LocalConfiguration.current.screenWidthDp)
         // 타이틀 + 날짜
         Surface(
             color = MaterialTheme.colorScheme.surface,
@@ -123,10 +125,12 @@ fun VerticalContent(
             }
         }
 
-        val recentNotebookSpace =
-            ((LocalConfiguration.current.screenWidthDp - (2 * 16) - 115 - (2 * 6))
+        val recentNotebookSpace = remember(screenWidth) {
+            ((screenWidth - (2 * 16) - 115 - (2 * 6))
                     - (3 * 6)) / 2.0F
-        // 자주 사용하는 노트북 섹션
+        }
+
+        // 자주 사용 하는 노트북 섹션
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -268,10 +272,13 @@ fun VerticalContent(
             }
         }
 
-        val notebookWidth =
-            ((LocalConfiguration.current.screenWidthDp) - (2 * XLARGE_PADDING.value) - (4 * SMALL_PADDING.value)) / 3
-        val notebookHeight = notebookWidth * 4 / 3
-        val bookShelfHeight = notebookHeight * 2 + (2 * LARGE_PADDING.value) + SMALL_PADDING.value
+
+        val notebookWidth = remember(screenWidth) {
+            (screenWidth - (2 * XLARGE_PADDING.value) - (4 * SMALL_PADDING.value)) / 3
+        }
+        val notebookHeight = remember { notebookWidth * 4 / 3 }
+        val bookShelfHeight = remember { notebookHeight * 2 + (2 * LARGE_PADDING.value) + SMALL_PADDING.value }
+
         Surface(
             modifier = Modifier
                 .padding(start = XLARGE_PADDING, end = XLARGE_PADDING)

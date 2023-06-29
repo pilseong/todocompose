@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 data class MemoWithNotebook(
-    @Embedded val memo: TodoTask,
+    @Embedded val memo: MemoTask,
     val total: Int,
     @Relation(
         parentColumn = "notebook_id",

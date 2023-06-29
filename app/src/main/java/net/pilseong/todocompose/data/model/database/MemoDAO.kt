@@ -8,22 +8,22 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import java.time.ZonedDateTime
 
 @Dao
-abstract class TodoDAO {
+abstract class MemoDAO {
 
-    @Query("SELECT * FROM todo_table")
-    abstract suspend fun allTasks(): List<TodoTask>
+    @Query("SELECT * FROM memo_table")
+    abstract suspend fun allMemos(): List<MemoTask>
 
     @Transaction
     @Query(
         "SELECT *, " +
-                "( SELECT COUNT(*) FROM todo_table " +
+                "( SELECT COUNT(*) FROM memo_table " +
                 "WHERE 1=1 " +
                 "AND ( " +
                 "       CASE :searchRangeAll " +
@@ -107,7 +107,7 @@ abstract class TodoDAO {
                 "CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
                 "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 ") AS total " +
-                "FROM todo_table " +
+                "FROM memo_table " +
                 "WHERE 1=1 " +
                 "AND ( " +
                 "       CASE :searchRangeAll " +
@@ -216,32 +216,32 @@ abstract class TodoDAO {
     ): List<MemoWithNotebook>
 
 
-    @Query("SELECT * FROM todo_table WHERE id = :taskId")
-    abstract fun getSelectedTask(taskId: Int): TodoTask
+    @Query("SELECT * FROM memo_table WHERE id = :memoId")
+    abstract fun getSelectedMemo(memoId: Int): MemoTask
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun addTask(todo: TodoTask)
+    abstract suspend fun addMemo(memo: MemoTask)
 
-    suspend fun updateTaskWithTimestamp(todo: TodoTask) =
-        updateTask(todo.copy(updatedAt = ZonedDateTime.now()))
+    suspend fun updateTaskWithTimestamp(memo: MemoTask) =
+        updateMemo(memo.copy(updatedAt = ZonedDateTime.now()))
 
     @Update
-    abstract suspend fun updateTask(todo: TodoTask)
+    abstract suspend fun updateMemo(memo: MemoTask)
 
-    @Query("DELETE FROM todo_table WHERE id = :todoId")
-    abstract suspend fun deleteTask(todoId: Int)
+    @Query("DELETE FROM memo_table WHERE id = :memoId")
+    abstract suspend fun deleteMemo(memoId: Int)
 
-    @Query("DELETE FROM todo_table")
-    abstract suspend fun deleteAllTasks()
+    @Query("DELETE FROM memo_table")
+    abstract suspend fun deleteAllMemos()
 
-    @Query("DELETE FROM todo_table WHERE notebook_id = :notebookId")
+    @Query("DELETE FROM memo_table WHERE notebook_id = :notebookId")
     abstract suspend fun deleteTasksByNotebookId(notebookId: Int)
 
 
     @Transaction
-    open suspend fun deleteSelectedTasks(notesIds: List<Int>) {
+    open suspend fun deleteSelectedMemos(notesIds: List<Int>) {
         notesIds.forEach { id ->
-            deleteTask(id)
+            deleteMemo(id)
         }
     }
 
@@ -257,37 +257,37 @@ abstract class TodoDAO {
                 "SUM (CASE progression  WHEN 'SUSPENDED' THEN 1 END) AS suspended, " +
                 "SUM (CASE progression  WHEN 'WAITING' THEN 1 END) AS waiting, " +
                 "SUM (CASE progression  WHEN 'NONE' THEN 1 END) AS not_assigned " +
-                "FROM todo_table WHERE notebook_id = :notebookId"
+                "FROM memo_table WHERE notebook_id = :notebookId"
     )
     abstract fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount>
 
     @Transaction
-    open suspend fun insertMultipleMemos(tasks: List<TodoTask>) {
+    open suspend fun insertMultipleMemos(tasks: List<MemoTask>) {
         tasks.forEach { task ->
-            addTask(task)
+            addMemo(task)
         }
     }
 
-    @Query("UPDATE todo_table SET notebook_id = :notebookId, updated_at = :updatedAt WHERE id = :taskId")
-    abstract suspend fun updateNotebookId(taskId: Int, notebookId: Int, updatedAt: Long)
+    @Query("UPDATE memo_table SET notebook_id = :notebookId, updated_at = :updatedAt WHERE id = :memoId")
+    abstract suspend fun updateNotebookId(memoId: Int, notebookId: Int, updatedAt: Long)
 
     @Transaction
-    open suspend fun updateMultipleNotebookIds(todosIds: List<Int>, destinationNotebookId: Int) {
-        todosIds.forEach { id ->
+    open suspend fun updateMultipleNotebookIds(memosIds: List<Int>, destinationNotebookId: Int) {
+        memosIds.forEach { id ->
             updateNotebookId(
-                id, destinationNotebookId, ZonedDateTypeConverter.fromZonedDateTime(
-                    ZonedDateTime.now()
-                )
+                id,
+                destinationNotebookId,
+                ZonedDateTypeConverter.fromZonedDateTime(ZonedDateTime.now())!!
             )
         }
     }
 
-    @Query("UPDATE todo_table SET progression = :state WHERE id = :taskId")
-    abstract suspend fun updateState(taskId: Int, state: State)
+    @Query("UPDATE memo_table SET progression = :state WHERE id = :memoId")
+    abstract suspend fun updateState(memoId: Int, state: State)
 
     @Transaction
-    open suspend fun updateStateForMultipleMemos(todosIds: List<Int>, state: State) {
-        todosIds.forEach { id ->
+    open suspend fun updateStateForMultipleMemos(memosIds: List<Int>, state: State) {
+        memosIds.forEach { id ->
             updateState(id, state)
         }
     }

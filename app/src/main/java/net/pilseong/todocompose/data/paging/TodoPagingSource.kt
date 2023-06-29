@@ -8,13 +8,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.database.TodoDAO
+import net.pilseong.todocompose.data.model.database.MemoDAO
 import net.pilseong.todocompose.util.Constants
 import java.time.Instant
 
 class TodoPagingSource(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val todoDAO: TodoDAO,
+    private val memoDAO: MemoDAO,
     private val query: String,
     private val searchRangeAll: Boolean = false,
     private val sortCondition: Int,
@@ -52,7 +52,7 @@ class TodoPagingSource(
             withContext(ioDispatcher) {
                 val todoList =
 //                    todoDAO.getTasks(
-                    todoDAO.getMemosWithNotebooks(
+                    memoDAO.getMemosWithNotebooks(
                         page = currentPage,
                         pageSize = Constants.PAGE_SIZE,
                         query = "%$query%",

@@ -27,11 +27,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
@@ -251,7 +251,7 @@ fun DetailTaskBarPreview() {
     TodoComposeTheme {
         DetailTaskBar(
             task = MemoWithNotebook(
-                memo = TodoTask(
+                memo = MemoTask(
                     id = -1,
                     title = "필성 힘내!!!",
                     description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",

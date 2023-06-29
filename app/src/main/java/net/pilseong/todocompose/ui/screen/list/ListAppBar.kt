@@ -44,7 +44,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -181,7 +180,7 @@ fun ListAppBar(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
@@ -322,7 +321,6 @@ fun MenuAction(
         Icon(
             imageVector = Icons.Filled.Menu,
             contentDescription = stringResource(R.string.delete_all_action),
-//            tint = MaterialTheme.colorScheme.topBarContentColor
             tint = MaterialTheme.colorScheme.onSurface
         )
     }
@@ -334,7 +332,6 @@ fun MenuAction(
         onDismissRequest = { expanded = false },
     ) {
         DropdownMenuItem(
-//            modifier = Modifier.padding(start = LARGE_PADDING),
             text = { Text(text = stringResource(id = R.string.delete_all_menu_text)) },
             onClick = {
                 expanded = false
@@ -380,10 +377,8 @@ fun SearchAppBar(
                     vertical = SMALL_PADDING
                 )
                 .fillMaxWidth(),
-//                .height(TOP_BAR_HEIGHT),
             shape = RoundedCornerShape(30.dp),
             tonalElevation = 16.dp
-//        color = MaterialTheme.colorScheme.topBarContainerColor
         ) {
             val focusRequester = remember { FocusRequester() }
             LaunchedEffect(Unit) {

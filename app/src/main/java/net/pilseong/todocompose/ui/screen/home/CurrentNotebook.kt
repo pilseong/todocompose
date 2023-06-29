@@ -28,10 +28,13 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
+import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import java.time.format.DateTimeFormatter
 
@@ -84,7 +87,7 @@ fun CurrentNotebook(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(SMALL_PADDING)
+                        .padding(horizontal = SMALL_PADDING)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = CenterVertically
@@ -92,6 +95,7 @@ fun CurrentNotebook(
                     Text(
                         modifier = Modifier.padding(horizontal = 2.dp),
                         text = stringResource(id = R.string.current_label),
+                        lineHeight = TextUnit(20F, TextUnitType.Sp),
                         color = Color.White,
                         fontSize = MaterialTheme.typography.labelSmall.fontSize
                     )
@@ -108,8 +112,11 @@ fun CurrentNotebook(
                 modifier = Modifier
                     .padding(horizontal = SMALL_PADDING)
                     .weight(1F)
-                    .wrapContentHeight(CenterVertically),
+                    .wrapContentHeight(CenterVertically)
+                    .fillMaxWidth(),
                 text = currentNotebook.title,
+                fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
+                fontSize = MaterialTheme.typography.labelMedium.fontSize,
                 textAlign = TextAlign.Center,
                 color = Color(
                     ColorUtils.blendARGB(
@@ -131,10 +138,7 @@ fun CurrentNotebook(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(
-                            horizontal = SMALL_PADDING,
-                            vertical = 2.dp
-                        )
+                        .padding(horizontal = SMALL_PADDING)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -146,6 +150,7 @@ fun CurrentNotebook(
                                     stringResource(id = R.string.note_inside_dateformat)
                                 )
                             ),
+                        lineHeight = TextUnit(16F, TextUnitType.Sp),
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
                         color = Color.White.copy(alpha = 0.7f)
                     )
@@ -156,6 +161,7 @@ fun CurrentNotebook(
                                     "HH:mm"
                                 )
                             ),
+                        lineHeight = TextUnit(16F, TextUnitType.Sp),
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
                         color = Color.White.copy(alpha = 0.7f)
                     )
@@ -173,7 +179,12 @@ fun PreviewCurrentNotebook() {
             notebookWidth = 110F,
             onSelectNotebook = {},
             onInfoClick = {},
-            currentNotebook = NotebookWithCount.instance()
+            currentNotebook = NotebookWithCount(
+                id = 1,
+                title = "My Love Note",
+                description = "desc1",
+                priority = Priority.NONE
+            ),
         )
     }
 }

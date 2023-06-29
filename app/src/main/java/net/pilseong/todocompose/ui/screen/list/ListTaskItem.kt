@@ -53,11 +53,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
@@ -165,7 +165,7 @@ fun TaskItem(
                 modifier = Modifier
                     .padding(vertical = LARGE_PADDING)
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(56.dp),
                 verticalAlignment = CenterVertically
             ) {
                 // 시간 + 중요성
@@ -337,7 +337,7 @@ fun TaskItemPreview() {
     TodoComposeTheme {
         TaskItem(
             todoTask = MemoWithNotebook(
-                memo = TodoTask(
+                memo = MemoTask(
                     1, "필성 힘내!!!",
                     "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                     Priority.HIGH,

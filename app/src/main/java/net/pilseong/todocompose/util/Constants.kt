@@ -1,7 +1,7 @@
 package net.pilseong.todocompose.util
 
 object Constants {
-    const val MEMO_TABLE = "todo_table"
+    const val MEMO_TABLE = "memo_table"
     const val NOTE_TABLE = "note_table"
     const val DATABASE_NAME = "todo_database"
 

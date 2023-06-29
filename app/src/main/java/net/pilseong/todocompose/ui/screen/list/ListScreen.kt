@@ -56,7 +56,7 @@ import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.ui.viewmodel.toTodoTask
+import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.HOME_SCREEN
 import net.pilseong.todocompose.util.SearchAppBarState
@@ -209,7 +209,7 @@ fun ListScreen(
             ListContent(
                 tasks = tasks,
                 toTaskScreen = { index ->
-                    memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toTodoTask())
+                    memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toMemoTask())
                     memoViewModel.updateIndex(index)
                     toTaskScreen()
                 },
@@ -321,7 +321,7 @@ private fun ListScreenPreview() {
         tasks = flowOf(
             PagingData.from<MemoWithNotebook>(
                 listOf(
-//                    TodoTask(
+//                    MemoTask(
 //                        1,
 //                        "필성 힘내!!!",
 //                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",

@@ -82,9 +82,9 @@
     <string name="priority_low">낮음</string>
     <string name="priority_none">미지정</string>
     <string name="status_completed">완료</string>
-    <string name="status_active">처리중</string>
-    <string name="status_suspended">보류중</string>
-    <string name="status_cancelled">취소됨</string>
+    <string name="status_active">처리</string>
+    <string name="status_suspended">보류</string>
+    <string name="status_cancelled">취소</string>
     <string name="status_waiting">대기</string>
     <string name="status_none">상태없음</string>
     <string name="import_menu_label">가져오기</string>
@@ -111,13 +111,14 @@
     <string name="save_label">저장</string>
     <string name="info_created_at">생성일</string>
     <string name="info_updated_at">수정일</string>
+    <string name="info_finished_at">종결일</string>
     <string name="info_accessed_at">사용일</string>
     <string name="info_priority">노트 중요도</string>
     <string name="info_priority_memos_count">메모 중요도 분포(상/중/하/미지정)</string>
     <string name="info_total_memos">총 메모수</string>
-    <string name="info_completed_count">완료 메모</string>
+    <string name="info_done_count">종결 메모(완료/취소)</string>
     <string name="info_in_process_count">작업중 메모(처리/대기)</string>
-    <string name="info_suspended_count">보류중 메모</string>
+    <string name="info_suspended_count">보류 메모</string>
     <string name="info_waiting_count">대기 메모</string>
     <string name="info_not_assigned_count">미지정 메모</string>
     <string name="info_description">설명</string>
@@ -131,5 +132,5 @@
     <string name="note_sort_updated_at_label">수정일 기준</string>
     <string name="note_sort_accessed_at_label">사용일 기준</string>
     <string name="day_of_week_label">E</string>
-    <string name="total_label">전체</string>
+    <string name="total_label">검색결과: %1$s건</string>
 </resources>

@@ -60,6 +60,7 @@ import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.CustomAlertDialog
+import net.pilseong.todocompose.ui.components.ProgressIndicator
 import net.pilseong.todocompose.ui.screen.list.DisplaySnackBar
 import net.pilseong.todocompose.ui.screen.list.ListScreen
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
@@ -67,7 +68,7 @@ import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.ui.viewmodel.toTodoTask
+import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
@@ -120,7 +121,9 @@ fun NavGraphBuilder.memoNavGraph(
             val uiState = memoViewModel.uiState
 
             val intentResultLauncher =
-                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                rememberLauncherForActivityResult(
+                    ActivityResultContracts.GetContent()
+                ) { uri ->
                     memoViewModel.handleImport(uri)
                 }
 
@@ -133,7 +136,6 @@ fun NavGraphBuilder.memoNavGraph(
             val dialogTitle = remember { mutableStateOf(createNotebookStr) }
             val action = remember { mutableStateOf(Action.NOTEBOOK_CHANGE) }
             val snackBarHostState = remember { SnackbarHostState() }
-
 
             Log.d(
                 "PHILIP",
@@ -155,9 +157,9 @@ fun NavGraphBuilder.memoNavGraph(
                     memoViewModel.updateAction(Action.NO_ACTION)
                     toTaskScreen()
                 },
-                onSwipeToEdit = { index, todoTask ->
+                onSwipeToEdit = { index, memo ->
                     memoViewModel.updateIndex(index)
-                    memoViewModel.setTaskScreenToEditorMode(todoTask.toTodoTask())
+                    memoViewModel.setTaskScreenToEditorMode(memo.toMemoTask())
                     // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                     memoViewModel.updateAction(Action.NO_ACTION)
 
@@ -210,12 +212,12 @@ fun NavGraphBuilder.memoNavGraph(
                 onStateChange = { task, state ->
                     memoViewModel.handleActions(
                         Action.STATE_CHANGE,
-                        todoTask = task.toTodoTask(),
+                        memo = task.toMemoTask(),
                         state = state
                     )
                 },
                 onImportClick = {
-                    intentResultLauncher.launch("*/*")
+                    intentResultLauncher.launch("text/plain")
                 },
                 onFabClicked = {
                     memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
@@ -278,7 +280,7 @@ fun NavGraphBuilder.memoNavGraph(
                 onFavoriteClick = { todo ->
                     memoViewModel.handleActions(
                         action = Action.FAVORITE_UPDATE,
-                        todoTask = todo.toTodoTask()
+                        memo = todo.toMemoTask()
                     )
                 },
                 onLongClickReleased = {
@@ -294,6 +296,11 @@ fun NavGraphBuilder.memoNavGraph(
                     )
                 }
             )
+
+            // 로딩바 보이기
+            if (memoViewModel.progressVisible) {
+                ProgressIndicator()
+            }
 
             NotebooksPickerDialog(
                 dialogTitle = dialogTitle.value,
@@ -319,7 +326,7 @@ fun NavGraphBuilder.memoNavGraph(
                 snackBarHostState = snackBarHostState,
                 action = memoViewModel.action,
                 enabled = memoViewModel.actionPerformed,
-                title = memoViewModel.savedLastTodoTask.title,
+                title = memoViewModel.savedLastMemoTask.title,
                 buttonClicked = { selectedAction, result ->
                     Log.d("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
@@ -407,7 +414,7 @@ fun NavGraphBuilder.memoNavGraph(
                             if (action == Action.DELETE) {
                                 memoViewModel.handleActions(
                                     action = action,
-                                    todoTask = tasks[taskIndex]!!.toTodoTask()
+                                    memo = tasks[taskIndex]!!.toMemoTask()
                                 )
                                 toListScreen()
                             } else {
@@ -425,7 +432,7 @@ fun NavGraphBuilder.memoNavGraph(
                         memoViewModel.index = 0
                     },
                     onEditClicked = {
-                        memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex]!!.toTodoTask())
+                        memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex]!!.toMemoTask())
                     },
                     onValueChange = memoViewModel::updateUiState,
                     onSwipeRightOnViewer = { memoViewModel.decrementIndex() },

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.NotebookWithCount
+import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.ui.components.SortMenuItems
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -355,7 +356,12 @@ fun NoteContentPreview() {
         onSelectNotebookWithLongClick = {},
         selectedNotebookIds = SnapshotStateList(),
         onInfoClick = {},
-        currentNotebook = NotebookWithCount.instance(),
+        currentNotebook = NotebookWithCount(
+            id = 1,
+            title = "My Love Note",
+            description = "desc1",
+            priority = Priority.NONE
+        ),
         firstRecentNotebook = NotebookWithCount.instance(),
         secondRecentNotebook = NotebookWithCount.instance(),
         onEmptyImageClick = {},

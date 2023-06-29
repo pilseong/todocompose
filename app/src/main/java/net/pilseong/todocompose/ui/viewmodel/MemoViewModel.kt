@@ -32,11 +32,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.TodoTask
 import net.pilseong.todocompose.data.model.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
@@ -67,12 +67,11 @@ class MemoViewModel @Inject constructor(
 
     var selectedNotebook = mutableStateOf(Notebook.instance())
 
+    var progressVisible by mutableStateOf(false)
+
     /**
      * 화면의 state 를 관리 하는 변수들 선언
      */
-
-    // 화면 갱신이 필요 하기 때문에 state 로 관리 해야 한다.
-    var sortFavorite by mutableStateOf(false)
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
     var index by mutableIntStateOf(0)
@@ -94,7 +93,7 @@ class MemoViewModel @Inject constructor(
     var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
     // snack 바에 결과를 보여주기 위해서 마지막 action의 상태를 저장한다.
-    var savedLastTodoTask = TodoTask.instance()
+    var savedLastMemoTask = MemoTask.instance()
 
     fun updateIndex(index: Int) {
         this.index = index
@@ -112,7 +111,7 @@ class MemoViewModel @Inject constructor(
 
     fun decrementIndex() {
         viewModelScope.launch {
-            delay(300)
+            delay(100)
             index--
             Log.d("PHILIP", "[MemoViewModel] decrementIndex $index")
         }
@@ -183,24 +182,18 @@ class MemoViewModel @Inject constructor(
                 priorityMedium = uiState.priorityMedium,
                 priorityLow = uiState.priorityLow,
                 priorityNone = uiState.priorityNone,
-            )
-//                .stateIn(
-//                    scope = viewModelScope,
-//                    started = SharingStarted.WhileSubscribed(),
-//                    initialValue = PagingData.empty()
-//                )
-                .cachedIn(viewModelScope)
+            ).cachedIn(viewModelScope)
                 .collectLatest {
                     Log.d(
                         "PHILIP",
                         "[MemoViewModel] refreshAllTasks how many"
                     )
                     tasks.value = it
+                    if (progressVisible) progressVisible = false
                 }
         }
     }
 
-    //    var notebooks = MutableStateFlow<List<NotebookWithCount>>(emptyList())
     var notebooks = notebookRepository.getNotebooksAsFlow(NoteSortingOption.ACCESS_AT)
         .stateIn(
             scope = viewModelScope,
@@ -282,7 +275,7 @@ class MemoViewModel @Inject constructor(
         this.actionPerformed = Random.nextBytes(4)
     }
 
-    fun setTaskScreenToEditorMode(task: TodoTask = TodoTask.instance(notebookId = uiState.notebookIdState)) {
+    fun setTaskScreenToEditorMode(task: MemoTask = MemoTask.instance(notebookId = uiState.notebookIdState)) {
         taskAppBarState = TaskAppBarState.EDITOR
         updateUiState(
             if (task.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = uiState.notebookIdState)
@@ -291,7 +284,7 @@ class MemoViewModel @Inject constructor(
     }
 
 
-    fun setTaskScreenToViewerMode(task: TodoTask = TodoTask.instance(notebookId = uiState.notebookIdState)) {
+    fun setTaskScreenToViewerMode(task: MemoTask = MemoTask.instance(notebookId = uiState.notebookIdState)) {
         taskAppBarState = TaskAppBarState.VIEWER
         updateUiState(task.toTaskDetails())
     }
@@ -299,7 +292,7 @@ class MemoViewModel @Inject constructor(
 
     fun handleActions(
         action: Action,
-        todoTask: TodoTask = TodoTask.instance(),
+        memo: MemoTask = MemoTask.instance(),
         priority: Priority = Priority.NONE,
         sortOrderEnabled: Boolean = false,
         sortDateEnabled: Boolean = false,
@@ -327,7 +320,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.DELETE -> {
-                deleteTask(todoTask)
+                deleteTask(memo)
                 updateActionPerformed()
             }
 
@@ -353,7 +346,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.FAVORITE_UPDATE -> {
-                updateFavorite(todoTask)
+                updateFavorite(memo)
                 // favorite 모드가 활성화 되었을 때만 favorite 삭제시 리프레시
             }
 
@@ -478,7 +471,7 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.STATE_CHANGE -> {
-                updateState(todoTask, state)
+                updateState(memo, state)
             }
 
             Action.STATE_CHANGE_MULTIPLE -> {
@@ -592,13 +585,13 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun addTask() {
-        savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
+        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
         viewModelScope.launch {
             Log.d(
                 "PHILIP",
                 "[MemoViewModel] addTask performed with $taskUiState"
             )
-            todoRepository.addTask(taskUiState.taskDetails.toTodoTask())
+            todoRepository.addMemo(taskUiState.taskDetails.toMemoTask())
             refreshAllTasks()
         }
         this.action = Action.ADD
@@ -609,18 +602,18 @@ class MemoViewModel @Inject constructor(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
-        savedLastTodoTask = taskUiState.taskDetails.toTodoTask()
+        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
         viewModelScope.launch {
-            todoRepository.updateTask(taskUiState.taskDetails.toTodoTask())
+            todoRepository.updateMemo(taskUiState.taskDetails.toMemoTask())
         }
         this.action = Action.UPDATE
     }
 
-    private fun deleteTask(task: TodoTask) {
-        savedLastTodoTask = task.copy()
+    private fun deleteTask(task: MemoTask) {
+        savedLastMemoTask = task.copy()
 
         viewModelScope.launch {
-            todoRepository.deleteTask(task.id)
+            todoRepository.deleteMemo(task.id)
             refreshAllTasks()
         }
         this.action = Action.DELETE
@@ -644,23 +637,22 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             Log.d(
                 "PHILIP",
-                "[MemoViewModel] undoTask - undo with $savedLastTodoTask"
+                "[MemoViewModel] undoTask - undo with $savedLastMemoTask"
             )
-            todoRepository.addTask(
-                savedLastTodoTask
+            todoRepository.addMemo(
+                savedLastMemoTask
             )
             refreshAllTasks()
         }
         this.action = Action.UNDO
     }
 
-    private fun updateFavorite(todo: TodoTask) {
+    private fun updateFavorite(memo: MemoTask) {
         viewModelScope.launch {
-            Log.d("PHILIP", "updateFavorite ${todo.favorite}")
-//            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(favorite = !todo.favorite))
-            todoRepository.updateTaskWithoutUpdatedAt(todo)
+            Log.d("PHILIP", "updateFavorite ${memo.favorite}")
+            todoRepository.updateMemoWithoutUpdatedAt(memo)
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
-            if (sortFavorite) refreshAllTasks()
+            if (uiState.sortFavorite) refreshAllTasks()
         }
     }
 
@@ -677,9 +669,20 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    private fun updateState(todo: TodoTask, state: State) {
+    private fun updateState(todo: MemoTask, state: State) {
         viewModelScope.launch {
-            todoRepository.updateTaskWithoutUpdatedAt(todo.copy(progression = state))
+            todoRepository.updateMemoWithoutUpdatedAt(
+                if (state == State.COMPLETED) {
+                    todo.copy(
+                        progression = state,
+                        finishedAt = ZonedDateTime.now()
+                    )
+                } else {
+                    todo.copy(
+                        progression = state,
+                    )
+                }
+            )
             // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
             when (state) {
                 State.NONE -> {
@@ -711,7 +714,7 @@ class MemoViewModel @Inject constructor(
 
     private fun deleteAllTasks() {
         viewModelScope.launch {
-            todoRepository.deleteAllTasks()
+            todoRepository.deleteAllMemos()
             refreshAllTasks()
         }
         this.action = Action.DELETE_ALL
@@ -719,7 +722,7 @@ class MemoViewModel @Inject constructor(
 
     private fun deleteSelectedTasks() {
         viewModelScope.launch {
-            todoRepository.deleteSelectedTasks(selectedItems)
+            todoRepository.deleteSelectedMemos(selectedItems)
             selectedItems.clear()
             refreshAllTasks()
         }
@@ -739,6 +742,8 @@ class MemoViewModel @Inject constructor(
         .serializeNulls().setPrettyPrinting().create()
 
     fun handleImport(uri: Uri?) {
+        progressVisible = true
+
         val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
         val bytes = item?.readBytes()
 
@@ -746,17 +751,22 @@ class MemoViewModel @Inject constructor(
             val memoString = String(bytes, Charsets.UTF_8)
             val dbTables = memoString.split("pilseong")
 
-            val memoListType = object : TypeToken<List<TodoTask>>() {}.type
+            val memoListType = object : TypeToken<List<MemoTask>>() {}.type
             val noteListType = object : TypeToken<List<Notebook>>() {}.type
 
-            val memos = gson.fromJson<List<TodoTask>>(dbTables[0], memoListType)
+            val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
             val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
 
             Log.d("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
 
             viewModelScope.launch {
-                todoRepository.insertMultipleMemos(memos)
-                notebookRepository.insertMultipleNotebooks(notes)
+                try {
+                    todoRepository.insertMultipleMemos(memos)
+                    notebookRepository.insertMultipleNotebooks(notes)
+                    refreshAllTasks()
+                } catch (e: Exception) {
+                    Log.d("PHILIP", "error while importing ${e.message}")
+                }
             }
         }
         item?.close()
@@ -844,6 +854,7 @@ class MemoViewModel @Inject constructor(
                             refreshAllTasks()
                             getNotebook(uiState.notebookIdState)
                         }
+
                         else -> {}
                     }
                 }
@@ -868,7 +879,7 @@ data class TaskDetails(
     val notebookId: Int = -1
 )
 
-fun TaskDetails.toTodoTask() = TodoTask(
+fun TaskDetails.toMemoTask() = MemoTask(
     id = id,
     title = title,
     description = description,
@@ -880,7 +891,7 @@ fun TaskDetails.toTodoTask() = TodoTask(
     notebookId = notebookId
 )
 
-fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
+fun MemoTask.toTaskDetails(): TaskDetails = TaskDetails(
     id = id,
     title = title,
     description = description,
@@ -892,7 +903,7 @@ fun TodoTask.toTaskDetails(): TaskDetails = TaskDetails(
     notebookId = notebookId
 )
 
-fun MemoWithNotebook.toTodoTask(): TodoTask = TodoTask(
+fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
     id = memo.id,
     title = memo.title,
     description = memo.description,

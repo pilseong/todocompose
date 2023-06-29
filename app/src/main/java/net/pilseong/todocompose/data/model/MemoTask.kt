@@ -10,7 +10,7 @@ import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import java.time.ZonedDateTime
 
 @Entity(tableName = MEMO_TABLE)
-data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
+data class MemoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val title: String,
@@ -24,16 +24,19 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "updated_at")
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
-    @ColumnInfo(name = "completed_at")
-    val completedAt: ZonedDateTime? = null,
+    @ColumnInfo(name = "completed_at", defaultValue = "-1")
+    val finishedAt: ZonedDateTime? = null,
+    @ColumnInfo(name = "due_date", defaultValue = "-1")
+    val dueDate: ZonedDateTime? = null,
     @ColumnInfo(name = "notebook_id", defaultValue = "-1")
+    val notebookId: Int,
+    @ColumnInfo(name = "deleted", defaultValue = "0")
     val deleted: Boolean = false,
-    val notebookId: Int
 ) {
 
     companion object {
-        @JvmStatic fun instance(notebookId: Int = -1): TodoTask {
-            return TodoTask(
+        @JvmStatic fun instance(notebookId: Int = -1): MemoTask {
+            return MemoTask(
                 id = NEW_ITEM_ID,
                 title = "",
                 description = "",
@@ -42,7 +45,7 @@ data class TodoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
                 progression = State.NONE,
                 createdAt = ZonedDateTime.now(),
                 updatedAt = ZonedDateTime.now(),
-                completedAt = null,
+                finishedAt = null,
                 notebookId = notebookId
             )
         }

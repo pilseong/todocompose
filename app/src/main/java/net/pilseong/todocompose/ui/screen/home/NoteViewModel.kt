@@ -117,12 +117,9 @@ class NoteViewModel @Inject constructor(
         }
 
         notebooksJob = viewModelScope.launch {
+            // stateIn을 하면 깜박임이 생기고 에니메이션이 생성되지 않는다.
             notebookRepository.getNotebooksAsFlow(noteSortingOption)
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5000),
-                    initialValue = emptyList()
-                ).collectLatest {
+                .collectLatest {
                     Log.d("PHILIP", "[NoteViewModel] getNotebooksWithCount() executed with $it")
                     notebooks.value = it
                     if (isLoading) {
@@ -158,14 +155,14 @@ class NoteViewModel @Inject constructor(
                             "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
                         )
                         // 현재 노트북을 삭제할 경우, flow를 통해 순간적으로 null을 수신하게 된다.
-                        if (it != null)
+                        if (it.id == noteId)
                             currentNotebook.value = it
                     }
             } else {
                 memoRepository.getMemoCount(-1)
                     .stateIn(
                         scope = viewModelScope,
-                        started = SharingStarted.WhileSubscribed(),
+                        started = SharingStarted.WhileSubscribed(5000),
                         initialValue = DefaultNoteMemoCount()
                     ).collectLatest {
                         Log.d(
@@ -347,9 +344,9 @@ class NoteViewModel @Inject constructor(
                     }
 
                     viewModelScope.launch {
-                        // 아래의 delay는 노트화면에서 리스트로 전환될 때 순간적으로 recent가 빠르게 변환되는 것을 지연하기 위한 것이다.
-                        // 현재 flow로 되어 있어 클릭하는 순간 바로 데이터를 받게 되어 제어가 불가능하다.
-                        delay(20)
+                        // 아래의 delay 는 노트 화면 에서 리스트 로 전환될 때 순간적 으로 recent 가 빠르게 변환 되는 것을 지연 하기 위한 것이다.
+                        // 현재 flow 로 되어 있어 클릭 하는 순간 바로 데이터 를 받게 되어 제어가 불가능 하다.
+                        // delay 를 삭제함 flow 에서 받는 값을 비교 하여 쓸지 않 쓸지를 판단 하도록 변경 수정 완료
                         persistNotebookIdState(noteIdsList)
                     }
                 }
