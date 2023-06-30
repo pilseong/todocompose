@@ -28,14 +28,16 @@
     <string name="label_no">취소</string>
     <string name="delete_task_dialog_title">\'%1$s\' 메모 삭제</string>
     <string name="delete_task_dialog_confirmation">\'%1$s\' 을 정말 삭제하시겠습니까?</string>
-    <string name="export_task_dialog_confirmation">내보내기를 실행하시겠습니까?</string>
-    <string name="delete_all_task_dialog_title">전체 삭제</string>
+    <string name="export_memos_dialog_title">이메일로 내보내기</string>
+    <string name="import_dialog_title">파일로 부터 가져오기</string>
+    <string name="delete_all_task_dialog_title">전체 메모 삭제</string>
     <string name="delete_selected_task_dialog_title">선택 삭제</string>
     <string name="delete_selected_notebook_dialog_title">선택 노트 삭제</string>
-    <string name="delete_all_tasks_dialog_confirmation">모든 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
-    <string name="delete_seleccted_tasks_dialog_confirmation">선택된 메모를 삭제하시겠습니까? 복구가 불가능합니다.</string>
-    <string name="delete_seleccted_notebooks_dialog_confirmation">선택된 노트를 삭제하시겠습니까? 복구가 불가능합니다.</string>
-    <string name="export_all_tasks_dialog_confirmation">모든 메모를 이메일 첨부파일로 생성합니다. 데이터가 많은 경우 시간이 걸릴 수 있습니다.</string>
+    <string name="delete_all_tasks_dialog_confirmation">\'%1$s\'의 모든 메모를 삭제하시겠습니까?</string>
+    <string name="delete_selected_tasks_dialog_confirmation">선택된 메모를 삭제하시겠습니까?</string>
+    <string name="delete_selected_notebooks_dialog_confirmation">선택된 노트를 삭제하시겠습니까? 복구가 불가능합니다.</string>
+    <string name="export_all_memos_dialog_confirmation">모든 메모를 이메일 첨부파일로 생성합니다.</string>
+    <string name="import_dialog_confirmation">파일로부터 데이터를 가져오시겠습니까? 기존의 자료와 중복되는 경우 무시됩니다.</string>
     <string name="delete_label">삭제 아이콘</string>
     <string name="update_label">엡데이트 아이콘</string>
     <string name="empty_title_popup">제목이 비어 있습니다.</string>
@@ -133,4 +135,7 @@
     <string name="note_sort_accessed_at_label">사용일 기준</string>
     <string name="day_of_week_label">E</string>
     <string name="total_label">검색결과: %1$s건</string>
+    <string name="info_import_fail_title">가져오기 오류</string>
+    <string name="info_import_fail_content">가져오기 중 에러가 발생했습니다. 형식이 다르거나 손상된 자료일 수 있습니다.</string>
+    <string name="info_dialog_dismiss_label">닫기</string>
 </resources>

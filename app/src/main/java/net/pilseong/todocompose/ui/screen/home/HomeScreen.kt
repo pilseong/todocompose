@@ -121,7 +121,7 @@ private fun HomeAppBar(
         ) {
             MultiSelectAppbarActions(
                 onDeleteTitle = R.string.delete_selected_notebook_dialog_title,
-                onDeleteDescription = R.string.delete_seleccted_notebooks_dialog_confirmation,
+                onDeleteDescription = R.string.delete_selected_notebooks_dialog_confirmation,
                 onDeleteSelectedClicked = onDeleteSelectedClicked,
             ) {
                 if (selectedNotebookIds.size == 1) {

@@ -99,7 +99,7 @@ fun ListAppBar(
             var expanded by remember { mutableStateOf(false) }
             MultiSelectAppbarActions(
                 onDeleteTitle = R.string.delete_selected_task_dialog_title,
-                onDeleteDescription = R.string.delete_seleccted_tasks_dialog_confirmation,
+                onDeleteDescription = R.string.delete_selected_tasks_dialog_confirmation,
                 onDeleteSelectedClicked = onDeleteSelectedClicked,
                 actions = {
                     CommonAction(
@@ -117,6 +117,7 @@ fun ListAppBar(
                 }
             )
 
+            // 멀티 상태 선택 메뉴
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
@@ -157,9 +158,7 @@ fun ListAppBar(
                     onSearchIconClicked = onSearchIconClicked,
                     onDeleteAllClicked = onDeleteAllClicked,
                     onDateRangePickerConfirmed = onDateRangePickerConfirmed,
-                    onImportClick = {
-                        onImportClick()
-                    },
+                    onImportClick = onImportClick,
                     onExportClick = onExportClick,
                     onAppBarTitleClick = onAppBarTitleClick
                 )
@@ -211,6 +210,7 @@ fun DefaultListAppBar(
         ),
         actions = {
             ListAppBarActions(
+                notebookName = appbarTitle,
                 onSearchClicked = onSearchIconClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
                 onDatePickConfirmed = onDateRangePickerConfirmed,
@@ -239,6 +239,7 @@ fun PreviewDefaultListAppBar() {
 
 @Composable
 fun ListAppBarActions(
+    notebookName: String = "",
     onSearchClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
@@ -251,19 +252,31 @@ fun ListAppBarActions(
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
         title = stringResource(id = R.string.delete_all_task_dialog_title),
-        message = stringResource(id = R.string.delete_all_tasks_dialog_confirmation),
+        message = stringResource(id = R.string.delete_all_tasks_dialog_confirmation, notebookName),
         openDialog = deleteAlertExpanded,
         onYesClicked = onDeleteAllClicked,
         onCloseDialog = { deleteAlertExpanded = false }
     )
 
-    // 다이얼 로그 박스 에 대한 상태
+    // Import 다이얼 로그 박스 에 대한 상태
+    var importAlertExpanded by remember { mutableStateOf(false) }
+
+    // import 의 confirm 용도의 alert dialog 생성
+    DisplayAlertDialog(
+        title = stringResource(id = R.string.import_dialog_title),
+        message = stringResource(id = R.string.import_dialog_confirmation),
+        openDialog = importAlertExpanded,
+        onYesClicked = onImportClick,
+        onCloseDialog = { importAlertExpanded = false }
+    )
+
+    // Export 다이얼 로그 박스 에 대한 상태
     var exportAlertExpanded by remember { mutableStateOf(false) }
 
     // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
     DisplayAlertDialog(
-        title = stringResource(id = R.string.export_task_dialog_confirmation),
-        message = stringResource(id = R.string.export_all_tasks_dialog_confirmation),
+        title = stringResource(id = R.string.export_memos_dialog_title),
+        message = stringResource(id = R.string.export_all_memos_dialog_confirmation),
         openDialog = exportAlertExpanded,
         onYesClicked = onExportClick,
         onCloseDialog = { exportAlertExpanded = false }
@@ -289,7 +302,9 @@ fun ListAppBarActions(
         onDeleteAllClicked = {
             deleteAlertExpanded = true
         },
-        onImportClick = onImportClick,
+        onImportClick = {
+            importAlertExpanded = true
+        },
         onExportClick = {
             exportAlertExpanded = true
         }

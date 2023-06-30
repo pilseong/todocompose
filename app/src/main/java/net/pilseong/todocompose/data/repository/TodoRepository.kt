@@ -106,6 +106,12 @@ class TodoRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteAllMemosInNote(notebookId: Int) {
+        withContext(Dispatchers.IO) {
+            memoDAO.deleteMemosInNote(notebookId)
+        }
+    }
+
     suspend fun deleteSelectedMemos(notesIds: List<Int>) {
         withContext(Dispatchers.IO) {
             memoDAO.deleteSelectedMemos(notesIds)

@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -60,6 +61,7 @@ import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.CustomAlertDialog
+import net.pilseong.todocompose.ui.components.InfoAlertDialog
 import net.pilseong.todocompose.ui.components.ProgressIndicator
 import net.pilseong.todocompose.ui.screen.list.DisplaySnackBar
 import net.pilseong.todocompose.ui.screen.list.ListScreen
@@ -97,8 +99,8 @@ fun NavGraphBuilder.memoNavGraph(
             )
         ) { backStackEntry ->
 
-            // 같은 store owner가 소유하는 viewmodel을 사용한다. store owner은 상위 NavGraph이므로
-            // activity가 죽지 않는 이상 계속 동일한 view model 객체를 사용하게 된다.
+            // 같은 store owner 가 소유 하는 view model 을 사용 한다. store owner은 상위 NavGraph이므로
+            // activity 가 죽지 않는 이상 계속 동일한 view model 객체를 사용하게 된다.
             val memoViewModel = hiltViewModel<MemoViewModel>(
                 viewModelStoreOwner = viewModelStoreOwner
             )
@@ -346,6 +348,17 @@ fun NavGraphBuilder.memoNavGraph(
                 actionAfterPopup = { memoViewModel.updateAction(it) }
             )
 
+            InfoAlertDialog(
+                enable = memoViewModel.openDialog,
+                title = stringResource(memoViewModel.infoDialogTitle),
+                content = stringResource(memoViewModel.infoDialogContent),
+                dismissLabel = stringResource(memoViewModel.infoDialogCDismissLabel),
+                onDismiss = {
+                    memoViewModel.openDialog = false
+                }
+            )
+
+
 
             // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
             BackHandler(
@@ -398,7 +411,7 @@ fun NavGraphBuilder.memoNavGraph(
             Log.d("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
 
 
-            // activity  destroy 되고 다시 생성된 경우는 List 화면으로 forwarding - 샤오미 종특
+            // activity  destroy 되고 다시 생성된 경우는 List 화면 으로 forwarding - 샤오미 종특
             if (taskIndex >= tasks.itemCount) {
                 Log.d("PHILIP", "[MemoNavGraph] memoViewModel value $memoViewModel")
                 navHostController.navigate(Screen.MemoList.route)

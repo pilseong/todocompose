@@ -15,19 +15,6 @@ import javax.inject.Inject
 class NotebookRepository @Inject constructor(
     private val notebookDAO: NotebookDAO
 ) {
-//    fun getNotebooks(): Flow<List<Notebook>> {
-//        return notebookDAO.getNotebooks()
-//    }
-
-    suspend fun getNotebooks(sortingOption: NoteSortingOption): List<NotebookWithCount> {
-        Log.d("PHILIP", "[NotebookRepository] getNotebooks with $sortingOption")
-        var notebooks: List<NotebookWithCount>
-        withContext(Dispatchers.IO) {
-            notebooks = notebookDAO.getNotebooksWithCount(sortingOption)
-        }
-        return notebooks
-    }
-
     fun getNotebooksAsFlow(sortingOption: NoteSortingOption): Flow<List<NotebookWithCount>> {
         Log.d("PHILIP", "[NotebookRepository] getNotebooksAsFlow with $sortingOption")
         return notebookDAO.getNotebooksWithCountAsFlow(sortingOption)
@@ -39,10 +26,6 @@ class NotebookRepository @Inject constructor(
 
     suspend fun getNotebook(id: Int): Notebook {
         return notebookDAO.getNotebook(id)
-    }
-
-    suspend fun getNotebookWithCount(id: Int): NotebookWithCount {
-        return notebookDAO.getNotebookWithCount(id)
     }
 
     fun getNotebookWithCountAsFlow(id: Int): Flow<NotebookWithCount> {
@@ -58,7 +41,9 @@ class NotebookRepository @Inject constructor(
     }
 
     suspend fun insertMultipleNotebooks(notebooksIds: List<Notebook>) {
-        notebookDAO.insertMultipleNotebooks(notebooksIds)
+        withContext(Dispatchers.IO) {
+            notebookDAO.insertMultipleNotebooks(notebooksIds)
+        }
     }
 
     suspend fun updateNotebook(notebook: Notebook) {

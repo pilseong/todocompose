@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -61,6 +62,12 @@ class MemoViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    var openDialog by mutableStateOf(false)
+    var infoDialogTitle by mutableIntStateOf(R.string.info_import_fail_title)
+    var infoDialogContent by mutableIntStateOf(R.string.info_import_fail_content)
+    var infoDialogCDismissLabel by mutableIntStateOf(R.string.info_dialog_dismiss_label)
+
 
     var tasks = MutableStateFlow<PagingData<MemoWithNotebook>>(PagingData.empty())
         private set
@@ -189,7 +196,9 @@ class MemoViewModel @Inject constructor(
                         "[MemoViewModel] refreshAllTasks how many"
                     )
                     tasks.value = it
-                    if (progressVisible) progressVisible = false
+                    if (progressVisible) {
+                        progressVisible = false
+                    }
                 }
         }
     }
@@ -714,7 +723,7 @@ class MemoViewModel @Inject constructor(
 
     private fun deleteAllTasks() {
         viewModelScope.launch {
-            todoRepository.deleteAllMemos()
+            todoRepository.deleteAllMemosInNote(uiState.notebookIdState)
             refreshAllTasks()
         }
         this.action = Action.DELETE_ALL
@@ -742,31 +751,54 @@ class MemoViewModel @Inject constructor(
         .serializeNulls().setPrettyPrinting().create()
 
     fun handleImport(uri: Uri?) {
-        progressVisible = true
-
         val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
         val bytes = item?.readBytes()
 
         if (bytes != null) {
+            progressVisible = true
             val memoString = String(bytes, Charsets.UTF_8)
             val dbTables = memoString.split("pilseong")
 
-            val memoListType = object : TypeToken<List<MemoTask>>() {}.type
-            val noteListType = object : TypeToken<List<Notebook>>() {}.type
+            if (dbTables.size != 2) {
+                progressVisible = false
 
-            val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
-            val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
+                // 실패 대화박스 표출
+                infoDialogTitle = R.string.info_import_fail_title
+                infoDialogContent = R.string.info_import_fail_content
+                openDialog = true
+                Log.d("PHILIP", "error while parsing tables")
+                item.close()
+                return
+            }
 
-            Log.d("PHILIP", "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}")
+            try {
+                val memoListType = object : TypeToken<List<MemoTask>>() {}.type
+                val noteListType = object : TypeToken<List<Notebook>>() {}.type
 
-            viewModelScope.launch {
-                try {
+                val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
+                val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
+
+                Log.d(
+                    "PHILIP",
+                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}"
+                )
+
+                viewModelScope.launch {
                     todoRepository.insertMultipleMemos(memos)
                     notebookRepository.insertMultipleNotebooks(notes)
+                    delay(1000)
                     refreshAllTasks()
-                } catch (e: Exception) {
-                    Log.d("PHILIP", "error while importing ${e.message}")
                 }
+            } catch (e: JsonParseException) {
+                progressVisible = false
+
+                infoDialogTitle = R.string.info_import_fail_title
+                infoDialogContent = R.string.info_import_fail_content
+                openDialog = true
+
+                Log.d("PHILIP", "error while importing ${e.message}")
+                item.close()
+                return
             }
         }
         item?.close()
@@ -776,7 +808,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             val allMemoData = todoRepository.getAllTasks()
             var memoJson = gson?.toJson(allMemoData)
-            val filename = "memos.txt"
+            val filename = "idea_note.json"
 
             val allNotes = notebookRepository.getAllNotebooks()
             val noteJson = gson?.toJson(allNotes)
@@ -808,10 +840,12 @@ class MemoViewModel @Inject constructor(
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // provider 를 통한 파일 제공
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-        try {
-            context.startActivity(intent)
-        } catch (ex: ActivityNotFoundException) {
-            Log.d("PHILIP", "No Intent matcher found")
+        intent.resolveActivity(context.packageManager)?.let {
+            try {
+                context.startActivity(intent)
+            } catch (ex: ActivityNotFoundException) {
+                Log.d("PHILIP", "No Intent matcher found")
+            }
         }
     }
 

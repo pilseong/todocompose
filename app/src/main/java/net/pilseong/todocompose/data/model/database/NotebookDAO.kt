@@ -21,32 +21,17 @@ abstract class NotebookDAO(
     abstract suspend fun getNotebook(id: Int): Notebook
 
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id) as memoTotalCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
-            "FROM note_table WHERE id = :id")
-    abstract suspend fun getNotebookWithCount(id: Int): NotebookWithCount
-
-    @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id) as memoTotalCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id) as memoTotalCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
             "FROM note_table WHERE id = :id")
     abstract fun getNotebookWithCountAsFlow(id: Int): Flow<NotebookWithCount>
 
@@ -93,37 +78,19 @@ abstract class NotebookDAO(
             addNotebook(notebook)
         }
     }
-    @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id) as memoTotalCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
-            "FROM note_table " +
-            "ORDER BY " +
-            "CASE WHEN :sortingOption = 'ACCESS_AT' THEN accessed_at END DESC, " +
-            "CASE WHEN :sortingOption = 'UPDATED_AT' THEN updated_at END DESC, " +
-            "CASE WHEN :sortingOption = 'CREATED_AT' THEN created_at END DESC")
-    abstract suspend fun getNotebooksWithCount(sortingOption: NoteSortingOption): List<NotebookWithCount>
 
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id) as memoTotalCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
-            "(SELECT COUNT(*) FROM memo_table WHERE note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id) as memoTotalCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'COMPLETED') as completedCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'CANCELLED') as cancelledCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'ACTIVE') as activeCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'SUSPENDED') as suspendedCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'WAITING') as waitingCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.progression = 'NONE') as noneCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'HIGH') as highPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'MEDIUM') as mediumPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
+            "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
             "FROM note_table " +
             "ORDER BY " +
             "CASE WHEN :sortingOption = 'ACCESS_AT' THEN accessed_at END DESC, " +

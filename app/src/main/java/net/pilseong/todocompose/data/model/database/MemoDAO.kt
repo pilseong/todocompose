@@ -24,7 +24,7 @@ abstract class MemoDAO {
     @Query(
         "SELECT *, " +
                 "( SELECT COUNT(*) FROM memo_table " +
-                "WHERE 1=1 " +
+                "WHERE deleted = 0 " +
                 "AND ( " +
                 "       CASE :searchRangeAll " +
                 "           WHEN 0 THEN notebook_id = :notebookId " +
@@ -108,7 +108,7 @@ abstract class MemoDAO {
                 "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 ") AS total " +
                 "FROM memo_table " +
-                "WHERE 1=1 " +
+                "WHERE deleted = 0 " +
                 "AND ( " +
                 "       CASE :searchRangeAll " +
                 "           WHEN 0 THEN notebook_id = :notebookId " +
@@ -215,8 +215,12 @@ abstract class MemoDAO {
         priorityNone: Boolean = true
     ): List<MemoWithNotebook>
 
+    // 메모 리스트 메뉴로 현재 노트북의 있는 메모 삭제
+    @Query("UPDATE memo_table SET deleted = 1 WHERE notebook_id = :notebookId")
+    abstract fun deleteMemosInNote(notebookId: Int)
 
-    @Query("SELECT * FROM memo_table WHERE id = :memoId")
+
+    @Query("SELECT * FROM memo_table WHERE deleted = 0 AND id = :memoId")
     abstract fun getSelectedMemo(memoId: Int): MemoTask
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -228,12 +232,13 @@ abstract class MemoDAO {
     @Update
     abstract suspend fun updateMemo(memo: MemoTask)
 
-    @Query("DELETE FROM memo_table WHERE id = :memoId")
+    @Query("UPDATE memo_table SET deleted = 1 WHERE id = :memoId")
     abstract suspend fun deleteMemo(memoId: Int)
 
-    @Query("DELETE FROM memo_table")
+    @Query("UPDATE memo_table SET deleted = 1")
     abstract suspend fun deleteAllMemos()
 
+    // 노트북 자체를 삭제 할 때 cascade 로 삭제 된다.(현재 수동 삭제)
     @Query("DELETE FROM memo_table WHERE notebook_id = :notebookId")
     abstract suspend fun deleteTasksByNotebookId(notebookId: Int)
 
@@ -257,7 +262,7 @@ abstract class MemoDAO {
                 "SUM (CASE progression  WHEN 'SUSPENDED' THEN 1 END) AS suspended, " +
                 "SUM (CASE progression  WHEN 'WAITING' THEN 1 END) AS waiting, " +
                 "SUM (CASE progression  WHEN 'NONE' THEN 1 END) AS not_assigned " +
-                "FROM memo_table WHERE notebook_id = :notebookId"
+                "FROM memo_table WHERE deleted = 0 AND notebook_id = :notebookId"
     )
     abstract fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount>
 
