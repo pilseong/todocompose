@@ -128,7 +128,7 @@ class MemoViewModel @Inject constructor(
     // 맨 처음 로딩 시에 date store 에서 받아온 값으로 정렬을 하는데
     // 현재 3개의 값을 저장 하고 있다. observer 들은 이전 값에 변동이 없는 경우는 그리지 않는데
     // 맨 처음 에는 저장된 값이 같더 라도 그려 줘야 한다.
-    var firstFetch = true
+//    var firstFetch = true
 
     // 아래 두 변수는 snack bar 를 그려 줄 때 현재 Action 에 대한 처리를 하는데
     // 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
@@ -354,6 +354,12 @@ class MemoViewModel @Inject constructor(
                 updateActionPerformed()
             }
 
+            Action.COPY_TO -> {
+                updateAction(action)
+                copyToTask(notebookId)
+                updateActionPerformed()
+            }
+
             Action.FAVORITE_UPDATE -> {
                 updateFavorite(memo)
                 // favorite 모드가 활성화 되었을 때만 favorite 삭제시 리프레시
@@ -493,7 +499,9 @@ class MemoViewModel @Inject constructor(
             }
 
             Action.SEARCH_RANGE_CHANGE -> {
+                updateAction(action)
                 updateSearchRange(searchRangeAll)
+                updateActionPerformed()
             }
 
             Action.NO_ACTION -> {
@@ -594,12 +602,17 @@ class MemoViewModel @Inject constructor(
     }
 
     private fun addTask() {
-        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
-        viewModelScope.launch {
-            Log.d(
-                "PHILIP",
-                "[MemoViewModel] addTask performed with $taskUiState"
+        Log.d(
+            "PHILIP",
+            "[MemoViewModel] addTask performed with $taskUiState"
+        )
+        val temp = taskUiState.taskDetails.toMemoTask()
+        savedLastMemoTask = if (temp.progression == State.COMPLETED) {
+            temp.copy(
+                finishedAt = ZonedDateTime.now()
             )
+        } else temp
+        viewModelScope.launch {
             todoRepository.addMemo(taskUiState.taskDetails.toMemoTask())
             refreshAllTasks()
         }
@@ -611,9 +624,15 @@ class MemoViewModel @Inject constructor(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
-        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
+        val temp = taskUiState.taskDetails.toMemoTask()
+        savedLastMemoTask = if (temp.progression == State.COMPLETED) {
+            temp.copy(
+                finishedAt = ZonedDateTime.now()
+            )
+        } else temp
+
         viewModelScope.launch {
-            todoRepository.updateMemo(taskUiState.taskDetails.toMemoTask())
+            todoRepository.updateMemo(savedLastMemoTask)
         }
         this.action = Action.UPDATE
     }
@@ -642,14 +661,27 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+    private fun copyToTask(destinationNoteId: Int) {
+        viewModelScope.launch {
+            Log.d(
+                "PHILIP",
+                "[MemoViewModel] copyToTask performed with ${selectedItems.toList()} to notebook id with $destinationNoteId "
+            )
+
+            todoRepository.copyMultipleMemosToNote(selectedItems.toList(), destinationNoteId)
+            selectedItems.clear()
+            refreshAllTasks()
+        }
+    }
+
     private fun undoTask() {
         viewModelScope.launch {
             Log.d(
                 "PHILIP",
                 "[MemoViewModel] undoTask - undo with $savedLastMemoTask"
             )
-            todoRepository.addMemo(
-                savedLastMemoTask
+            todoRepository.updateMemoWithoutUpdatedAt(
+                savedLastMemoTask.copy(deleted = false)
             )
             refreshAllTasks()
         }
@@ -877,7 +909,7 @@ class MemoViewModel @Inject constructor(
 
 
     private fun observeUiState() {
-        if (firstFetch) firstFetch = false
+//        if (firstFetch) firstFetch = false
         Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
         viewModelScope.launch {
             uiStateFlow

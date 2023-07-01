@@ -135,9 +135,9 @@ fun ListScreen(
         snackbarHost = {
             SnackbarHost(
                 hostState = snackBarHostState
-            ) {
+            ) { data ->
                 Snackbar(
-                    snackbarData = it,
+                    snackbarData = data,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     actionColor = MaterialTheme.colorScheme.onTertiaryContainer

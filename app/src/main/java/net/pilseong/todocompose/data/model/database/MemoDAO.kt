@@ -280,9 +280,24 @@ abstract class MemoDAO {
     open suspend fun updateMultipleNotebookIds(memosIds: List<Int>, destinationNotebookId: Int) {
         memosIds.forEach { id ->
             updateNotebookId(
-                id,
-                destinationNotebookId,
-                ZonedDateTypeConverter.fromZonedDateTime(ZonedDateTime.now())!!
+                memoId = id,
+                notebookId = destinationNotebookId,
+                updatedAt = ZonedDateTypeConverter.fromZonedDateTime(ZonedDateTime.now())!!
+            )
+        }
+    }
+
+    // 메모를 다른 노트로 복사 하는 기능 - 새로 생성 되는 노트의 값은 업데이트 시간만 변경 되도록 현재
+    @Transaction
+    open suspend fun copyMultipleMemosToNote(memosIds: List<Int>, destinationNotebookId: Int) {
+        memosIds.forEach { id ->
+            val memoTask = getSelectedMemo(id)
+            addMemo(
+                memoTask.copy(
+                    id = 0,
+                    notebookId = destinationNotebookId,
+                    updatedAt = ZonedDateTime.now()
+                )
             )
         }
     }

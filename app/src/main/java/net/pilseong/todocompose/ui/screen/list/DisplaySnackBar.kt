@@ -17,6 +17,7 @@ fun DisplaySnackBar(
     action: Action,
     enabled: ByteArray,
     title: String,
+    range: Boolean = false,
     duration: SnackbarDuration = SnackbarDuration.Short,
     buttonClicked: (Action, SnackbarResult) -> Unit,
     actionAfterPopup: (Action) -> Unit,
@@ -74,6 +75,15 @@ fun DisplaySnackBar(
 
         Action.MOVE_TO ->
             stringResource(id = R.string.snackbar_move_to_message)
+
+        Action.COPY_TO ->
+            stringResource(id = R.string.snackbar_copy_to_message)
+
+        Action.SEARCH_RANGE_CHANGE ->
+            if (range)
+                stringResource(id = R.string.snackbar_all_range_change)
+            else
+                stringResource(id = R.string.snackbar_single_range_change)
 
         else -> {
             ""

@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.text.htmlEncode
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
                 // light 모드 에서는 배경색으로 인한 flikering이 여전히 존재
                 Surface {
                     MainNavGraph(
-                        startDestination = BottomBarScreen.Home.route,
+                        startDestination = "root",
                         navHostController = navHostController
                     )
                 }
@@ -90,8 +91,11 @@ class MainActivity : ComponentActivity() {
             intent?.action == Intent.ACTION_SEND -> {
                 if ("text/plain" == intent.type) {
                     intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
-                        Log.d("PHILIP", "intent called $it")
-                        navHostController.navigate(Screen.MemoDetail.route)
+                        Log.d("PHILIP", "intent called ${it.htmlEncode()}")
+                        navHostController.currentBackStackEntry?.savedStateHandle?.apply {
+                            set("data", it)
+                        }
+                        navHostController.navigate(Screen.MemoDetail.passId(memoId = -1))
                     }
                 } else if (intent.type?.startsWith("image/") == true) {
     //                    handleSendImage(intent) // Handle single image being sent

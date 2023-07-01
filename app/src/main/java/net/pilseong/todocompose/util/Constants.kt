@@ -11,6 +11,7 @@ object Constants {
     const val SETTINGS = "settings"
 
     const val NOTE_ID_ARGUMENT = "note_id"
+    const val MEMO_ID_ARGUMENT = "memo_id"
 
     const val MAX_TITLE_LENGTH = 2000
     const val MAX_CONTENT_LENGTH = 51200

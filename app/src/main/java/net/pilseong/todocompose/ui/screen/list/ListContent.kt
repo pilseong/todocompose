@@ -168,8 +168,8 @@ fun LazyItemList(
         if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
     }
 
-    // 100개의 리스트의 50번째가 firstVisibleItem이었다가 20개 짜리 리스트로 노트를 변경할 경우
-    // index가 리스트보다 많아지는 경우가 일시적으로 발생한다. 예외처리
+    // 100개의 리스트 의 50번째가 firstVisibleItem 이 었다가 20개 짜리 리스트 로 노트를 변경할 경우
+    // index 가 리스트 보다 많아 지는 경우가 일시적 으로 발생 한다. 예외 처리
     val timeData by remember(dateEnabled, realIndex) {
         mutableStateOf(
             if (dateEnabled) {
@@ -295,6 +295,9 @@ fun LazyItemList(
                         selectedItemsIds = selectedItemsIds,
                         onStateSelected = { todo, state ->
                             tasks.itemSnapshotList[index]!!.memo.progression = state
+                            // 설정이 종료 일 경우 종료 정보를 snapshot 에 저장 해야 뷰어 에서 종료 시간을 볼 수 있다.
+                            if (state == State.COMPLETED)
+                                tasks.itemSnapshotList[index]!!.memo.finishedAt = ZonedDateTime.now()
                             onStateSelected(todo, state)
                         },
                     )
@@ -310,11 +313,6 @@ private fun StatusHeader(
     time: ZonedDateTime?,
     total: Int,
 ) {
-    Log.d(
-        "PHILIP",
-        "headerIndex: ${time.toString()}, $total"
-    )
-
     val innerTime by rememberUpdatedState(time)
 
     Surface(

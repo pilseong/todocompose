@@ -90,7 +90,9 @@ class TodoRepository @Inject constructor(
     }
 
     suspend fun updateMemoWithoutUpdatedAt(memoTask: MemoTask) {
-        memoDAO.updateMemo(memoTask)
+        withContext(Dispatchers.IO) {
+            memoDAO.updateMemo(memoTask)
+        }
     }
 
 
@@ -127,6 +129,12 @@ class TodoRepository @Inject constructor(
     suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
         withContext(Dispatchers.IO) {
             memoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
+        }
+    }
+
+    suspend fun copyMultipleMemosToNote(tasksIds: List<Int>, destinationNotebookId: Int) {
+        withContext(Dispatchers.IO) {
+            memoDAO.copyMultipleMemosToNote(tasksIds, destinationNotebookId)
         }
     }
 

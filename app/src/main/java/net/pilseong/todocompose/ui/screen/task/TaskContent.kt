@@ -2,6 +2,7 @@ package net.pilseong.todocompose.ui.screen.task
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -36,6 +39,10 @@ import androidx.compose.material3.rememberDismissState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -44,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
@@ -170,6 +178,8 @@ private fun ViewerContent(
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
+        var expanded by remember { mutableStateOf(false) }
+
         Surface {
             Column(
                 modifier = Modifier
@@ -184,35 +194,53 @@ private fun ViewerContent(
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                         )
+                        Icon(
+                            modifier = Modifier.clickable {
+                                expanded = !expanded
+                            },
+                            imageVector = if (expanded) Icons.Filled.ArrowDropDown else Icons.Default.ArrowDropUp,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                        )
                     }
                     Column(modifier = Modifier.weight(3.5F / 12)) {
                         Column {
-                            Text(
-                                stringResource(id = R.string.task_content_notebook_name),
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                            )
+                            if (expanded) {
+                                Text(
+                                    text = stringResource(id = R.string.task_content_notebook_name),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    lineHeight = 20.sp
+                                )
+                            }
                             Text(
                                 text = stringResource(id = R.string.info_created_at),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp,
                             )
                             Text(
                                 text = stringResource(id = R.string.info_updated_at),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
                             )
                             if (task.memo.finishedAt != null) {
                                 Text(
                                     stringResource(id = R.string.info_finished_at),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    lineHeight = 20.sp
                                 )
                             }
                             Text(
-                                stringResource(id = R.string.badge_priority_label),
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                            )
-                            Text(
                                 stringResource(id = R.string.badge_state_label),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
                             )
+                            if (expanded) {
+                                Text(
+                                    stringResource(id = R.string.badge_priority_label),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    lineHeight = 20.sp
+                                )
+                            }
                         }
                     }
                     Column(
@@ -222,12 +250,25 @@ private fun ViewerContent(
                         Column(
                             horizontalAlignment = Alignment.End
                         ) {
+                            if (expanded) {
+                                Text(
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    text = task.notebook?.title
+                                        ?: stringResource(id = R.string.default_note_title),
+                                    overflow = TextOverflow.Ellipsis,
+                                    lineHeight = 20.sp,
+                                    maxLines = 1
+                                )
+                            }
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text = task.notebook?.title
-                                    ?: stringResource(id = R.string.default_note_title),
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1
+                                text = task.memo.createdAt.toLocalDateTime()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            stringResource(id = R.string.task_content_dateformat)
+                                        )
+                                    ),
+                                lineHeight = 20.sp
                             )
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -236,21 +277,13 @@ private fun ViewerContent(
                                         DateTimeFormatter.ofPattern(
                                             stringResource(id = R.string.task_content_dateformat)
                                         )
-                                    )
-                            )
-                            Text(
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text = task.memo.createdAt.toLocalDateTime()
-                                    .format(
-                                        DateTimeFormatter.ofPattern(
-                                            stringResource(id = R.string.task_content_dateformat)
-                                        )
-                                    )
+                                    ),
+                                lineHeight = 20.sp
                             )
                             if (task.memo.finishedAt != null) {
                                 Text(
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    text = task.memo.finishedAt.toLocalDateTime()
+                                    text = task.memo.finishedAt!!.toLocalDateTime()
                                         .format(
                                             DateTimeFormatter.ofPattern(
                                                 stringResource(id = R.string.task_content_dateformat)
@@ -260,12 +293,16 @@ private fun ViewerContent(
                             }
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text = stringResource(id = task.memo.priority.label)
-                            )
-                            Text(
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 text = stringResource(id = task.memo.progression.label),
+                                lineHeight = 20.sp
                             )
+                            if (expanded) {
+                                Text(
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    text = stringResource(id = task.memo.priority.label),
+                                    lineHeight = 20.sp
+                                )
+                            }
                         }
                     }
                 }

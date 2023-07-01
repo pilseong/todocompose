@@ -25,7 +25,7 @@ data class MemoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     @ColumnInfo(name = "updated_at")
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
     @ColumnInfo(name = "completed_at", defaultValue = "-1")
-    val finishedAt: ZonedDateTime? = null,
+    var finishedAt: ZonedDateTime? = null,
     @ColumnInfo(name = "due_date", defaultValue = "-1")
     val dueDate: ZonedDateTime? = null,
     @ColumnInfo(name = "notebook_id", defaultValue = "-1")

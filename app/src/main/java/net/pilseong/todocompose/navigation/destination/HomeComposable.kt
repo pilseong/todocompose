@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
 import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.InfoDialog
@@ -38,8 +39,7 @@ fun NavGraphBuilder.homeComposable(
         val openDialog = remember { mutableStateOf(false) }
         val infoDialog = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
-        var dialogTitle by
-        remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
+        var dialogTitle by remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         var action by remember { mutableStateOf(NoteAction.ADD) }

@@ -1,10 +1,16 @@
 package net.pilseong.todocompose.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.homeComposable
 import net.pilseong.todocompose.navigation.destination.memoNavGraph
@@ -21,37 +27,56 @@ fun MainNavGraph(
     val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }
+
     NavHost(
         navController = navHostController,
         startDestination = startDestination
     ) {
-        homeComposable(
-            navHostController = navHostController,
-            viewModelStoreOwner = viewModelStoreOwner,
-            route = BottomBarScreen.Home.route
-        )
-
-        memoNavGraph(
-            navHostController = navHostController,
-            viewModelStoreOwner = viewModelStoreOwner,
-            toTaskScreen = {
-                navHostController.navigate(Screen.MemoDetail.route)
-            },
-            toListScreen = {
-                navHostController.navigate(Screen.MemoList.route)
-            },
-            onClickBottomNavBar = { route ->
-                navHostController.navigate(route)
-            }
-        )
-
-        composable(
-            route = BottomBarScreen.Settings.route
+        navigation(
+            startDestination = BottomBarScreen.Home.route,
+            route = "root",
         ) {
-            SettingsScreen(onClickBottomNavBar = { route ->
-                navHostController.navigate(route)
-            })
+            homeComposable(
+                navHostController = navHostController,
+                viewModelStoreOwner = viewModelStoreOwner,
+                route = BottomBarScreen.Home.route
+            )
+
+            memoNavGraph(
+                navHostController = navHostController,
+                toTaskScreen = {
+                    navHostController.navigate(Screen.MemoDetail.route)
+                },
+                toListScreen = {
+                    navHostController.navigate(Screen.MemoList.route)
+                },
+                onClickBottomNavBar = { route ->
+                    navHostController.navigate(route)
+                }
+            )
+
+            composable(
+                route = BottomBarScreen.Settings.route
+            ) {
+                SettingsScreen(onClickBottomNavBar = { route ->
+                    navHostController.navigate(route)
+                })
+            }
         }
     }
 }
 
+@Composable
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navHostController: NavHostController): T {
+
+//    Log.d("PHILIP", "sharedViewModel before ${destination.parent?.route}")
+//    Log.d("PHILIP", "sharedViewModel before ${destination.parent}")
+    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+    val parentEntry = remember(this) {
+        navHostController.getBackStackEntry(navGraphRoute)
+    }
+
+//    Log.d("PHILIP", "sharedViewModel after $navGraphRoute, $parentEntry")
+
+    return hiltViewModel(parentEntry)
+}

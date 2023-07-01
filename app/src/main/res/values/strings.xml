@@ -46,7 +46,9 @@
     <string name="viewer_appbar_update_icon">Check Icon for updating the selected memo</string>
     <string name="viewer_appbar_delete_icon">Delete Icon for the selected memo</string>
     <string name="viewer_appbar_clipboard_copied_popup">Copy to clipboard</string>
-    <string name="snackbar_message_priority_change">Priority change applied</string>
+    <string name="snackbar_message_priority_change">Priority sorting applied</string>
+    <string name="snackbar_all_range_change">Search-in-all-notes applied</string>
+    <string name="snackbar_single_range_change">Search-in-selected-note applied</string>
     <string name="sort_ascending_label">Ascending</string>
     <string name="sort_date_label">Created At</string>
     <string name="task_content_updated_at_label">Updated At</string>
@@ -70,12 +72,13 @@
     <string name="snackbar_message_date_range_cancelled">Date range filter removed</string>
     <string name="snackbar_favorite_change_message">Favorite notes filtered</string>
     <string name="snackbar_move_to_message">Memo(s) moved successfully</string>
+    <string name="snackbar_copy_to_message">Memo(s) copied successfully</string>
     <string name="snackbar_selected_items_deleted_message">Selected notes deleted</string>
     <string name="snackbar_changed_notebook_message">Selected notebook applied</string>
     <string name="status_line_date_range_text">Date from %1$s to %2$s</string>
     <string name="status_line_date_range_up_to_date_text">up to date</string>
     <string name="status_line_date_range_from_the_first_memo_text">the first meno</string>
-    <string name="loading_text">Loading...</string>
+    <string name="loading_text">Loading…</string>
     <string name="task_item_star_description">Favorite icon</string>
     <string name="task_content_dateformat">HH:mm LLL dd, yyyy</string>
     <string name="task_content_notebook_name">Notebook Name</string>
@@ -106,6 +109,7 @@
     <string name="note_screen_create_notebook_dialog_title">Create Notebook</string>
     <string name="note_screen_switch_notebook_dialog_title">Switch to</string>
     <string name="note_screen_move_to_notebook_dialog_title">Move to</string>
+    <string name="note_screen_copy_to_notebook_dialog_title">Copy to</string>
     <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
     <string name="date_picker_title">Pick up a date range</string>
     <string name="note_select_use_default">Default Notebook</string>

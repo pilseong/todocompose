@@ -243,7 +243,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getSecondNoteAsFlow(noteId: Int?) {
+    private fun getSecondNoteAsFlow(noteId: Int?) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getSecondNoteAsFlow() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
@@ -424,6 +424,7 @@ class NoteViewModel @Inject constructor(
                     }
                 }
         }
+        Log.i("PHILIP", "obser finished")
     }
 
     init {

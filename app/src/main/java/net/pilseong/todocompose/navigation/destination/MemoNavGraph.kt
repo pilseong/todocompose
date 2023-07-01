@@ -1,53 +1,7 @@
 package net.pilseong.todocompose.navigation.destination
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ListAlt
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -55,32 +9,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import androidx.paging.compose.collectAsLazyPagingItems
-import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
-import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.navigation.Screen
-import net.pilseong.todocompose.ui.components.CustomAlertDialog
-import net.pilseong.todocompose.ui.components.InfoAlertDialog
-import net.pilseong.todocompose.ui.components.ProgressIndicator
-import net.pilseong.todocompose.ui.screen.list.DisplaySnackBar
-import net.pilseong.todocompose.ui.screen.list.ListScreen
+import net.pilseong.todocompose.navigation.sharedViewModel
+import net.pilseong.todocompose.ui.screen.list.MemoListComposable
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
-import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
+import net.pilseong.todocompose.util.Constants.MEMO_ID_ARGUMENT
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
-import net.pilseong.todocompose.util.Constants.NOTE_ID_ARGUMENT
-import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.util.SortOption
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
-    viewModelStoreOwner: ViewModelStoreOwner,
     toTaskScreen: () -> Unit,
     toListScreen: () -> Unit,
     onClickBottomNavBar: (String) -> Unit
@@ -89,313 +30,31 @@ fun NavGraphBuilder.memoNavGraph(
         startDestination = Screen.MemoList.route,
         route = MEMO_LIST,
     ) {
-        composable(
-            route = Screen.MemoList.route,
-            arguments = listOf(
-                navArgument(NOTE_ID_ARGUMENT) {
-                    type = NavType.IntType
-                    defaultValue = 0
-                }
-            )
-        ) { backStackEntry ->
-
-            // 같은 store owner 가 소유 하는 view model 을 사용 한다. store owner은 상위 NavGraph이므로
-            // activity 가 죽지 않는 이상 계속 동일한 view model 객체를 사용하게 된다.
-            val memoViewModel = hiltViewModel<MemoViewModel>(
-                viewModelStoreOwner = viewModelStoreOwner
-            )
-
-            // 아래 루틴은 직전이 memo graph 에 속해 있지 않을 경우 action 을 None 으로 초기화 한다.
-            // 이유는 마지막 action 에 대한 snackbar 를 화면에 보여 주어야 할지를 판단할 수가 없기 때문 이다.
-            // memo detail 에서 온 경우는 어떤 action 에 의해 list 화면 으로 돌아 오는 것이기 때문에
-            // action 에 대해 처리를 해야 하지만 다른 곳에서 온 경우는 엑션이 실행 되면 안된다.
-            // action 은 stat e가 아니기 때문에 memolist 로 새로 진입한 경우 snackbar 는 그려 주어야 할지 판단할 수 없다.
-            val route = navHostController.previousBackStackEntry?.destination?.route
-            if (route != null && route != Screen.MemoDetail.route) {
-                // 노트북을 변경하거나 노트북을 이동할 경우 MemoNavGraph가 실행이 된다. 이 경우 이전에 home에서 온 경우에도 이전 것이 남아 있어
-                // 중복적으로 NO_ACTION이 실행되게 되는데 이것을 막기 위해서 사용하였다.
-                LaunchedEffect(key1 = route) {
-                    Log.d("PHILIP", "[MemoNavGraph] NO_ACTION called $route")
-                    memoViewModel.updateAction(Action.NO_ACTION)
-                }
-            }
-
-            val uiState = memoViewModel.uiState
-
-            val intentResultLauncher =
-                rememberLauncherForActivityResult(
-                    ActivityResultContracts.GetContent()
-                ) { uri ->
-                    memoViewModel.handleImport(uri)
-                }
-
-            val createNotebookStr =
-                stringResource(id = R.string.note_screen_switch_notebook_dialog_title)
-            val moveToNotebookStr =
-                stringResource(id = R.string.note_screen_move_to_notebook_dialog_title)
-
-            val openDialog = remember { mutableStateOf(false) }
-            val dialogTitle = remember { mutableStateOf(createNotebookStr) }
-            val action = remember { mutableStateOf(Action.NOTEBOOK_CHANGE) }
-            val snackBarHostState = remember { SnackbarHostState() }
-
-            Log.d(
-                "PHILIP",
-                "[memoNavGraph] ListScreen called with " +
-                        "${backStackEntry.arguments?.getInt(NOTE_ID_ARGUMENT)}"
-            )
-
-            ListScreen(
-                uiState = uiState,
-                snackBarHostState = snackBarHostState,
-                searchAppBarState = memoViewModel.searchAppBarState,
-                searchText = memoViewModel.searchTextString,
-                tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
-                selectedItems = memoViewModel.selectedItems,
-                selectedNotebook = memoViewModel.selectedNotebook.value,
-                memoViewModel = memoViewModel,
-                toTaskScreen = {
-                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                    memoViewModel.updateAction(Action.NO_ACTION)
-                    toTaskScreen()
-                },
-                onSwipeToEdit = { index, memo ->
-                    memoViewModel.updateIndex(index)
-                    memoViewModel.setTaskScreenToEditorMode(memo.toMemoTask())
-                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                    memoViewModel.updateAction(Action.NO_ACTION)
-
-                    toTaskScreen()
-                },
-                onClickBottomNavBar = onClickBottomNavBar,
-                onAppBarTitleClick = {
-                    memoViewModel.getDefaultNoteCount()
-                    action.value = Action.NOTEBOOK_CHANGE
-                    dialogTitle.value = createNotebookStr
-                    openDialog.value = true
-                },
-                onSearchIconClicked = {
-                    // 초기 로딩 을 위한 데이터 검색
-                    memoViewModel.onOpenSearchBar()
-                },
-                onCloseClicked = {
-                    if (memoViewModel.searchTextString.isNotEmpty() ||
-                        memoViewModel.searchRangeAll
-                    ) {
-                        memoViewModel.searchTextString = ""
-                        memoViewModel.handleActions(
-                            Action.SEARCH_RANGE_CHANGE,
-                            searchRangeAll = false
-                        )
-                    } else {
-                        memoViewModel.onCloseSearchBar()
-                    }
-                },
-                onSearchClicked = {
-                    memoViewModel.refreshAllTasks()
-                },
-                onTextChange = { text ->
-                    memoViewModel.searchTextString = text
-                    memoViewModel.refreshAllTasks()
-                },
-                onDeleteSelectedClicked = {
-                    memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
-                },
-                onMoveMemoClicked = {
-                    Log.d("PHILIP", "onMoveMemoClicked")
-                    memoViewModel.getDefaultNoteCount()
-                    action.value = Action.MOVE_TO
-                    dialogTitle.value = moveToNotebookStr
-                    openDialog.value = true
-                },
-                onStateSelected = { state ->
-                    memoViewModel.handleActions(Action.STATE_FILTER_CHANGE, state = state)
-                },
-                onStateChange = { task, state ->
-                    memoViewModel.handleActions(
-                        Action.STATE_CHANGE,
-                        memo = task.toMemoTask(),
-                        state = state
-                    )
-                },
-                onImportClick = {
-                    intentResultLauncher.launch("text/plain")
-                },
-                onFabClicked = {
-                    memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
-                    memoViewModel.setTaskScreenToEditorMode()
-                    // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                    memoViewModel.updateAction(Action.NO_ACTION)
-                    toTaskScreen()
-                },
-                onDeleteAllClicked = {
-                    Log.d("PHILIP", "onDeleteAllClicked")
-                    memoViewModel.handleActions(Action.DELETE_ALL)
-                },
-                onDateRangePickerConfirmed = { start, end ->
-                    memoViewModel.handleActions(
-                        action = Action.SEARCH_WITH_DATE_RANGE,
-                        startDate = start,
-                        endDate = end
-                    )
-                },
-                onExportClick = {
-                    memoViewModel.exportData()
-                },
-                onSearchRangeAllClicked = {
-                    memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = it)
-                },
-                onDateRangeCloseClick = {
-                    memoViewModel.handleActions(
-                        Action.SEARCH_WITH_DATE_RANGE,
-                        startDate = null,
-                        endDate = null
-                    )
-                },
-                onFavoriteSortClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_FAVORITE_CHANGE,
-                        favorite = !uiState.sortFavorite
-                    )
-                },
-                onOrderEnabledClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_ORDER_CHANGE,
-                        sortOrderEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                                uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
-                    )
-                },
-                onDateEnabledClick = {
-                    memoViewModel.handleActions(
-                        action = Action.SORT_DATE_CHANGE,
-                        sortDateEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                                uiState.dateOrderState == SortOption.CREATED_AT_DESC),
-                    )
-                },
-                onPrioritySelected = { priorityAction, priority ->
-                    Log.d("PHILIP", "$priorityAction, $priority")
-                    memoViewModel.handleActions(
-                        priorityAction,
-                        priority = priority
-                    )
-                },
-                onFavoriteClick = { todo ->
-                    memoViewModel.handleActions(
-                        action = Action.FAVORITE_UPDATE,
-                        memo = todo.toMemoTask()
-                    )
-                },
-                onLongClickReleased = {
-                    memoViewModel.removeMultiSelectedItem(it)
-                },
-                onLongClickApplied = {
-                    memoViewModel.appendMultiSelectedItem(it)
-                },
-                onStateSelectedForMultipleItems = { state ->
-                    memoViewModel.handleActions(
-                        action = Action.STATE_CHANGE_MULTIPLE,
-                        state = state
-                    )
-                }
-            )
-
-            // 로딩바 보이기
-            if (memoViewModel.progressVisible) {
-                ProgressIndicator()
-            }
-
-            NotebooksPickerDialog(
-                dialogTitle = dialogTitle.value,
-                visible = openDialog.value,
-                onDismissRequest = {
-                    openDialog.value = false
-                },
-                notebooks = memoViewModel.notebooks.collectAsState().value,
-                defaultNoteMemoCount = memoViewModel.defaultNoteMemoCount,
-                onCloseClick = {
-                    openDialog.value = false
-                },
-                onNotebookClick = { id ->
-                    Log.d("PHILIP", "[MemoNavGraph] onNotebookClick $id")
-                    memoViewModel.handleActions(action.value, notebookId = id)
-                    openDialog.value = false
-                }
-            )
-
-            // task screen 에서 요청한 처리의 결과를 보여 준다. undo 의 경우는 특별 하게 처리 한다.
-            // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
-            DisplaySnackBar(
-                snackBarHostState = snackBarHostState,
-                action = memoViewModel.action,
-                enabled = memoViewModel.actionPerformed,
-                title = memoViewModel.savedLastMemoTask.title,
-                buttonClicked = { selectedAction, result ->
-                    Log.d("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
-
-                    if (result == SnackbarResult.ActionPerformed
-                        && selectedAction == Action.DELETE
-                    ) {
-                        Log.d("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
-                        memoViewModel.handleActions(Action.UNDO)
-                    } else {
-                        memoViewModel.updateAction(Action.NO_ACTION)
-                    }
-                },
-                orderEnabled = memoViewModel.snackBarOrderEnabled,
-                dateEnabled = memoViewModel.snackBarDateEnabled,
-                startDate = memoViewModel.startDate,
-                endDate = memoViewModel.endDate,
-                actionAfterPopup = { memoViewModel.updateAction(it) }
-            )
-
-            InfoAlertDialog(
-                enable = memoViewModel.openDialog,
-                title = stringResource(memoViewModel.infoDialogTitle),
-                content = stringResource(memoViewModel.infoDialogContent),
-                dismissLabel = stringResource(memoViewModel.infoDialogCDismissLabel),
-                onDismiss = {
-                    memoViewModel.openDialog = false
-                }
-            )
-
-
-
-            // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
-            BackHandler(
-                enabled = memoViewModel.searchAppBarState != SearchAppBarState.CLOSE ||
-                        memoViewModel.selectedItems.size != 0
-            ) {
-                // 선택 해제
-                if (memoViewModel.selectedItems.size != 0) {
-                    memoViewModel.selectedItems.clear()
-
-                    // 검색바 조절
-                }
-
-                if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
-                    memoViewModel.searchTextString = ""
-                    memoViewModel.handleActions(
-                        Action.SEARCH_RANGE_CHANGE,
-                        searchRangeAll = false
-                    )
-                } else {
-                    memoViewModel.onCloseSearchBar()
-                }
-            }
-
-        }
+        MemoListComposable(navHostController, toTaskScreen, onClickBottomNavBar)
 
 
         composable(
             route = Screen.MemoDetail.route,
-        ) {
-            val memoViewModel = hiltViewModel<MemoViewModel>(
-                viewModelStoreOwner = viewModelStoreOwner
+            arguments = listOf(
+                navArgument(MEMO_ID_ARGUMENT) {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("content") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
             )
+        ) { navBackStackEntry ->
+            val memoViewModel = navBackStackEntry.sharedViewModel<MemoViewModel>(navHostController)
 
             Log.d(
                 "PHILIP",
-                "[memoNavGraph] TaskScreen called"
+                "[memoNavGraph] TaskScreen called id: ${
+                    navBackStackEntry.arguments?.getInt(
+                        MEMO_ID_ARGUMENT
+                    )
+                }, content: ${navBackStackEntry.arguments?.getString("content")}"
             )
 
             // 세부 화면 스크린 에서는 리스트 에서 생성 하고 저장한 snapshot 만 의존 한다.
@@ -411,10 +70,45 @@ fun NavGraphBuilder.memoNavGraph(
             Log.d("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
 
 
-            // activity  destroy 되고 다시 생성된 경우는 List 화면 으로 forwarding - 샤오미 종특
+
+            if (navBackStackEntry.arguments?.getInt(MEMO_ID_ARGUMENT) == -1) {
+                val detailArgument = navHostController.previousBackStackEntry?.savedStateHandle?.get<String>(
+                    "data"
+                )
+                LaunchedEffect(key1 = navBackStackEntry.arguments?.getInt(MEMO_ID_ARGUMENT)) {
+                    memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
+                    memoViewModel.setTaskScreenToEditorMode()
+                    memoViewModel.updateUiState(
+                        memoViewModel.taskUiState.taskDetails.copy(
+                            description = detailArgument!!
+                        )
+                    )
+                }
+                // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
+            }
+
             if (taskIndex >= tasks.itemCount) {
-                Log.d("PHILIP", "[MemoNavGraph] memoViewModel value $memoViewModel")
-                navHostController.navigate(Screen.MemoList.route)
+                // 1. activity  destroy 되고 다시 생성된 경우는 List 화면 으로 forwarding - 샤오미 종특
+                // 이 경우는 Memo List, home 이 직전의 destination 이다. list 나 home 으로 돌아 가야 한다.
+                // 2. 마지막 메모를 삭제할 경우 에도 index 가 0 tasks 가 0인 경우가 발생 한다. 이 경우는 실행이 MemoDetail 에서 오기 때문에 구별 가능
+                // 이 경우는 무시 한다.
+                // 3. 링크를 share 하여 접근 하는 경우가 있다. 이런 경우는 argument 의 memo_id 가 -1 로 지정되어 있다. 이전 route는 home 이 된다.
+                // 이 경우는 이전 화면 으로 이동 해서는 안된다.
+                Log.d("PHILIP", "${navHostController.previousBackStackEntry?.destination?.route}")
+                if (navHostController.previousBackStackEntry?.destination?.route != Screen.MemoDetail.route &&
+                    navBackStackEntry.arguments?.getInt(MEMO_ID_ARGUMENT) != -1 ) {
+                    Log.d("PHILIP", "[MemoNavGraph] previous value $route")
+                    // 다른 action 을 처리 하고 있는 경우는 action 이 처리 되고 있는 정상적인 경우이다.
+                    if (memoViewModel.action == Action.NO_ACTION) {
+                        LaunchedEffect(key1 = taskIndex, key2 = tasks.itemCount) {
+                            Log.d(
+                                "PHILIP",
+                                "[MemoNavGraph] memoViewModel value ${memoViewModel.action}"
+                            )
+                            toListScreen()
+                        }
+                    }
+                }
             } else {
                 TaskScreen(
                     tasks = tasks,
@@ -429,16 +123,15 @@ fun NavGraphBuilder.memoNavGraph(
                                     action = action,
                                     memo = tasks[taskIndex]!!.toMemoTask()
                                 )
-                                toListScreen()
                             } else {
                                 memoViewModel.handleActions(
                                     action = action
                                 )
-                                toListScreen()
                             }
                         } else {
-                            toListScreen()
+                            memoViewModel.handleActions(Action.NO_ACTION)
                         }
+                        toListScreen()
                         // 화면 전환 후에 이전의 index가 lazyloading 범위를 넘어갈 경우 처리를 위해 초기화 필요
                         // 45번 task인데 refresh 이후에 기본 default size 만큼만 로딩 되기 때문이다.
                         // 화면이 list로 전환된 이후에도 몇 번이 호출이 일어난다.
@@ -457,184 +150,3 @@ fun NavGraphBuilder.memoNavGraph(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NotebooksPickerDialog(
-    dialogTitle: String = "",
-    visible: Boolean,
-    notebooks: List<NotebookWithCount>,
-    defaultNoteMemoCount: DefaultNoteMemoCount,
-    onDismissRequest: () -> Unit,
-    onCloseClick: () -> Unit,
-    onNotebookClick: (Int) -> Unit
-) {
-    if (visible) {
-        CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surface),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(vertical = LARGE_PADDING)
-                        .padding(horizontal = XLARGE_PADDING),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ListAlt,
-                        contentDescription = "list icon"
-                    )
-                    Spacer(modifier = Modifier.width(SMALL_PADDING))
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = dialogTitle,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
-                Surface(
-                    modifier = Modifier
-                        .height(300.dp)
-                        .padding(XLARGE_PADDING)
-                        .fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(4.dp),
-                    tonalElevation = 2.dp,
-                    shadowElevation = 2.dp,
-                ) {
-                    LazyColumn(
-                        // contentPadding은 전체를 감싸는 padding
-                        contentPadding = PaddingValues(LARGE_PADDING),
-                        verticalArrangement = Arrangement.spacedBy(LARGE_PADDING)
-                    ) {
-                        items(
-                            items = notebooks,
-                            key = { notebook ->
-                                notebook.id
-                            }
-                        ) {
-                            Surface(
-                                modifier = Modifier
-                                    .height(56.dp)
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onNotebookClick(it.id)
-                                    },
-                                shape = RoundedCornerShape(4.dp),
-                                color = it.priority.color.copy(alpha = 0.4F),
-                                tonalElevation = 6.dp,
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(start = LARGE_PADDING),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = if (it.title == "") ""
-                                        else if (it.title.length > 20) "${
-                                            it.title.substring(
-                                                startIndex = 0,
-                                                endIndex = 20
-                                            )
-                                        }..."
-                                        else it.title
-                                    )
-                                }
-                                Surface(
-                                    modifier = Modifier.fillMaxSize(),
-                                    color = Color.Transparent
-                                ) {
-                                    Row(horizontalArrangement = Arrangement.End) {
-                                        Badge {
-                                            Text(text = it.memoTotalCount.toString())
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .padding(XLARGE_PADDING)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Surface(modifier = Modifier.width(IntrinsicSize.Max)) {
-                        OutlinedButton(
-                            shape = RoundedCornerShape(4.dp),
-                            onClick = {
-                                onNotebookClick(-1)
-                            }) {
-                            Text(text = stringResource(id = R.string.note_select_use_default))
-
-                        }
-                        Row(horizontalArrangement = Arrangement.End) {
-                            Badge {
-                                Text(text = defaultNoteMemoCount.total.toString())
-                            }
-                        }
-                    }
-                    // Close 버튼
-                    Text(
-                        modifier = Modifier
-                            .weight(1F)
-                            .fillMaxWidth()
-                            .clickable {
-                                onCloseClick()
-                            }
-                            .padding(12.dp),
-                        textAlign = TextAlign.End,
-                        text = stringResource(id = R.string.close_label),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun NotebooksPickerDialogPreview() {
-    MaterialTheme {
-        NotebooksPickerDialog(
-            visible = true,
-            onCloseClick = {},
-            onDismissRequest = {},
-            notebooks = listOf(
-                NotebookWithCount(
-                    id = 1,
-                    title = "My Love Note",
-                    description = "desc1",
-                    priority = Priority.NONE
-                ),
-                NotebookWithCount(
-                    id = 2,
-                    title = "first notebooksss",
-                    description = "desc2",
-                    priority = Priority.NONE
-                ),
-                NotebookWithCount(
-                    id = 3, title = "test3", description = "desc3", priority = Priority.NONE
-                )
-            ),
-            defaultNoteMemoCount = DefaultNoteMemoCount(0, 0, 0, 0, 0),
-            onNotebookClick = {
-
-            }
-        )
-    }
-}
