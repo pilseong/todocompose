@@ -32,7 +32,7 @@ import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 
-fun NavGraphBuilder.MemoListComposable(
+fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,
     onClickBottomNavBar: (String) -> Unit
