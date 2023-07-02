@@ -44,6 +44,7 @@ fun TaskAppBar(
     task: MemoWithNotebook,
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
     taskUiState: TaskUiState,
+    onBackClick: () -> Unit,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
@@ -55,7 +56,8 @@ fun TaskAppBar(
                 task = task,
                 toListScreen = toListScreen,
                 onCopyClicked = onCopyClicked,
-                onEditClicked = onEditClicked
+                onEditClicked = onEditClicked,
+                onBackClick = onBackClick
             )
         }
 
@@ -63,6 +65,7 @@ fun TaskAppBar(
             EditTaskBar(
                 uiState = taskUiState,
                 toListScreen = toListScreen,
+                onBackClick = onBackClick,
                 edit = taskUiState.taskDetails.id != NEW_ITEM_ID
             )
 
@@ -78,12 +81,13 @@ fun TaskAppBar(
 fun EditTaskBar(
     uiState: TaskUiState,
     toListScreen: (Action) -> Unit,
+    onBackClick: () -> Unit,
     edit: Boolean = false
 ) {
     TopAppBar(
         navigationIcon = {
             CommonAction(
-                onClicked = { toListScreen(Action.NO_ACTION) },
+                onClicked = { onBackClick() },
                 icon = Icons.Default.Close,
                 description = stringResource(id = R.string.default_task_bar_close_icon)
             )
@@ -145,6 +149,7 @@ fun CommonAction(
 fun DetailTaskBar(
     task: MemoWithNotebook,
     toListScreen: (Action) -> Unit,
+    onBackClick: () -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
 ) {
@@ -152,7 +157,7 @@ fun DetailTaskBar(
     TopAppBar(
         navigationIcon = {
             CommonAction(
-                onClicked = { toListScreen(Action.NO_ACTION) },
+                onClicked = { onBackClick() },
                 icon = Icons.Default.ArrowBackIosNew,
                 description = stringResource(
                     R.string.default_task_bar_close_icon
@@ -160,11 +165,6 @@ fun DetailTaskBar(
             )
         },
         title = {
-//            FittedTextTitle(
-//                onAppBarTitleClick = { },
-//                appbarTitle = task.memo.title,
-//                clickEnabled = false
-//            )
             Text(
                 text = task.memo.title,
                 overflow = TextOverflow.Ellipsis,
@@ -239,6 +239,7 @@ fun EditTaskBarPreview() {
     TodoComposeTheme {
         EditTaskBar(
             uiState = TaskUiState(),
+            onBackClick = {},
             toListScreen = {}
         )
     }
@@ -262,6 +263,7 @@ fun DetailTaskBarPreview() {
                 notebook = Notebook.instance(),
                 total = 1
             ),
+            onBackClick = {},
             toListScreen = {},
             onCopyClicked = {},
             onEditClicked = {}

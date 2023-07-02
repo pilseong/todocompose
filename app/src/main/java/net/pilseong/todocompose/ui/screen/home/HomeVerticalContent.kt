@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -69,6 +70,7 @@ fun VerticalContent(
     Column(
         modifier = Modifier
             .padding(top = LARGE_PADDING)
+            .navigationBarsPadding()
             .fillMaxSize()
     ) {
 
@@ -283,7 +285,6 @@ fun VerticalContent(
             modifier = Modifier
                 .padding(start = XLARGE_PADDING, end = XLARGE_PADDING)
                 .height(bookShelfHeight.dp)
-//                .height(340.dp)
                 .fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             color = MaterialTheme.colorScheme.surface,

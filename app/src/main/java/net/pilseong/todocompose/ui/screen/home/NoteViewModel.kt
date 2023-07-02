@@ -299,7 +299,6 @@ class NoteViewModel @Inject constructor(
         } else {
             secondRecentNotebook.value = null
         }
-
     }
 
 

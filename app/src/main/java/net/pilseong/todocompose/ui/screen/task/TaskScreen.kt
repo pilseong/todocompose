@@ -34,6 +34,7 @@ fun TaskScreen(
     taskIndex: Int,
     taskAppBarState: TaskAppBarState,
     taskUiState: TaskUiState,
+    onBackClick: () -> Unit,
     toListScreen: (Action) -> Unit,
     onEditClicked: () -> Unit,
     onValueChange: (TaskDetails) -> Unit,
@@ -70,6 +71,7 @@ fun TaskScreen(
                     }
                 },
                 onEditClicked = onEditClicked,
+                onBackClick = onBackClick,
             )
         },
         content = { paddingValues ->

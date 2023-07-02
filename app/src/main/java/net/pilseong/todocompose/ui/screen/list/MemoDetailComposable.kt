@@ -57,22 +57,19 @@ fun NavGraphBuilder.memoDetailComposable(
         Log.d("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
 
 
-
+        // intent 로 전달 받은 데이터 를 화면에 보여 주기 위한 로직
         if (navBackStackEntry.arguments?.getInt(Constants.MEMO_ID_ARGUMENT) == -1) {
             val detailArgument =
-                navHostController.previousBackStackEntry?.savedStateHandle?.get<String>(
-                    "data"
-                )
+                navHostController.previousBackStackEntry?.savedStateHandle?.get<String>("content")
             LaunchedEffect(key1 = navBackStackEntry.arguments?.getInt(Constants.MEMO_ID_ARGUMENT)) {
                 memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
                 memoViewModel.setTaskScreenToEditorMode()
                 memoViewModel.updateUiState(
                     memoViewModel.taskUiState.taskDetails.copy(
-                        description = detailArgument!!
+                        description = detailArgument ?: ""
                     )
                 )
             }
-            // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
         }
 
         if (taskIndex >= tasks.itemCount) {
@@ -131,7 +128,10 @@ fun NavGraphBuilder.memoDetailComposable(
                 },
                 onValueChange = memoViewModel::updateUiState,
                 onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
-                onSwipeLeftOnViewer = { memoViewModel.incrementIndex() }
+                onSwipeLeftOnViewer = { memoViewModel.incrementIndex() },
+                onBackClick = {
+                    navHostController.popBackStack()
+                }
             )
         }
 

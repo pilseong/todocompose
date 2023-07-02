@@ -68,10 +68,9 @@ fun NavGraphBuilder.memoListComposable(
         val uiState = memoViewModel.uiState
 
         val intentResultLauncher =
-            rememberLauncherForActivityResult(
-                ActivityResultContracts.GetContent()
-            ) { uri ->
-                memoViewModel.handleImport(uri)
+            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                if (uri !=  null)
+                    memoViewModel.handleImport(uri)
             }
 
         var openDialog by remember { mutableStateOf(false) }

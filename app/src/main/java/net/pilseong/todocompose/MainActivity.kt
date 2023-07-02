@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
                             "[MainActivity]handleIntent intent called ${it.htmlEncode()}"
                         )
                         navHostController.currentBackStackEntry?.savedStateHandle?.apply {
-                            set("data", it)
+                            set("content", it)
                         }
                         navHostController.navigate(Screen.MemoDetail.passId(memoId = -1))
                     }

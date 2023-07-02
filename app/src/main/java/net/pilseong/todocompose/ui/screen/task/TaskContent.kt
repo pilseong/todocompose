@@ -1,6 +1,11 @@
 package net.pilseong.todocompose.ui.screen.task
 
+import android.Manifest
 import android.util.Log
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -29,7 +36,9 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
@@ -45,13 +54,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.rememberPermissionState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.MemoWithNotebook
@@ -74,7 +91,7 @@ import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun TaskContent(
     task: MemoWithNotebook,
@@ -88,67 +105,99 @@ fun TaskContent(
 ) {
 
     Log.d("PHILIP", "size : $taskSize, taskInded : $taskIndex")
-    if (taskAppBarState == TaskAppBarState.VIEWER) {
+    var screenMode by remember { mutableStateOf(false) }
 
-        // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
-        val threshold = LocalConfiguration.current.screenWidthDp / 3
+    val cameraPermissionState: PermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
-        val dismissState = rememberDismissState(
-            confirmValueChange = {
-                when (it) {
-                    DismissValue.Default -> false
-                    DismissValue.DismissedToEnd -> {
-                        onSwipeRightOnViewer()
-                        true
+    if (screenMode) {
+        val content = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val cameraController = remember { LifecycleCameraController(content) }
 
+        Scaffold(modifier = Modifier.fillMaxWidth()) { paddingValues ->
+            AndroidView(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize(),
+                factory = { context ->
+                    PreviewView(context).apply {
+                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                        setBackgroundColor(Color.Black.toArgb())
+                        scaleType = PreviewView.ScaleType.FILL_START
+                    }.also { previewView ->
+                        previewView.controller = cameraController
+                        cameraController.bindToLifecycle(lifecycleOwner)
                     }
-
-                    DismissValue.DismissedToStart -> {
-                        onSwipeLeftOnViewer()
-                        true
-                    }
-                }
-            },
-            positionalThreshold = { threshold.dp.toPx() }
-        )
-
-        // index 의 이동이 일어난 경우 실행 된다. 동일한 인덱스 로 이동 하는 경우는 없기 때문에
-        // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
-        // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
-        LaunchedEffect(key1 = taskIndex) {
-            Log.d("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
-            if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
-                dismissState.snapTo(DismissValue.DismissedToStart)
-            } else {
-                dismissState.snapTo(DismissValue.DismissedToEnd)
-            }
-            dismissState.reset()
+                })
         }
-
-        SwipeToDismiss(
-            state = dismissState,
-            background = {
-                ColorBackGround(
-                    dismissState = dismissState,
-                    leftToRightColor = MaterialTheme.colorScheme.surface,
-                    rightToLeftColor = MaterialTheme.colorScheme.surface,
-                    leftIcon = Icons.Default.KeyboardArrowLeft,
-                    rightIcon = Icons.Default.KeyboardArrowRight
-                )
-            },
-            dismissContent = {
-                ViewerContent(
-                    task = task
-                )
-            },
-            directions = getDirections(taskIndex, taskSize - 1)
-        )
-
     } else {
-        EditorContent(
-            taskUiState = taskUiState,
-            onValueChange = onValueChange
-        )
+        if (taskAppBarState == TaskAppBarState.VIEWER) {
+
+            // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
+            val threshold = LocalConfiguration.current.screenWidthDp / 3
+
+            val dismissState = rememberDismissState(
+                confirmValueChange = {
+                    when (it) {
+                        DismissValue.Default -> false
+                        DismissValue.DismissedToEnd -> {
+                            onSwipeRightOnViewer()
+                            true
+
+                        }
+
+                        DismissValue.DismissedToStart -> {
+                            onSwipeLeftOnViewer()
+                            true
+                        }
+                    }
+                },
+                positionalThreshold = { threshold.dp.toPx() }
+            )
+
+            // index 의 이동이 일어난 경우 실행 된다. 동일한 인덱스 로 이동 하는 경우는 없기 때문에
+            // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
+            // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
+            LaunchedEffect(key1 = taskIndex) {
+                Log.d("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
+                if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
+                    dismissState.snapTo(DismissValue.DismissedToStart)
+                } else {
+                    dismissState.snapTo(DismissValue.DismissedToEnd)
+                }
+                dismissState.reset()
+            }
+
+            SwipeToDismiss(
+                state = dismissState,
+                background = {
+                    ColorBackGround(
+                        dismissState = dismissState,
+                        leftToRightColor = MaterialTheme.colorScheme.surface,
+                        rightToLeftColor = MaterialTheme.colorScheme.surface,
+                        leftIcon = Icons.Default.KeyboardArrowLeft,
+                        rightIcon = Icons.Default.KeyboardArrowRight
+                    )
+                },
+                dismissContent = {
+                    ViewerContent(
+                        task = task
+                    )
+                },
+                directions = getDirections(taskIndex, taskSize - 1)
+            )
+
+        } else {
+            EditorContent(
+                onRequestPermission = cameraPermissionState::launchPermissionRequest,
+                screenMode = screenMode,
+                onCameraClick = {
+                    screenMode = true
+                },
+                taskUiState = taskUiState,
+                onValueChange = onValueChange
+            )
+        }
     }
 }
 
@@ -352,8 +401,11 @@ private fun ViewerContent(
 
 @Composable
 private fun EditorContent(
+    screenMode: Boolean = false,
+    onCameraClick: () -> Unit,
     taskUiState: TaskUiState,
     onValueChange: (TaskDetails) -> Unit,
+    onRequestPermission: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -416,38 +468,62 @@ private fun EditorContent(
                 )
             }
         )
-        Surface {
-            TextField(
-                modifier = Modifier
-                    .imePadding()
-                    .fillMaxSize(),
-                value = taskUiState.taskDetails.description,
-                label = {
-                    Text(
-                        text = stringResource(id = R.string.new_task_description_placeholder)
-                    )
-                },
-                onValueChange = {
-                    if (it.length <= MAX_CONTENT_LENGTH)
-                        onValueChange(taskUiState.taskDetails.copy(description = it))
+        TextField(
+            modifier = Modifier
+                .imePadding()
+                .navigationBarsPadding()
+                .weight(1F)
+                .fillMaxWidth(),
+            value = taskUiState.taskDetails.description,
+            label = {
+                Text(
+                    text = stringResource(id = R.string.new_task_description_placeholder)
+                )
+            },
+            onValueChange = {
+                if (it.length <= MAX_CONTENT_LENGTH)
+                    onValueChange(taskUiState.taskDetails.copy(description = it))
 
-                },
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                        1.dp
-                    ),
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                        1.dp
-                    )
+            },
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                    1.dp
                 ),
-                supportingText = {
-                    Text(
-                        text = "${taskUiState.taskDetails.description.length} / $MAX_CONTENT_LENGTH",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                    1.dp
+                )
+            ),
+            supportingText = {
+                Text(
+                    text = "${taskUiState.taskDetails.description.length} / $MAX_CONTENT_LENGTH",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End,
+                )
+            }
+        )
+        Surface {
+            Row {
+                IconButton(onClick = {
+                    onCameraClick()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Camera,
+                        contentDescription = "take pictures"
                     )
                 }
-            )
+            }
+        }
+        Surface {
+            Row {
+                IconButton(onClick = {
+                    onRequestPermission()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Camera,
+                        contentDescription = "take pictures"
+                    )
+                }
+            }
         }
     }
 }
@@ -505,7 +581,9 @@ fun EditorContentPrevie() {
                     notebookId = -1,
                 )
             ),
-            onValueChange = {}
+            onValueChange = {},
+            onCameraClick = {},
+            onRequestPermission = {}
         )
     }
 }
