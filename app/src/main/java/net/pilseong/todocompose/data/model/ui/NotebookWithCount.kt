@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.data.model
+package net.pilseong.todocompose.data.model.ui
 
 import androidx.room.ColumnInfo
 import java.time.ZonedDateTime

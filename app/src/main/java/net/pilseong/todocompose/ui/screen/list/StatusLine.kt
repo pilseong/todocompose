@@ -44,9 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.UserData
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
+import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.ui.components.PriorityMenuItems
 import net.pilseong.todocompose.ui.components.StateMenuItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellowColor

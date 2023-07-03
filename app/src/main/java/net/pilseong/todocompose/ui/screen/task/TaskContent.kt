@@ -1,11 +1,9 @@
 package net.pilseong.todocompose.ui.screen.task
 
 import android.Manifest
+import android.net.Uri
 import android.util.Log
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.LinearLayout
-import androidx.camera.view.LifecycleCameraController
-import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +23,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.DismissDirection
@@ -38,7 +37,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
@@ -55,26 +53,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.screen.list.ColorBackGround
@@ -89,7 +89,9 @@ import net.pilseong.todocompose.util.Constants.MAX_CONTENT_LENGTH
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
+import net.pilseong.todocompose.util.getOutputDirectory
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.Executors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -103,101 +105,68 @@ fun TaskContent(
     onSwipeRightOnViewer: () -> Unit,
     onSwipeLeftOnViewer: () -> Unit
 ) {
-
     Log.d("PHILIP", "size : $taskSize, taskInded : $taskIndex")
-    var screenMode by remember { mutableStateOf(false) }
+    if (taskAppBarState == TaskAppBarState.VIEWER) {
 
-    val cameraPermissionState: PermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+        // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
+        val threshold = LocalConfiguration.current.screenWidthDp / 3
 
-    if (screenMode) {
-        val content = LocalContext.current
-        val lifecycleOwner = LocalLifecycleOwner.current
-        val cameraController = remember { LifecycleCameraController(content) }
+        val dismissState = rememberDismissState(
+            confirmValueChange = {
+                when (it) {
+                    DismissValue.Default -> false
+                    DismissValue.DismissedToEnd -> {
+                        onSwipeRightOnViewer()
+                        true
 
-        Scaffold(modifier = Modifier.fillMaxWidth()) { paddingValues ->
-            AndroidView(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                factory = { context ->
-                    PreviewView(context).apply {
-                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                        setBackgroundColor(Color.Black.toArgb())
-                        scaleType = PreviewView.ScaleType.FILL_START
-                    }.also { previewView ->
-                        previewView.controller = cameraController
-                        cameraController.bindToLifecycle(lifecycleOwner)
                     }
-                })
-        }
-    } else {
-        if (taskAppBarState == TaskAppBarState.VIEWER) {
 
-            // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
-            val threshold = LocalConfiguration.current.screenWidthDp / 3
-
-            val dismissState = rememberDismissState(
-                confirmValueChange = {
-                    when (it) {
-                        DismissValue.Default -> false
-                        DismissValue.DismissedToEnd -> {
-                            onSwipeRightOnViewer()
-                            true
-
-                        }
-
-                        DismissValue.DismissedToStart -> {
-                            onSwipeLeftOnViewer()
-                            true
-                        }
+                    DismissValue.DismissedToStart -> {
+                        onSwipeLeftOnViewer()
+                        true
                     }
-                },
-                positionalThreshold = { threshold.dp.toPx() }
-            )
-
-            // index 의 이동이 일어난 경우 실행 된다. 동일한 인덱스 로 이동 하는 경우는 없기 때문에
-            // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
-            // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
-            LaunchedEffect(key1 = taskIndex) {
-                Log.d("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
-                if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
-                    dismissState.snapTo(DismissValue.DismissedToStart)
-                } else {
-                    dismissState.snapTo(DismissValue.DismissedToEnd)
                 }
-                dismissState.reset()
+            },
+            positionalThreshold = { threshold.dp.toPx() }
+        )
+
+        // index 의 이동이 일어난 경우 실행 된다. 동일한 인덱스 로 이동 하는 경우는 없기 때문에
+        // 중복 이벤트 발생에 대한 대처를 할 필요가 없다.
+        // index 가 변경 된 상태 변경이 확인 되는 경우에 실행 된다.
+        LaunchedEffect(key1 = taskIndex) {
+            Log.d("PHILIP", "inside effect size : $taskSize, taskInded : $taskIndex")
+            if (dismissState.dismissDirection == DismissDirection.StartToEnd) {
+                dismissState.snapTo(DismissValue.DismissedToStart)
+            } else {
+                dismissState.snapTo(DismissValue.DismissedToEnd)
             }
-
-            SwipeToDismiss(
-                state = dismissState,
-                background = {
-                    ColorBackGround(
-                        dismissState = dismissState,
-                        leftToRightColor = MaterialTheme.colorScheme.surface,
-                        rightToLeftColor = MaterialTheme.colorScheme.surface,
-                        leftIcon = Icons.Default.KeyboardArrowLeft,
-                        rightIcon = Icons.Default.KeyboardArrowRight
-                    )
-                },
-                dismissContent = {
-                    ViewerContent(
-                        task = task
-                    )
-                },
-                directions = getDirections(taskIndex, taskSize - 1)
-            )
-
-        } else {
-            EditorContent(
-                onRequestPermission = cameraPermissionState::launchPermissionRequest,
-                screenMode = screenMode,
-                onCameraClick = {
-                    screenMode = true
-                },
-                taskUiState = taskUiState,
-                onValueChange = onValueChange
-            )
+            dismissState.reset()
         }
+
+        SwipeToDismiss(
+            state = dismissState,
+            background = {
+                ColorBackGround(
+                    dismissState = dismissState,
+                    leftToRightColor = MaterialTheme.colorScheme.surface,
+                    rightToLeftColor = MaterialTheme.colorScheme.surface,
+                    leftIcon = Icons.Default.KeyboardArrowLeft,
+                    rightIcon = Icons.Default.KeyboardArrowRight
+                )
+            },
+            dismissContent = {
+                ViewerContent(
+                    task = task
+                )
+            },
+            directions = getDirections(taskIndex, taskSize - 1)
+        )
+
+    } else {
+        EditorContent(
+            taskUiState = taskUiState,
+            onValueChange = onValueChange
+        )
     }
 }
 
@@ -399,13 +368,11 @@ private fun ViewerContent(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun EditorContent(
-    screenMode: Boolean = false,
-    onCameraClick: () -> Unit,
     taskUiState: TaskUiState,
     onValueChange: (TaskDetails) -> Unit,
-    onRequestPermission: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -501,31 +468,108 @@ private fun EditorContent(
                 )
             }
         )
-        Surface {
+
+
+        var cameraDialog by  remember { mutableStateOf(false) }
+        var cameraOpen by remember { mutableStateOf(false) }
+        var photoOpen by remember { mutableStateOf(false) }
+        var photoUri: Uri? by remember { mutableStateOf(null) }
+
+        val cameraPermissionState = rememberPermissionState(
+            Manifest.permission.CAMERA
+        )
+
+        Row() {
             Row {
                 IconButton(onClick = {
-                    onCameraClick()
+                    if (cameraPermissionState.status.isGranted) {
+                        cameraDialog = true
+                        cameraOpen = true
+                    } else {
+                        cameraPermissionState.launchPermissionRequest()
+                    }
                 }) {
                     Icon(
-                        imageVector = Icons.Default.Camera,
+                        imageVector = Icons.Default.PhotoCamera,
+                        contentDescription = "take pictures"
+                    )
+                }
+            }
+            Row {
+                IconButton(onClick = {
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.PhotoLibrary,
                         contentDescription = "take pictures"
                     )
                 }
             }
         }
-        Surface {
-            Row {
-                IconButton(onClick = {
-                    onRequestPermission()
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Camera,
-                        contentDescription = "take pictures"
+        if (cameraDialog) {
+            val cameraExecutor = Executors.newSingleThreadExecutor()
+
+            Dialog(
+                onDismissRequest = {
+                    cameraDialog = false
+                    cameraOpen = false
+                    photoOpen = false
+                    if (!cameraExecutor.isShutdown) {
+                        cameraExecutor.shutdown()
+                        Log.d("PHILIP", "showdown")
+                    }
+                },
+                properties = DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = false,
+                    usePlatformDefaultWidth = false
+                )
+            ) {
+                if (cameraOpen) {
+                    CameraView(
+                        outputDirectory = getOutputDirectory(LocalContext.current),
+                        executor = cameraExecutor,
+                        onImageCaptured = {
+                            Log.d("PHILIP", "file captured $it")
+                            photoUri = it
+                            cameraOpen = false
+                            photoOpen = true
+                        },
+                        onError = { Log.e("kilo", "View error:", it) },
+                        onDismiss = {
+                            cameraDialog = false
+                            cameraOpen = false
+                            if (!cameraExecutor.isShutdown) {
+                                cameraExecutor.shutdown()
+                                Log.d("PHILIP", "showdown")
+                            }
+                        }
                     )
                 }
+
+                if (photoOpen) {
+                    Surface(
+                        color = Color.Black
+                    ) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Image(
+                                modifier = Modifier.fillMaxSize(),
+                                painter = rememberAsyncImagePainter(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(photoUri)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentScale = ContentScale.Crop
+                                ),
+                                contentDescription = "captured image",
+                            )
+                        }
+                    }
+                }
+
             }
         }
     }
+
 }
 
 @Preview
@@ -582,8 +626,6 @@ fun EditorContentPrevie() {
                 )
             ),
             onValueChange = {},
-            onCameraClick = {},
-            onRequestPermission = {}
         )
     }
 }

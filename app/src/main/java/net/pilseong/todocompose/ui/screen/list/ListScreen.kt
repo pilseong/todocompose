@@ -47,11 +47,11 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
-import net.pilseong.todocompose.data.model.UserData
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
+import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent

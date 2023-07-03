@@ -36,8 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.components.CustomAlertDialog
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING

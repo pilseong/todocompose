@@ -15,8 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.util.NoteSortingOption
 

@@ -28,10 +28,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState

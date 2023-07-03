@@ -50,7 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions

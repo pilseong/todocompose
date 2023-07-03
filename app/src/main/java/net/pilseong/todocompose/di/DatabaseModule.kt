@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import net.pilseong.todocompose.data.model.database.MemoDAO
 import net.pilseong.todocompose.data.model.database.MemoDatabase
 import net.pilseong.todocompose.data.model.database.NotebookDAO
+import net.pilseong.todocompose.data.model.database.PhotoDAO
 import net.pilseong.todocompose.util.Constants.DATABASE_NAME
 import javax.inject.Singleton
 
@@ -37,5 +38,11 @@ object DatabaseModule {
     @Provides
     fun provideNotebookDAO(database: MemoDatabase): NotebookDAO {
         return database.getNotebookDAO()
+    }
+
+    @Singleton
+    @Provides
+    fun providePhotoDAO(database: MemoDatabase): PhotoDAO {
+        return database.getPhotoDAO()
     }
 }

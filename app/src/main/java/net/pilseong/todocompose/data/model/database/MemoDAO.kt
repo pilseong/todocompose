@@ -7,10 +7,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.MemoWithNotebook
-import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import java.time.ZonedDateTime
 

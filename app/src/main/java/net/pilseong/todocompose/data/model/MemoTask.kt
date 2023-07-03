@@ -5,6 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.util.Constants.MEMO_TABLE
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import java.time.ZonedDateTime

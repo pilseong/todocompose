@@ -44,9 +44,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
-import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING

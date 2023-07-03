@@ -16,7 +16,6 @@ import androidx.navigation.compose.composable
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
-import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
 import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.InfoDialog

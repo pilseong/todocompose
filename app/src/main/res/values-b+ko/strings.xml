@@ -29,7 +29,7 @@
     <string name="delete_task_dialog_title">\'%1$s\' 메모 삭제</string>
     <string name="delete_task_dialog_confirmation">\'%1$s\' 을 정말 삭제하시겠습니까?</string>
     <string name="export_memos_dialog_title">이메일로 내보내기</string>
-    <string name="import_dialog_title">파일로 부터 가져오기</string>
+    <string name="import_dialog_title">파일로부터 가져오기</string>
     <string name="delete_all_task_dialog_title">전체 메모 삭제</string>
     <string name="delete_selected_task_dialog_title">선택 삭제</string>
     <string name="delete_selected_notebook_dialog_title">선택 노트 삭제</string>

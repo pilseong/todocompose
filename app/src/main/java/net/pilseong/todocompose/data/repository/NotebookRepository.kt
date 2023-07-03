@@ -6,8 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.NotebookWithCount
 import net.pilseong.todocompose.data.model.database.NotebookDAO
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.util.NoteSortingOption
 import javax.inject.Inject
 

@@ -3,7 +3,7 @@ package net.pilseong.todocompose.util
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor

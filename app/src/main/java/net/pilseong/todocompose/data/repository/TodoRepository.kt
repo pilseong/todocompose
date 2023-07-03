@@ -8,12 +8,12 @@ import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import net.pilseong.todocompose.data.model.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.MemoWithNotebook
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
 import net.pilseong.todocompose.data.model.database.MemoDAO
+import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject

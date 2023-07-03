@@ -19,8 +19,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.data.model.NotebookWithCount
-import net.pilseong.todocompose.data.model.Priority
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions

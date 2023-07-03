@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.UserData
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.di.IoDispatcher
 import net.pilseong.todocompose.util.Constants.DATE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.FAVORITE_ENABLED_PREFERENCE_KEY

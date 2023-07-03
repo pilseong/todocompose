@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.data.model
+package net.pilseong.todocompose.data.model.ui
 
 import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SortOption

@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.data.model
+package net.pilseong.todocompose.data.model.ui
 
 data class DefaultNoteMemoCount(
     val total: Int = 0,

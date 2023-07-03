@@ -3,6 +3,7 @@ package net.pilseong.todocompose.util
 object Constants {
     const val MEMO_TABLE = "memo_table"
     const val NOTE_TABLE = "note_table"
+    const val PHOTO_TABLE = "photo_table"
     const val DATABASE_NAME = "todo_database"
 
     const val HOME_SCREEN = "home"

@@ -1,7 +1,9 @@
-package net.pilseong.todocompose.data.model
+package net.pilseong.todocompose.data.model.ui
 
 import androidx.room.Embedded
 import androidx.room.Relation
+import net.pilseong.todocompose.data.model.MemoTask
+import net.pilseong.todocompose.data.model.Notebook
 
 data class MemoWithNotebook(
     @Embedded val memo: MemoTask,

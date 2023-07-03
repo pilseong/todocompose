@@ -6,9 +6,9 @@ import androidx.paging.PagingState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.pilseong.todocompose.data.model.MemoWithNotebook
-import net.pilseong.todocompose.data.model.Priority
 import net.pilseong.todocompose.data.model.database.MemoDAO
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.util.Constants
 import java.time.Instant
 

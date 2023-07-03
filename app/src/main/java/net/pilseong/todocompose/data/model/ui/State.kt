@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.data.model
+package net.pilseong.todocompose.data.model.ui
 
 import androidx.compose.ui.graphics.Color
 import net.pilseong.todocompose.R

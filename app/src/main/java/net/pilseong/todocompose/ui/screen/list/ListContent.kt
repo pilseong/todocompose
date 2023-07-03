@@ -61,15 +61,14 @@ import androidx.paging.LoadState.NotLoading.*
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.MemoWithNotebook
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.Priority
-import net.pilseong.todocompose.data.model.State
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
@@ -85,39 +84,6 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ListContent(
-    tasks: LazyPagingItems<MemoWithNotebook>,
-    toTaskScreen: (Int) -> Unit,
-//    onSwipeToDelete: (Action, MemoWithNotebook) -> Unit,
-    onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
-    header: Boolean = false,
-    dateEnabled: Boolean = false,
-    onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>,
-    onStateSelected: (MemoWithNotebook, State) -> Unit,
-) {
-
-    DisplayTasks(
-        tasks = tasks,
-        toTaskScreen = toTaskScreen,
-//            onSwipeToDelete = onSwipeToDelete,
-        onSwipeToEdit = onSwipeToEdit,
-        header = header,
-        dateEnabled = dateEnabled,
-        onFavoriteClick = onFavoriteClick,
-        onLongClickReleased = onLongClickReleased,
-        onLongClickApplied = onLongClickApplied,
-        selectedItemsIds = selectedItemsIds,
-        onStateSelected = onStateSelected,
-    )
-}
-
-// tasks 가 있는 경우에 표출
-
-
-@Composable
-fun DisplayTasks(
     tasks: LazyPagingItems<MemoWithNotebook>,
     toTaskScreen: (Int) -> Unit,
 //    onSwipeToDelete: (Action, MemoWithNotebook) -> Unit,
@@ -188,6 +154,7 @@ fun LazyItemList(
 
     LazyColumn(
         modifier = Modifier
+            .fillMaxSize()
             .padding(horizontal = XLARGE_PADDING)
             .navigationBarsPadding(),
         state = listState
@@ -195,14 +162,25 @@ fun LazyItemList(
         items(
             count = tasks.itemCount,
             key = tasks.itemKey(key = { item -> item.memo.id }),
-            contentType = tasks.itemContentType(null)
+//            contentType = tasks.itemContentType(null)
         ) { index ->
-            // index를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
+            // index 를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
             val taskInside = remember(index, tasks[index]!!.toString()) { tasks[index]!! }
 
-            if (header && index != 0) {
-                TaskItemHeader(dateEnabled, tasks, index)
+            val currentDate = remember(dateEnabled, index) {
+                if (dateEnabled) taskInside.memo.createdAt else taskInside.memo.updatedAt
             }
+
+            val prevDate = remember(dateEnabled, index) {
+                if (dateEnabled) {
+                    if (index == 0) null
+                    else tasks.peek(index - 1)?.memo?.createdAt
+                } else {
+                    if (index == 0) null
+                    else tasks.peek(index - 1)?.memo?.updatedAt
+                }
+            }
+
 
             val drawEndEdge by remember(dateEnabled, index) {
                 val today: ZonedDateTime?
@@ -225,7 +203,7 @@ fun LazyItemList(
 
             // 화면 의 크기의 반을 swipe 한 경우 처리
             val screenWidth = LocalConfiguration.current.screenWidthDp
-            val threshold = remember(screenWidth) { screenWidth * (3/5F) }
+            val threshold = remember(screenWidth) { screenWidth * (3 / 5F) }
             var currentFraction by remember { mutableFloatStateOf(0f) }
 
             val dismissState = rememberDismissState(
@@ -279,10 +257,9 @@ fun LazyItemList(
                         toTaskScreen = {
                             toTaskScreen(index)
                         },
-                        datetime = remember(dateEnabled) {
-                            if (dateEnabled) taskInside.memo.createdAt
-                            else tasks.peek(index)!!.memo.updatedAt
-                        },
+                        headerEnabled = header && index != 0 && currentDate.toLocalDate()
+                            .toString() != prevDate?.toLocalDate().toString(),
+                        datetime = currentDate,
                         // favorite 을 클릭 했을 때 화면에 만 반영 하기 위해서 snapshot 의 상태만 변경 한다.
                         // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
                         // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
@@ -299,7 +276,8 @@ fun LazyItemList(
                             tasks.itemSnapshotList[index]!!.memo.progression = state
                             // 설정이 종료 일 경우 종료 정보를 snapshot 에 저장 해야 뷰어 에서 종료 시간을 볼 수 있다.
                             if (state == State.COMPLETED)
-                                tasks.itemSnapshotList[index]!!.memo.finishedAt = ZonedDateTime.now()
+                                tasks.itemSnapshotList[index]!!.memo.finishedAt =
+                                    ZonedDateTime.now()
                             onStateSelected(todo, state)
                         },
                     )
@@ -408,30 +386,6 @@ fun DateHeader(
 @Composable
 fun DateHeaderPreview() {
     DateHeader(ZonedDateTime.now())
-}
-
-@Composable
-private fun TaskItemHeader(
-    dateEnabled: Boolean,
-    tasks: LazyPagingItems<MemoWithNotebook>,
-    index: Int
-) {
-    val currentDate = remember(dateEnabled, index) {
-        if (dateEnabled) tasks.peek(index)?.memo?.createdAt else tasks.peek(index)?.memo?.updatedAt
-    }
-    val prevDate = remember(dateEnabled, index) {
-        if (dateEnabled) {
-            if (index == 0) null
-            else tasks.peek(index - 1)?.memo?.createdAt
-        } else {
-            if (index == 0) null
-            else tasks.peek(index - 1)?.memo?.updatedAt
-        }
-    }
-
-    if (currentDate?.toLocalDate().toString() != prevDate?.toLocalDate().toString()) {
-        DateHeader(currentDate!!)
-    }
 }
 
 
