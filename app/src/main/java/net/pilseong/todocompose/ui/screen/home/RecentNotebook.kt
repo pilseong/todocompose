@@ -39,8 +39,8 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 fun RecentNotebook(
     notebookWidth: Float,
-    onSelectNotebook: (Int) -> Unit,
-    onInfoClick: (Int) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
+    onInfoClick: (Long) -> Unit,
     currentNotebook: NotebookWithCount
 ) {
     Surface(

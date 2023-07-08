@@ -12,9 +12,9 @@ import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import java.time.ZonedDateTime
 
 @Entity(tableName = MEMO_TABLE)
-data class MemoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
+data class MemoTask constructor(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
     val title: String,
     val description: String,
     val priority: Priority,
@@ -31,13 +31,13 @@ data class MemoTask @RequiresApi(Build.VERSION_CODES.O) constructor(
     @ColumnInfo(name = "due_date", defaultValue = "-1")
     val dueDate: ZonedDateTime? = null,
     @ColumnInfo(name = "notebook_id", defaultValue = "-1")
-    val notebookId: Int,
+    val notebookId: Long,
     @ColumnInfo(name = "deleted", defaultValue = "0")
     val deleted: Boolean = false,
 ) {
 
     companion object {
-        @JvmStatic fun instance(notebookId: Int = -1): MemoTask {
+        @JvmStatic fun instance(notebookId: Long = -1): MemoTask {
             return MemoTask(
                 id = NEW_ITEM_ID,
                 title = "",

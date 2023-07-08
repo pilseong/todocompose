@@ -2,12 +2,16 @@ package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import net.pilseong.todocompose.data.model.ui.GalleryImage
+import net.pilseong.todocompose.data.model.ui.GalleryState
+import net.pilseong.todocompose.data.model.ui.rememberGalleryState
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
@@ -34,6 +38,7 @@ fun NavGraphBuilder.memoDetailComposable(
         )
     ) { navBackStackEntry ->
         val memoViewModel = navBackStackEntry.sharedViewModel<MemoViewModel>(navHostController)
+        Log.d("PHILIP", "[memoDetailComposable] $memoViewModel")
 
         Log.d(
             "PHILIP",
@@ -46,19 +51,21 @@ fun NavGraphBuilder.memoDetailComposable(
 
         // 세부 화면 스크린 에서는 리스트 에서 생성 하고 저장한 snapshot 만 의존 한다.
         // 1. 현재 리스트
-        // 2. 해당 인덱스
-        // 3. 테스크 top bar 의 상태
-        val taskAppBarState = memoViewModel.taskAppBarState
-        val taskIndex = memoViewModel.index
-
-
-        Log.d("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
+        // 2. 테스크 top bar 의 상태
+        // 3. 해당 인덱스
         val tasks = memoViewModel.tasks.collectAsLazyPagingItems()
         Log.d("PHILIP", "[MemoNavGraph] taskScreen  size of tasks ${tasks.itemCount}")
+        val taskAppBarState = memoViewModel.taskAppBarState
+        val taskIndex = memoViewModel.index
+        Log.d("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
+
+
 
 
         // intent 로 전달 받은 데이터 를 화면에 보여 주기 위한 로직
         if (navBackStackEntry.arguments?.getInt(Constants.MEMO_ID_ARGUMENT) == -1) {
+
+            // intent 로 넘긴 데이터 를 받는다
             val detailArgument =
                 navHostController.previousBackStackEntry?.savedStateHandle?.get<String>("content")
             LaunchedEffect(key1 = navBackStackEntry.arguments?.getInt(Constants.MEMO_ID_ARGUMENT)) {
@@ -109,6 +116,11 @@ fun NavGraphBuilder.memoDetailComposable(
                                 action = action,
                                 memo = tasks[taskIndex]!!.toMemoTask()
                             )
+                        } else if (action == Action.UPDATE) {
+                            memoViewModel.handleActions(
+                                action = action,
+                                photos = tasks[taskIndex]!!.photos
+                            )
                         } else {
                             memoViewModel.handleActions(
                                 action = action
@@ -124,14 +136,14 @@ fun NavGraphBuilder.memoDetailComposable(
                     memoViewModel.index = 0
                 },
                 onEditClicked = {
-                    memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex]!!.toMemoTask())
+                    memoViewModel.setTaskScreenToEditorMode(tasks[taskIndex]!!)
                 },
                 onValueChange = memoViewModel::updateUiState,
                 onSwipeRightOnViewer = { memoViewModel.decrementIndex() },
                 onSwipeLeftOnViewer = { memoViewModel.incrementIndex() },
                 onBackClick = {
                     navHostController.popBackStack()
-                }
+                },
             )
         }
 

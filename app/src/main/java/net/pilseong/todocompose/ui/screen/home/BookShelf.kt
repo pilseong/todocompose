@@ -24,12 +24,12 @@ import net.pilseong.todocompose.util.NoteSortingOption
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun BookShelf(
     notebooks: List<NotebookWithCount>,
-    selectedNotebookIds: SnapshotStateList<Int>,
+    selectedNotebookIds: SnapshotStateList<Long>,
     notebookWidth: Float = 110F,
     noteSortingOption: NoteSortingOption,
-    onSelectNotebookWithLongClick: (Int) -> Unit,
-    onSelectNotebook: (Int) -> Unit,
-    onInfoClick: (Int) -> Unit
+    onSelectNotebookWithLongClick: (Long) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
+    onInfoClick: (Long) -> Unit
 ) {
     Log.d("PHILIP", "noteOrder $noteSortingOption")
 
@@ -95,7 +95,7 @@ fun BookShelfPreview() {
                     title = "test3", description = "desc3", priority = Priority.NONE
                 )
             ),
-            selectedNotebookIds = SnapshotStateList<Int>(),
+            selectedNotebookIds = SnapshotStateList<Long>(),
             onSelectNotebookWithLongClick = {},
             onSelectNotebook = {},
             noteSortingOption = NoteSortingOption.ACCESS_AT,

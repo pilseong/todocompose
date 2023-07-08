@@ -24,11 +24,11 @@ class NotebookRepository @Inject constructor(
         return notebookDAO.getAllNotebooks()
     }
 
-    suspend fun getNotebook(id: Int): Notebook {
+    suspend fun getNotebook(id: Long): Notebook {
         return notebookDAO.getNotebook(id)
     }
 
-    fun getNotebookWithCountAsFlow(id: Int): Flow<NotebookWithCount> {
+    fun getNotebookWithCountAsFlow(id: Long): Flow<NotebookWithCount> {
         return notebookDAO.getNotebookWithCountAsFlow(id)
     }
 
@@ -36,7 +36,7 @@ class NotebookRepository @Inject constructor(
         notebookDAO.addNotebook(notebook)
     }
 
-    suspend fun deleteMultipleNotebooks(notebooksIds: List<Int>) {
+    suspend fun deleteMultipleNotebooks(notebooksIds: List<Long>) {
         notebookDAO.deleteMultipleNotebooks(notebooksIds)
     }
 
@@ -50,7 +50,7 @@ class NotebookRepository @Inject constructor(
         notebookDAO.updateNotebookWithTimestamp(notebook)
     }
 
-    suspend fun updateAccessTime(id: Int) {
+    suspend fun updateAccessTime(id: Long) {
         Log.d("PHILIP","[NotebookRepository] updateAccessTime $id")
         notebookDAO.updateAccessTime(id)
     }

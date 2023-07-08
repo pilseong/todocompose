@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 @Entity(tableName = NOTE_TABLE)
 data class Notebook  constructor(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
     val title: String,
     val description: String,
     val priority: Priority,
@@ -24,7 +24,7 @@ data class Notebook  constructor(
 ) {
     companion object {
         fun instance(
-            id: Int = Int.MAX_VALUE,
+            id: Long = Long.MAX_VALUE,
             title: String = "",
             description: String = "",
             priority: Priority = Priority.NONE,

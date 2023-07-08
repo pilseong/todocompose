@@ -18,7 +18,7 @@ abstract class NotebookDAO(
 ) {
 
     @Query("SELECT * FROM note_table  WHERE id = :id")
-    abstract suspend fun getNotebook(id: Int): Notebook
+    abstract suspend fun getNotebook(id: Long): Notebook
 
     @Query("SELECT id, title, description, priority, created_at, updated_at, accessed_at, " +
             "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id) as memoTotalCount, " +
@@ -33,7 +33,7 @@ abstract class NotebookDAO(
             "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'LOW') as lowPriorityCount, " +
             "(SELECT COUNT(*) FROM memo_table WHERE deleted = 0 AND note_table.id = memo_table.notebook_id AND memo_table.priority = 'NONE') as nonePriorityCount " +
             "FROM note_table WHERE id = :id")
-    abstract fun getNotebookWithCountAsFlow(id: Int): Flow<NotebookWithCount>
+    abstract fun getNotebookWithCountAsFlow(id: Long): Flow<NotebookWithCount>
 
     @Query("SELECT * FROM note_table ORDER BY updated_at DESC")
     abstract fun getNotebooks(): Flow<List<Notebook>>
@@ -45,7 +45,7 @@ abstract class NotebookDAO(
     abstract suspend fun addNotebook(notebook: Notebook)
 
     @Query("DELETE FROM note_table WHERE id = :note_id")
-    abstract suspend fun deleteNotebook(note_id: Int)
+    abstract suspend fun deleteNotebook(note_id: Long)
 
     @Update
     abstract suspend fun updateNotebook(notebook: Notebook)
@@ -54,13 +54,13 @@ abstract class NotebookDAO(
         updateNotebook(notebook.copy(updatedAt = ZonedDateTime.now()))
 
     @Transaction
-    open suspend fun updateAccessTime(id: Int) {
+    open suspend fun updateAccessTime(id: Long) {
         val note = getNotebook(id)
         updateNotebook(note.copy(accessedAt = ZonedDateTime.now()))
     }
 
     @Transaction
-    open suspend fun deleteMultipleNotebooks(notebooksIds: List<Int>) {
+    open suspend fun deleteMultipleNotebooks(notebooksIds: List<Long>) {
         val todoDAO = database.getMemoDAO()
 
         notebooksIds.forEach { notebookId ->

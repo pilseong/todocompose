@@ -7,8 +7,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.ui.graphics.vector.ImageVector
 import net.pilseong.todocompose.R
-import net.pilseong.todocompose.util.Constants.HOME_SCREEN
-import net.pilseong.todocompose.util.Constants.MEMO_LIST
+import net.pilseong.todocompose.util.Constants.HOME_ROOT
+import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 import net.pilseong.todocompose.util.Constants.SETTINGS
 
 sealed class BottomBarScreen(
@@ -17,12 +17,12 @@ sealed class BottomBarScreen(
     val icon: ImageVector
 ) {
     object Home: BottomBarScreen(
-        route = HOME_SCREEN,
+        route = HOME_ROOT,
         title = R.string.bottom_nav_label_home,
         icon = Icons.Default.Home
     )
     object Memo: BottomBarScreen(
-        route = MEMO_LIST,
+        route = MEMO_ROOT,
         title = R.string.bottom_nav_label_memo,
         icon = Icons.Default.StickyNote2
     )

@@ -6,7 +6,10 @@ object Constants {
     const val PHOTO_TABLE = "photo_table"
     const val DATABASE_NAME = "todo_database"
 
-    const val HOME_SCREEN = "home"
+//    const val HOME_SCREEN = "home"
+    const val MAIN_ROOT = "main_home"
+    const val HOME_ROOT = "home_root"
+    const val MEMO_ROOT = "memo_root"
     const val MEMO_LIST = "memo_list"
     const val MEMO_DETAIL = "memo_detail"
     const val SETTINGS = "settings"
@@ -26,8 +29,8 @@ object Constants {
     const val DATE_ORDER_PREFERENCE_KEY = "date_order_preference_key"
     const val NOTE_SORTING_ORDER_ID_PREFERENCE_KEY = "note_sorting_order_preference_key"
 
-    const val NEW_ITEM_ID = 0
-    const val NEW_ITEM_INDEX = -1
+    const val NEW_ITEM_ID: Long = 0L
+    const val NEW_ITEM_INDEX: Int = -1
 
     const val PAGE_SIZE = 40
 }

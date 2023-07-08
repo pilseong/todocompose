@@ -57,11 +57,11 @@ import java.util.Locale
 @Composable
 fun NoteContent(
     notebooks: List<NotebookWithCount>,
-    selectedNotebookIds: SnapshotStateList<Int>,
+    selectedNotebookIds: SnapshotStateList<Long>,
     noteSortingOption: NoteSortingOption,
-    onSelectNotebook: (Int) -> Unit,
-    onSelectNotebookWithLongClick: (Int) -> Unit,
-    onInfoClick: (Int) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
+    onSelectNotebookWithLongClick: (Long) -> Unit,
+    onInfoClick: (Long) -> Unit,
     currentNotebook: NotebookWithCount,
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,

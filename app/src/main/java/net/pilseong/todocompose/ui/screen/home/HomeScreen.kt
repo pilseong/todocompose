@@ -27,6 +27,7 @@ import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.util.Constants
+import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.NoteSortingOption
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,18 +35,18 @@ import net.pilseong.todocompose.util.NoteSortingOption
 fun HomeScreen(
     onClickBottomNavBar: (String) -> Unit,
     onFabClick: () -> Unit,
-    onSelectNotebook: (Int) -> Unit,
-    onSelectNotebookWithLongClick: (Int) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
+    onSelectNotebookWithLongClick: (Long) -> Unit,
     onBackButtonClick: () -> Unit,
     notebooks: List<NotebookWithCount>,
     currentNotebook: NotebookWithCount,
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,
-    selectedNotebookIds: SnapshotStateList<Int>,
+    selectedNotebookIds: SnapshotStateList<Long>,
     noteSortingOption: NoteSortingOption,
     onDeleteSelectedClicked: () -> Unit,
     onEditClick: () -> Unit,
-    onInfoClick: (Int) -> Unit,
+    onInfoClick: (Long) -> Unit,
     onSortMenuClick: (NoteSortingOption) -> Unit,
 ) {
     val scrollBehavior = exitUntilCollapsedScrollBehavior()
@@ -65,7 +66,7 @@ fun HomeScreen(
             if (LocalConfiguration.current.screenHeightDp > 500)
                 BottomNavBar(
                     onClick = onClickBottomNavBar,
-                    currentDestination = Constants.HOME_SCREEN
+                    currentDestination = HOME_ROOT
                 )
         },
         floatingActionButton = {
@@ -109,7 +110,7 @@ fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun HomeAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    selectedNotebookIds: SnapshotStateList<Int>,
+    selectedNotebookIds: SnapshotStateList<Long>,
     onDeleteSelectedClicked: () -> Unit,
     onBackButtonClick: () -> Unit,
     onEditClick: () -> Unit,

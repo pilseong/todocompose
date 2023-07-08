@@ -61,7 +61,7 @@ fun NotebooksPickerDialog(
     defaultNoteMemoCount: DefaultNoteMemoCount,
     onDismissRequest: () -> Unit,
     onCloseClick: () -> Unit,
-    onNotebookClick: (Int, Action) -> Unit
+    onNotebookClick: (Long, Action) -> Unit
 ) {
     if (visible) {
         CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {

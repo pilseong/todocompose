@@ -95,9 +95,9 @@ class DataStoreRepository @Inject constructor(
                 ),
                 dateOrderState = SortOption.values()[preferences[PreferenceKeys.dateOrderState]
                     ?: SortOption.UPDATED_AT_DESC.ordinal],
-                notebookIdState = if (noteIds != null) noteIds[0].toInt() else -1,
-                firstRecentNotebookId = if (noteIds != null && noteIds.size > 1) noteIds[1].toInt() else null,
-                secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toInt() else null,
+                notebookIdState = if (noteIds != null) noteIds[0].toLong() else -1L,
+                firstRecentNotebookId = if (noteIds != null && noteIds.size > 1) noteIds[1].toLong() else null,
+                secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toLong() else null,
                 sortFavorite = (preferences[PreferenceKeys.favoriteState]
                     ?: false.toString()).toBoolean(),
 

@@ -6,9 +6,9 @@ import net.pilseong.todocompose.util.SortOption
 data class UserData(
     val prioritySortState: Priority = Priority.NONE,
     val dateOrderState: SortOption = SortOption.UPDATED_AT_DESC,
-    val notebookIdState: Int = -1,
-    val firstRecentNotebookId: Int? = null,
-    val secondRecentNotebookId: Int? = null,
+    val notebookIdState: Long = -1,
+    val firstRecentNotebookId: Long? = null,
+    val secondRecentNotebookId: Long? = null,
     val sortFavorite: Boolean = false,
     val stateState: Int = 31,
     val stateNone: Boolean = true,

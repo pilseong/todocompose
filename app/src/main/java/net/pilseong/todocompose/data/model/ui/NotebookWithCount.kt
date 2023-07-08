@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import java.time.ZonedDateTime
 
 data class NotebookWithCount(
-    val id: Int = 0,
+    val id: Long = 0,
     val title: String,
     val description: String,
     val priority: Priority,
@@ -28,7 +28,7 @@ data class NotebookWithCount(
 ) {
     companion object {
         fun instance(
-            id: Int = 0,
+            id: Long = 0,
             title: String = "",
             description: String = "",
             priority: Priority = Priority.NONE,

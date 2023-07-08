@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.data.repository
 
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -15,7 +16,9 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.paging.TodoPagingSource
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
+import net.pilseong.todocompose.util.deleteFileFromUri
 import javax.inject.Inject
 
 //@ViewModelScoped
@@ -36,7 +39,7 @@ class TodoRepository @Inject constructor(
         startDate: Long? = null,
         endDate: Long? = null,
         isFavoriteOn: Boolean = false,
-        notebookId: Int = -1,
+        notebookId: Long = -1,
         stateCompleted: Boolean = true,
         stateCancelled: Boolean = true,
         stateActive: Boolean = true,
@@ -83,12 +86,29 @@ class TodoRepository @Inject constructor(
         }
     }
 
-    suspend fun updateMemo(memoTask: MemoTask) {
+    suspend fun addMemo(memo: TaskDetails) {
         withContext(Dispatchers.IO) {
-            memoDAO.updateTaskWithTimestamp(memoTask)
+            memoDAO.addMemo(memo)
         }
     }
 
+    // updatedAt 이 변경 되는 일반 업 데이트
+    suspend fun updateMemo(memoTask: MemoTask) {
+        withContext(Dispatchers.IO) {
+            memoDAO.updateMemoWithTimestamp(memoTask)
+        }
+    }
+
+    // updatedAt 이 변경 되는 일반 업 데이트, 메모 내부의 사진도 업데이트 한다.
+    suspend fun updateMemo(memoTask: TaskDetails): List<Long> {
+        var deletePhotoIds: List<Long>
+        withContext(Dispatchers.IO) {
+            deletePhotoIds = memoDAO.updateMemoWithTimestamp(memoTask)
+        }
+        return deletePhotoIds
+    }
+
+    // updatedAt 을 수정 하지 않는 메모의 업 데이터, 하나의 state를 변경할 때 사용
     suspend fun updateMemoWithoutUpdatedAt(memoTask: MemoTask) {
         withContext(Dispatchers.IO) {
             memoDAO.updateMemo(memoTask)
@@ -96,7 +116,7 @@ class TodoRepository @Inject constructor(
     }
 
 
-    suspend fun deleteMemo(memoId: Int) {
+    suspend fun deleteMemo(memoId: Long) {
         withContext(Dispatchers.IO) {
             memoDAO.deleteMemo(memoId)
         }
@@ -108,13 +128,13 @@ class TodoRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteAllMemosInNote(notebookId: Int) {
+    suspend fun deleteAllMemosInNote(notebookId: Long) {
         withContext(Dispatchers.IO) {
             memoDAO.deleteMemosInNote(notebookId)
         }
     }
 
-    suspend fun deleteSelectedMemos(notesIds: List<Int>) {
+    suspend fun deleteSelectedMemos(notesIds: List<Long>) {
         withContext(Dispatchers.IO) {
             memoDAO.deleteSelectedMemos(notesIds)
         }
@@ -126,19 +146,20 @@ class TodoRepository @Inject constructor(
         }
     }
 
-    suspend fun moveMultipleMemos(tasksIds: List<Int>, destinationNotebookId: Int) {
+    suspend fun moveMultipleMemos(tasksIds: List<Long>, destinationNotebookId: Long) {
         withContext(Dispatchers.IO) {
             memoDAO.updateMultipleNotebookIds(tasksIds, destinationNotebookId)
         }
     }
 
-    suspend fun copyMultipleMemosToNote(tasksIds: List<Int>, destinationNotebookId: Int) {
+    suspend fun copyMultipleMemosToNote(tasksIds: List<Long>, destinationNotebookId: Long) {
         withContext(Dispatchers.IO) {
             memoDAO.copyMultipleMemosToNote(tasksIds, destinationNotebookId)
         }
     }
 
-    suspend fun updateMultipleMemosWithoutUpdatedAt(tasksIds: List<Int>, state: State) {
+    // 여러 메모 상태의 업 데이트
+    suspend fun updatesStateForMultipleMemos(tasksIds: List<Long>, state: State) {
         withContext(Dispatchers.IO) {
             memoDAO.updateStateForMultipleMemos(tasksIds, state)
         }

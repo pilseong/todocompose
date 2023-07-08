@@ -35,7 +35,7 @@ import net.pilseong.todocompose.util.SortOption
 fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,
-    onClickBottomNavBar: (String) -> Unit
+    toHomeScreen: () -> Unit
 ) {
     composable(
         route = Screen.MemoList.route,
@@ -48,6 +48,10 @@ fun NavGraphBuilder.memoListComposable(
     ) { navBackStackEntry ->
 
         val memoViewModel = navBackStackEntry.sharedViewModel<MemoViewModel>(navHostController)
+
+        LaunchedEffect(key1 = Unit) {
+            Log.d("PHILIP", "[memoListComposable] memoViewModel $memoViewModel")
+        }
 
         // 아래 루틴은 직전이 memo screen 에 속해 있지 않을 경우 action 을 None 으로 초기화 한다.
         // 이유는 마지막 action 에 대한 snack bar 를 화면에 보여 주어야 할지를 판단할 수가 없기 때문 이다.
@@ -99,13 +103,13 @@ fun NavGraphBuilder.memoListComposable(
             },
             onSwipeToEdit = { index, memo ->
                 memoViewModel.updateIndex(index)
-                memoViewModel.setTaskScreenToEditorMode(memo.toMemoTask())
+                memoViewModel.setTaskScreenToEditorMode(memo)
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(Action.NO_ACTION)
 
                 toTaskScreen()
             },
-            onClickBottomNavBar = onClickBottomNavBar,
+            toHomeScreen = toHomeScreen,
             onAppBarTitleClick = {
                 memoViewModel.getDefaultNoteCount()
                 dialogMode = 0

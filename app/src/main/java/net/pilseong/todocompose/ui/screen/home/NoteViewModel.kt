@@ -41,7 +41,7 @@ class NoteViewModel @Inject constructor(
 ) : ViewModel() {
 //    var notebookIdState by mutableStateOf(-1)
 
-    var selectedNotebooks = mutableStateListOf<Int>()
+    var selectedNotebooks = mutableStateListOf<Long>()
     var defaultNotebook = mutableStateOf<NotebookWithCount>(
         NotebookWithCount.instance(
             id = -1,
@@ -63,7 +63,7 @@ class NoteViewModel @Inject constructor(
     var firstNoteJob: Job? = null
     var secondNoteJob: Job? = null
 
-    fun appendMultiSelectedNotebook(id: Int) {
+    fun appendMultiSelectedNotebook(id: Long) {
         if (selectedNotebooks.contains(id)) {
             selectedNotebooks.remove(id)
         } else {
@@ -82,7 +82,7 @@ class NoteViewModel @Inject constructor(
             if (userData.firstRecentNotebookId != null) recentNotes.add(userData.firstRecentNotebookId.toString())
             if (userData.secondRecentNotebookId != null) recentNotes.add(userData.secondRecentNotebookId.toString())
             val beforeCount = recentNotes.size
-            recentNotes.removeIf { it -> selectedNotebooks.contains(it.toInt()) }
+            recentNotes.removeIf { it -> selectedNotebooks.contains(it.toLong()) }
             val afterCount = recentNotes.size
 
             // D B에서 삭제
@@ -102,7 +102,7 @@ class NoteViewModel @Inject constructor(
     val secondRecentNotebook = mutableStateOf<NotebookWithCount?>(null)
 
 
-    fun setEditProperties(targetId: Int) {
+    fun setEditProperties(targetId: Long) {
         val notebook = notebooks.value.find { notebook ->
             notebook.id == targetId
         }
@@ -131,7 +131,7 @@ class NoteViewModel @Inject constructor(
 
     }
 
-    private fun getCurrentNoteAsFlow(noteId: Int) {
+    private fun getCurrentNoteAsFlow(noteId: Long) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
@@ -187,7 +187,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun getFirstNoteAsFlow(noteId: Int?) {
+    private fun getFirstNoteAsFlow(noteId: Long?) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getFirstNote() start observing with $noteId and firstNote ${firstRecentNotebook.value}"
@@ -243,7 +243,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun getSecondNoteAsFlow(noteId: Int?) {
+    private fun getSecondNoteAsFlow(noteId: Long?) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getSecondNoteAsFlow() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
@@ -305,7 +305,7 @@ class NoteViewModel @Inject constructor(
     fun handleActions(
         action: NoteAction,
         noteSortingOption: NoteSortingOption = NoteSortingOption.ACCESS_AT,
-        notebookId: Int = -1
+        notebookId: Long = -1
     ) {
         Log.d(
             "PHILIP",

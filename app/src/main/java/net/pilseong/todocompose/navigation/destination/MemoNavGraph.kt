@@ -6,19 +6,19 @@ import androidx.navigation.navigation
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.screen.list.memoDetailComposable
 import net.pilseong.todocompose.ui.screen.list.memoListComposable
-import net.pilseong.todocompose.util.Constants.MEMO_LIST
+import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 fun NavGraphBuilder.memoNavGraph(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,
     toListScreen: () -> Unit,
-    onClickBottomNavBar: (String) -> Unit
+    toHomeScreen: () -> Unit
 ) {
     navigation(
         startDestination = Screen.MemoList.route,
-        route = MEMO_LIST,
+        route = MEMO_ROOT,
     ) {
-        memoListComposable(navHostController, toTaskScreen, onClickBottomNavBar)
+        memoListComposable(navHostController, toTaskScreen, toHomeScreen)
 
 
         memoDetailComposable(navHostController, toListScreen)

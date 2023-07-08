@@ -53,7 +53,7 @@ fun InfoDialog(
     visible: Boolean,
     notebook: NotebookWithCount?,
     onDismissRequest: () -> Unit,
-    onEditClick: (Int) -> Unit,
+    onEditClick: (Long) -> Unit,
 ) {
     if (visible) {
         CustomAlertDialog(
@@ -98,12 +98,12 @@ fun InfoDialog(
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (notebook?.id != -1) {
+                            if (notebook?.id != -1L) {
                                 Icon(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clickable {
-                                            onEditClick(notebook?.id ?: Integer.MIN_VALUE)
+                                            onEditClick(notebook?.id ?: Long.MAX_VALUE)
                                         },
                                     imageVector = Icons.Default.EditNote,
                                     contentDescription = "Edit Note Icon"
@@ -423,7 +423,7 @@ fun InfoDialog(
                                 .border(1.dp, color = MaterialTheme.colorScheme.primary)
                                 .fillMaxWidth()
                         )
-                        if (notebook?.id != -1) {
+                        if (notebook?.id != -1L) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

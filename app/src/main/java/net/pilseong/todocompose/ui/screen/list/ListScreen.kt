@@ -58,7 +58,6 @@ import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
-import net.pilseong.todocompose.util.Constants.HOME_SCREEN
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 
@@ -73,10 +72,10 @@ fun ListScreen(
     tasks: LazyPagingItems<MemoWithNotebook>,
     searchAppBarState: SearchAppBarState = SearchAppBarState.CLOSE,
     searchText: String = "",
-    selectedItems: SnapshotStateList<Int>,
+    selectedItems: SnapshotStateList<Long>,
     toTaskScreen: () -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
-    onClickBottomNavBar: (String) -> Unit,
+    toHomeScreen: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onCloseClicked: () -> Unit,
@@ -98,8 +97,8 @@ fun ListScreen(
     onDateEnabledClick: () -> Unit,
     onPrioritySelected: (Action, Priority) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit,
+    onLongClickReleased: (Long) -> Unit,
+    onLongClickApplied: (Long) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
@@ -107,14 +106,14 @@ fun ListScreen(
         canScroll = {
             selectedItems.isEmpty()
         },
-        state = rememberTopAppBarState (
+        state = rememberTopAppBarState(
             initialContentOffset = 0F,
             initialHeightOffset = 0F,
             initialHeightOffsetLimit = 0F
         )
     )
 
-     val offsetState by remember {
+    val offsetState by remember {
         derivedStateOf {
             selectedItems.isNotEmpty()
         }
@@ -172,7 +171,9 @@ fun ListScreen(
             )
         },
         bottomBar = {
-            BottomActionBarNavigation(onClickBottomNavBar) {
+            BottomActionBarNavigation(
+                toHomeScreen = toHomeScreen
+            ) {
                 onFabClicked()
             }
         }
@@ -234,7 +235,7 @@ fun ListScreen(
 
 @Composable
 private fun BottomActionBarNavigation(
-    onClickBottomNavBar: (String) -> Unit,
+    toHomeScreen: () -> Unit,
     onFabClicked: () -> Unit,
 ) {
     BottomAppBar(
@@ -244,7 +245,7 @@ private fun BottomActionBarNavigation(
                 Spacer(modifier = Modifier.width(25.dp))
                 IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
                     onClick = {
-                        onClickBottomNavBar(HOME_SCREEN)
+                        toHomeScreen()
                     }) {
                     Icon(Icons.Filled.Home, contentDescription = "Localized description")
                 }
@@ -274,7 +275,7 @@ private fun BottomActionBarNavigation(
 @Composable
 fun BottomActionBarNavPreview() {
     MaterialTheme {
-        BottomActionBarNavigation(onClickBottomNavBar = {}, onFabClicked = {})
+        BottomActionBarNavigation(toHomeScreen = {}, onFabClicked = {})
     }
 
 }
@@ -334,7 +335,7 @@ private fun ListScreenPreview() {
         uiState = UserData(),
         snackBarHostState = SnackbarHostState(),
         toTaskScreen = {},
-        onClickBottomNavBar = {},
+        toHomeScreen = {},
         onAppBarTitleClick = {},
         onSearchIconClicked = {},
         onCloseClicked = {},

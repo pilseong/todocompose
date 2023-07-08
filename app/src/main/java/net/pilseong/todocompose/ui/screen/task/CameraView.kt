@@ -20,9 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.sharp.Lens
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import java.util.Locale
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
 
 @Composable
 fun CameraView(
@@ -83,22 +86,14 @@ fun CameraView(
         )
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-
+                .fillMaxWidth()
+                .padding(end = 24.dp, top = 24.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = {
-                onDismiss()
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "close button",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(1.dp)
-                        .border(1.dp, Color.White, CircleShape)
-                )
+            Button(onClick = onDismiss) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = "Close Icon")
+                Text(text = "Close")
             }
         }
         Row(
@@ -112,6 +107,7 @@ fun CameraView(
                 onClick = {
                     Log.i("kilo", "ON CLICK")
                     takePhoto(
+                        context = context,
                         filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS",
                         imageCapture = imageCapture,
                         outputDirectory = outputDirectory,
@@ -138,6 +134,7 @@ fun CameraView(
 }
 
 private fun takePhoto(
+    context: Context,
     filenameFormat: String,
     imageCapture: ImageCapture,
     outputDirectory: File,
@@ -148,23 +145,26 @@ private fun takePhoto(
 
     val photoFile = File(
         outputDirectory,
-        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+        SimpleDateFormat(
+            filenameFormat,
+            Locale.getDefault()
+        ).format(System.currentTimeMillis()) + ".jpg"
     )
 
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+    imageCapture.takePicture(
+        ImageCapture.OutputFileOptions.Builder(photoFile).build(), executor,
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onError(exception: ImageCaptureException) {
+                Log.e("PHILIP", "Take photo error:", exception)
+                onError(exception)
+            }
 
-    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-        override fun onError(exception: ImageCaptureException) {
-            Log.e("kilo", "Take photo error:", exception)
-            onError(exception)
-        }
-
-        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(photoFile)
-            Log.e("kilo", "Take photo successful $savedUri")
-            onImageCaptured(savedUri)
-        }
-    })
+            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                val savedUri = outputFileResults.savedUri!!
+                Log.d("PHILIP", "Take photo successful $savedUri")
+                onImageCaptured(savedUri)
+            }
+        })
 }
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =

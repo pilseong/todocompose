@@ -166,7 +166,7 @@ fun DetailTaskBar(
         },
         title = {
             Text(
-                text = task.memo.title,
+                text = task.notebook?.title ?: stringResource(id = R.string.default_note_title),
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )
@@ -261,7 +261,8 @@ fun DetailTaskBarPreview() {
                     notebookId = -1,
                 ),
                 notebook = Notebook.instance(),
-                total = 1
+                total = 1,
+                photos = emptyList(),
             ),
             onBackClick = {},
             toListScreen = {},

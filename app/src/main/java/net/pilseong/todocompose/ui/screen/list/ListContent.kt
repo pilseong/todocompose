@@ -91,9 +91,9 @@ fun ListContent(
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>,
+    onLongClickReleased: (Long) -> Unit,
+    onLongClickApplied: (Long) -> Unit,
+    selectedItemsIds: SnapshotStateList<Long>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
     if (tasks.itemCount == 0) {
@@ -123,9 +123,9 @@ fun LazyItemList(
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Int) -> Unit,
-    onLongClickApplied: (Int) -> Unit,
-    selectedItemsIds: SnapshotStateList<Int>,
+    onLongClickReleased: (Long) -> Unit,
+    onLongClickApplied: (Long) -> Unit,
+    selectedItemsIds: SnapshotStateList<Long>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
 ) {
     // lazy Column 의 화면 데이터 사용
@@ -540,7 +540,8 @@ fun ListContentPreview() {
                                 notebookId = -1
                             ),
                             notebook = Notebook.instance(),
-                            total = 1
+                            total = 1,
+                            photos = emptyList()
                         )
                     ),
                 )

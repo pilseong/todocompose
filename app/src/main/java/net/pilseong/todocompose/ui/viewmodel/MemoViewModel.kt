@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +12,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider.getUriForFile
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -34,6 +36,7 @@ import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
@@ -49,6 +52,7 @@ import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.TaskAppBarState
+import net.pilseong.todocompose.util.deleteFileFromUri
 import java.io.File
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -140,10 +144,10 @@ class MemoViewModel @Inject constructor(
     var startDate: Long? = null
     var endDate: Long? = null
 
-    val selectedItems = mutableStateListOf<Int>()
+    val selectedItems = mutableStateListOf<Long>()
 
 
-    fun appendMultiSelectedItem(id: Int) {
+    fun appendMultiSelectedItem(id: Long) {
         if (selectedItems.contains(id)) {
             selectedItems.remove(id)
         } else {
@@ -151,7 +155,7 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    fun removeMultiSelectedItem(id: Int) {
+    fun removeMultiSelectedItem(id: Long) {
         selectedItems.remove(id)
     }
 
@@ -210,9 +214,9 @@ class MemoViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    private suspend fun getNotebook(id: Int) {
+    private suspend fun getNotebook(id: Long) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
-        if (id == -1) selectedNotebook.value =
+        if (id == -1L) selectedNotebook.value =
             Notebook.instance(title = context.resources.getString(R.string.default_note_title))
         else selectedNotebook.value = notebookRepository.getNotebook(id)
     }
@@ -239,7 +243,7 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    private fun persistNotebookIdState(id: Int) {
+    private fun persistNotebookIdState(id: Long) {
         if (uiState.notebookIdState != id) {
             val noteIdsList = mutableListOf<String>()
             noteIdsList.add(id.toString())
@@ -284,10 +288,10 @@ class MemoViewModel @Inject constructor(
         this.actionPerformed = Random.nextBytes(4)
     }
 
-    fun setTaskScreenToEditorMode(task: MemoTask = MemoTask.instance(notebookId = uiState.notebookIdState)) {
+    fun setTaskScreenToEditorMode(task: MemoWithNotebook = MemoWithNotebook.instance(notebookId = uiState.notebookIdState)) {
         taskAppBarState = TaskAppBarState.EDITOR
         updateUiState(
-            if (task.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = uiState.notebookIdState)
+            if (task.memo.id == NEW_ITEM_ID) TaskDetails().copy(notebookId = uiState.notebookIdState)
             else task.toTaskDetails()
         )
     }
@@ -302,13 +306,14 @@ class MemoViewModel @Inject constructor(
     fun handleActions(
         action: Action,
         memo: MemoTask = MemoTask.instance(),
+        photos: List<Photo> = emptyList(),
         priority: Priority = Priority.NONE,
         sortOrderEnabled: Boolean = false,
         sortDateEnabled: Boolean = false,
         startDate: Long? = null,
         endDate: Long? = null,
         favorite: Boolean = false,
-        notebookId: Int = -1,
+        notebookId: Long = -1,
         state: State = State.NONE,
         searchRangeAll: Boolean = false,
     ) {
@@ -322,9 +327,10 @@ class MemoViewModel @Inject constructor(
                 updateActionPerformed()
             }
 
+            // 업데이트를 실행할 때 원래 사진 리스트와 수정할 사진 리스트를 비교해야 한다.
+            // photos는 원래 사진 리스트를 가지고 있다.
             Action.UPDATE -> {
-                updateTask()
-                refreshAllTasks()
+                updateTask(photos)
                 updateActionPerformed()
             }
 
@@ -607,32 +613,43 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] addTask performed with $taskUiState"
         )
         val temp = taskUiState.taskDetails.toMemoTask()
-        savedLastMemoTask = if (temp.progression == State.COMPLETED) {
+        savedLastMemoTask = if (temp.progression == State.COMPLETED || temp.progression == State.CANCELLED) {
             temp.copy(
                 finishedAt = ZonedDateTime.now()
             )
         } else temp
+
         viewModelScope.launch {
-            todoRepository.addMemo(taskUiState.taskDetails.toMemoTask())
+            todoRepository.addMemo(taskUiState.taskDetails)
             refreshAllTasks()
         }
         this.action = Action.ADD
     }
 
-    private fun updateTask() {
+    private fun updateTask(initialPhotos: List<Photo>) {
         Log.d(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
-        val temp = taskUiState.taskDetails.toMemoTask()
-        savedLastMemoTask = if (temp.progression == State.COMPLETED) {
-            temp.copy(
-                finishedAt = ZonedDateTime.now()
-            )
-        } else temp
+        // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다.
+         if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
+             updateUiState(taskUiState.taskDetails.copy(
+                 finishedAt = ZonedDateTime.now()
+             ))
+        }
+
+        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
-            todoRepository.updateMemo(savedLastMemoTask)
+            val deletedPhotosIds = todoRepository.updateMemo(taskUiState.taskDetails)
+            Log.d("PHILIP","delete ids $deletedPhotosIds")
+            initialPhotos.forEach { photo ->
+                Log.d("PHILIP","each $photo")
+                if (deletedPhotosIds.contains(photo.id)) {
+                    deleteFileFromUri(photo.uri.toUri())
+                }
+            }
+            refreshAllTasks()
         }
         this.action = Action.UPDATE
     }
@@ -648,7 +665,7 @@ class MemoViewModel @Inject constructor(
     }
 
 
-    private fun moveToTask(destinationNoteId: Int) {
+    private fun moveToTask(destinationNoteId: Long) {
         viewModelScope.launch {
             Log.d(
                 "PHILIP",
@@ -661,7 +678,7 @@ class MemoViewModel @Inject constructor(
         }
     }
 
-    private fun copyToTask(destinationNoteId: Int) {
+    private fun copyToTask(destinationNoteId: Long) {
         viewModelScope.launch {
             Log.d(
                 "PHILIP",
@@ -704,16 +721,17 @@ class MemoViewModel @Inject constructor(
                 "[MemoViewModel] updateStateForMultiple performed with ${selectedItems.toList()} to state $state "
             )
 
-            todoRepository.updateMultipleMemosWithoutUpdatedAt(selectedItems.toList(), state)
+            todoRepository.updatesStateForMultipleMemos(selectedItems.toList(), state)
             selectedItems.clear()
             refreshAllTasks()
         }
     }
 
+    // 상태 변경 -> updatedAt 이 변경 되지 않는다.
     private fun updateState(todo: MemoTask, state: State) {
         viewModelScope.launch {
             todoRepository.updateMemoWithoutUpdatedAt(
-                if (state == State.COMPLETED) {
+                if (state == State.COMPLETED || state == State.CANCELLED) {
                     todo.copy(
                         progression = state,
                         finishedAt = ZonedDateTime.now()
@@ -840,7 +858,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             val allMemoData = todoRepository.getAllTasks()
             var memoJson = gson?.toJson(allMemoData)
-            val filename = "idea_note.json"
+            val filename = "idea_note.txt"
 
             val allNotes = notebookRepository.getAllNotebooks()
             val noteJson = gson?.toJson(allNotes)
@@ -885,6 +903,7 @@ class MemoViewModel @Inject constructor(
         private set
 
     fun updateUiState(taskDetails: TaskDetails) {
+        Log.d("PHILIP", "updateUIState ${taskDetails}")
         taskUiState =
             TaskUiState(taskDetails = taskDetails, isEntryValid = validateInput(taskDetails))
     }
@@ -909,8 +928,7 @@ class MemoViewModel @Inject constructor(
 
 
     private fun observeUiState() {
-//        if (firstFetch) firstFetch = false
-        Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
+        Log.d("PHILIP", "[MemoViewModel] observeUiState() called")
         viewModelScope.launch {
             uiStateFlow
                 .onEach {
@@ -920,21 +938,23 @@ class MemoViewModel @Inject constructor(
                             refreshAllTasks()
                             getNotebook(uiState.notebookIdState)
                         }
-
                         else -> {}
                     }
                 }
-                .collect()
+                .collect {
+                    Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
+                }
         }
     }
 
     init {
         observeUiState()
+        Log.d("PHILIP", "version: ${Build.VERSION.RELEASE}")
     }
 }
 
 data class TaskDetails(
-    val id: Int = NEW_ITEM_ID,
+    val id: Long = NEW_ITEM_ID,
     val title: String = "",
     val description: String = "",
     val priority: Priority = Priority.NONE,
@@ -942,7 +962,9 @@ data class TaskDetails(
     var progression: State = State.NONE,
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
-    val notebookId: Int = -1
+    val finishedAt: ZonedDateTime? = null,
+    val notebookId: Long = -1,
+    var photos: MutableList<Photo> = mutableListOf(),
 )
 
 fun TaskDetails.toMemoTask() = MemoTask(
@@ -954,6 +976,7 @@ fun TaskDetails.toMemoTask() = MemoTask(
     progression = progression,
     createdAt = createdAt,
     updatedAt = updatedAt,
+    finishedAt = finishedAt,
     notebookId = notebookId
 )
 
@@ -966,7 +989,22 @@ fun MemoTask.toTaskDetails(): TaskDetails = TaskDetails(
     progression = progression,
     createdAt = createdAt,
     updatedAt = updatedAt,
+    finishedAt = finishedAt,
     notebookId = notebookId
+)
+
+fun MemoWithNotebook.toTaskDetails(): TaskDetails = TaskDetails(
+    id = memo.id,
+    title = memo.title,
+    description = memo.description,
+    priority = memo.priority,
+    favorite = memo.favorite,
+    progression = memo.progression,
+    createdAt = memo.createdAt,
+    updatedAt = memo.updatedAt,
+    finishedAt = memo.finishedAt,
+    notebookId = notebook?.id ?: -1,
+    photos = photos.toMutableList()
 )
 
 fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
@@ -978,9 +1016,9 @@ fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
     progression = memo.progression,
     createdAt = memo.createdAt,
     updatedAt = memo.updatedAt,
+    finishedAt = memo.finishedAt,
     notebookId = memo.notebookId
 )
-
 
 sealed interface UiState {
     object Loading : UiState

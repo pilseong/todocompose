@@ -53,12 +53,12 @@ fun NotebookCover(
     modifier: Modifier = Modifier,
     notebookWidth: Float,
     isMultiSelectionMode: Boolean = false,
-    onSelectNotebookWithLongClick: (Int) -> Unit,
+    onSelectNotebookWithLongClick: (Long) -> Unit,
     notebook: NotebookWithCount,
-    onSelectNotebook: (Int) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
     selected: Boolean = false,
     noteSortingOption: NoteSortingOption,
-    onInfoClick: (Int) -> Unit
+    onInfoClick: (Long) -> Unit
 ) {
     Surface(
         modifier = modifier

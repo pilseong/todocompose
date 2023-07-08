@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.ui.screen.task
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.GalleryState
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -56,8 +58,13 @@ fun TaskScreen(
         topBar = {
             TaskAppBar(
                 task = if (taskIndex >= 0) tasks[taskIndex]!!
-                else MemoWithNotebook(memo = MemoTask.instance(),
-                    notebook = Notebook.instance(), total = 1),
+                else MemoWithNotebook(
+                    memo = MemoTask.instance(),
+                    notebook = Notebook.instance(),
+                    total = 1,
+                    photos = emptyList(),
+
+                ),
                 taskAppBarState = taskAppBarState,
                 taskUiState = taskUiState,
                 toListScreen = toListScreen,
@@ -87,8 +94,12 @@ fun TaskScreen(
             ) {
                 TaskContent(
                     task = if (taskIndex >= 0) tasks[taskIndex]!!
-                    else MemoWithNotebook(memo = MemoTask.instance(),
-                        notebook = Notebook.instance(), total = 1),
+                    else MemoWithNotebook(
+                        memo = MemoTask.instance(),
+                        notebook = Notebook.instance(),
+                        total = 1,
+                        photos = emptyList(),
+                    ),
                     taskUiState = taskUiState,
                     taskSize = tasks.itemCount,
                     taskIndex = taskIndex,
@@ -96,8 +107,7 @@ fun TaskScreen(
                     onValueChange = onValueChange,
                     onSwipeRightOnViewer = onSwipeRightOnViewer,
                     onSwipeLeftOnViewer = onSwipeLeftOnViewer,
-
-                    )
+                )
             }
         }
     )

@@ -22,6 +22,7 @@ import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.util.Constants.MAIN_ROOT
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 // light 모드 에서는 배경색으로 인한 flikering이 여전히 존재
                 Surface {
                     MainNavGraph(
-                        startDestination = "root",
+                        startDestination = MAIN_ROOT,
                         navHostController = navHostController
                     )
                 }

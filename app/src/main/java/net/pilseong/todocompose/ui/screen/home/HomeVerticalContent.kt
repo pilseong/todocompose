@@ -55,16 +55,16 @@ import java.util.Locale
 
 @Composable
 fun VerticalContent(
-    onSelectNotebook: (Int) -> Unit,
-    onInfoClick: (Int) -> Unit,
+    onSelectNotebook: (Long) -> Unit,
+    onInfoClick: (Long) -> Unit,
     currentNotebook: NotebookWithCount,
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,
     onSortMenuClick: (NoteSortingOption) -> Unit,
     noteSortingOption: NoteSortingOption,
     notebooks: List<NotebookWithCount>,
-    selectedNotebookIds: SnapshotStateList<Int>,
-    onSelectNotebookWithLongClick: (Int) -> Unit,
+    selectedNotebookIds: SnapshotStateList<Long>,
+    onSelectNotebookWithLongClick: (Long) -> Unit,
     onEmptyImageClick: () -> Unit
 ) {
     Column(

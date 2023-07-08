@@ -1,6 +1,8 @@
 package net.pilseong.todocompose.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -14,6 +16,8 @@ import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.homeComposable
 import net.pilseong.todocompose.navigation.destination.memoNavGraph
 import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
+import net.pilseong.todocompose.util.Constants.HOME_ROOT
+import net.pilseong.todocompose.util.Constants.MAIN_ROOT
 
 @Composable
 fun MainNavGraph(
@@ -32,13 +36,13 @@ fun MainNavGraph(
         startDestination = startDestination
     ) {
         navigation(
-            startDestination = BottomBarScreen.Home.route,
-            route = "root",
+            startDestination = HOME_ROOT,
+            route = MAIN_ROOT,
         ) {
             homeComposable(
                 navHostController = navHostController,
                 viewModelStoreOwner = viewModelStoreOwner,
-                route = BottomBarScreen.Home.route
+                route = HOME_ROOT
             )
 
             memoNavGraph(
@@ -49,8 +53,9 @@ fun MainNavGraph(
                 toListScreen = {
                     navHostController.navigate(Screen.MemoList.route)
                 },
-                onClickBottomNavBar = { route ->
-                    navHostController.navigate(route)
+                toHomeScreen = {
+                    navHostController.popBackStack(Screen.Home.route, true)
+                    navHostController.navigate(Screen.Home.route)
                 }
             )
 
@@ -67,15 +72,15 @@ fun MainNavGraph(
 
 @Composable
 inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navHostController: NavHostController): T {
-
-//    Log.d("PHILIP", "sharedViewModel before ${destination.parent?.route}")
-//    Log.d("PHILIP", "sharedViewModel before ${destination.parent}")
     val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
     val parentEntry = remember(this) {
+        Log.d("PHILIP", "sharedViewModel set $navGraphRoute $this")
         navHostController.getBackStackEntry(navGraphRoute)
     }
 
-//    Log.d("PHILIP", "sharedViewModel after $navGraphRoute, $parentEntry")
+    LaunchedEffect(key1 = this) {
+        Log.d("PHILIP", "sharedViewModel after $parentEntry")
+    }
 
     return hiltViewModel(parentEntry)
 }

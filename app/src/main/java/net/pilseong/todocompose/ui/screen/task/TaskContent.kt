@@ -3,7 +3,7 @@ package net.pilseong.todocompose.ui.screen.task
 import android.Manifest
 import android.net.Uri
 import android.util.Log
-import androidx.compose.foundation.Image
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,8 +26,7 @@ import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.DismissDirection
@@ -35,7 +34,6 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
@@ -53,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -64,19 +61,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import androidx.core.net.toUri
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
+import net.pilseong.todocompose.ui.components.ComposeGallery
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
+import net.pilseong.todocompose.ui.components.ZoomableImage
 import net.pilseong.todocompose.ui.screen.list.ColorBackGround
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -89,11 +88,13 @@ import net.pilseong.todocompose.util.Constants.MAX_CONTENT_LENGTH
 import net.pilseong.todocompose.util.Constants.MAX_TITLE_LENGTH
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
+import net.pilseong.todocompose.util.deleteFileFromUri
 import net.pilseong.todocompose.util.getOutputDirectory
+import net.pilseong.todocompose.util.savePhotoToInternalStorage
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskContent(
     task: MemoWithNotebook,
@@ -103,7 +104,7 @@ fun TaskContent(
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
     onValueChange: (TaskDetails) -> Unit,
     onSwipeRightOnViewer: () -> Unit,
-    onSwipeLeftOnViewer: () -> Unit
+    onSwipeLeftOnViewer: () -> Unit,
 ) {
     Log.d("PHILIP", "size : $taskSize, taskInded : $taskIndex")
     if (taskAppBarState == TaskAppBarState.VIEWER) {
@@ -165,7 +166,7 @@ fun TaskContent(
     } else {
         EditorContent(
             taskUiState = taskUiState,
-            onValueChange = onValueChange
+            onValueChange = onValueChange,
         )
     }
 }
@@ -191,12 +192,15 @@ private fun ViewerContent(
 ) {
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         var expanded by remember { mutableStateOf(false) }
+        var photoOpen by remember {
+            mutableStateOf(false)
+        }
+
+        var selectedGalleryImage: Photo? by remember {
+            mutableStateOf(null)
+        }
 
         Surface {
             Column(
@@ -327,14 +331,14 @@ private fun ViewerContent(
                 // 제목
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(top = SMALL_PADDING),
                     horizontalArrangement = Arrangement.Start,
                 ) {
                     Column(
                         modifier = Modifier.weight(1.5F / 12),
                     ) {
-                        Icon(
+                        Icon(modifier = Modifier.padding(top = 2.dp),
                             imageVector = Icons.Filled.Title,
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
@@ -346,23 +350,94 @@ private fun ViewerContent(
                     )
 
                 }
+
+                // 사진
+                if (task.photos.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = SMALL_PADDING),
+                        horizontalArrangement = Arrangement.Start,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1.4F / 12),
+                        ) {
+                            Icon(modifier = Modifier.padding(top = 2.dp),
+                                imageVector = Icons.Filled.Photo,
+                                contentDescription = "Localized description",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(10.6F / 12)) {
+                            ComposeGallery(
+                                photos = task.photos,
+                                onAddClicked = { /*TODO*/ },
+                                onImageClicked = {
+                                    selectedGalleryImage = it
+                                    photoOpen = true
+                                },
+                                onCameraClicked = {},
+                                onImagesSelected = {}
+                            )
+                        }
+
+//                        Spacer(
+//                            modifier = Modifier.height(MEDIUM_PADDING),
+//                        )
+
+                    }
+                }
             }
         }
+
         Divider()
 
         Spacer(
             modifier = Modifier.height(MEDIUM_PADDING),
         )
 
-        Card(
-            shape = RoundedCornerShape(4.dp)
-        ) {
-            SelectionContainer {
-                Text(
-                    modifier = Modifier
-                        .padding(LARGE_PADDING),
-                    text = task.memo.description
+
+        Column(modifier = Modifier.verticalScroll(scrollState)) {
+            Card(
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                SelectionContainer {
+                    Text(
+                        modifier = Modifier
+                            .padding(LARGE_PADDING),
+                        text = task.memo.description
+                    )
+                }
+            }
+        }
+
+        if (photoOpen && selectedGalleryImage != null) {
+            Dialog(
+                onDismissRequest = {
+                    photoOpen = false
+                },
+                properties = DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = false,
+                    usePlatformDefaultWidth = false
                 )
+            ) {
+                Surface(
+                    color = Color.Black
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        ZoomableImage(
+                            selectedGalleryImage = selectedGalleryImage!!,
+                            onCloseClicked = {
+                                selectedGalleryImage = null
+                                photoOpen = false
+                            },
+                            onDeleteClicked = { },
+                            onCameraClick = {},
+                            onUseClicked = {}
+                        )
+                    }
+                }
             }
         }
     }
@@ -435,6 +510,7 @@ private fun EditorContent(
                 )
             }
         )
+
         TextField(
             modifier = Modifier
                 .imePadding()
@@ -470,7 +546,8 @@ private fun EditorContent(
         )
 
 
-        var cameraDialog by  remember { mutableStateOf(false) }
+        val context = LocalContext.current
+        var cameraDialog by remember { mutableStateOf(false) }
         var cameraOpen by remember { mutableStateOf(false) }
         var photoOpen by remember { mutableStateOf(false) }
         var photoUri: Uri? by remember { mutableStateOf(null) }
@@ -479,43 +556,69 @@ private fun EditorContent(
             Manifest.permission.CAMERA
         )
 
-        Row() {
-            Row {
-                IconButton(onClick = {
-                    if (cameraPermissionState.status.isGranted) {
-                        cameraDialog = true
-                        cameraOpen = true
-                    } else {
-                        cameraPermissionState.launchPermissionRequest()
+        var selectedGalleryImage by remember { mutableStateOf<Photo?>(null) }
+        var fromCamera by remember { mutableStateOf(false) }
+
+        ComposeGallery(
+            isEditMode = true,
+            photos = taskUiState.taskDetails.photos,
+            onAddClicked = { /*TODO*/ },
+            onImageClicked = {
+                selectedGalleryImage = it
+                fromCamera = false
+                photoOpen = true
+                cameraDialog = true
+            },
+            onCameraClicked = {
+                if (cameraPermissionState.status.isGranted) {
+                    cameraDialog = true
+                    cameraOpen = true
+                    fromCamera = true
+                } else {
+                    cameraPermissionState.launchPermissionRequest()
+                }
+            },
+            onImagesSelected = { images ->
+                Log.d("PHILIP", "get from the picker $images")
+                val newList = taskUiState.taskDetails.photos.toMutableList()
+
+                images.forEach { image ->
+
+                    val newUri = savePhotoToInternalStorage(context = context, uri = image)
+                    if (newUri != null) {
+                        Log.d("PHILIP", "back pressed")
+                        newList.add(
+                            Photo(
+                                uri = newUri.toString(),
+                                filename = "",
+                                memoId = taskUiState.taskDetails.id
+                            )
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "take pictures"
-                    )
                 }
+
+                onValueChange(taskUiState.taskDetails.copy(photos = newList))
             }
-            Row {
-                IconButton(onClick = {
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoLibrary,
-                        contentDescription = "take pictures"
-                    )
-                }
-            }
-        }
+        )
+
         if (cameraDialog) {
             val cameraExecutor = Executors.newSingleThreadExecutor()
-
             Dialog(
                 onDismissRequest = {
-                    cameraDialog = false
-                    cameraOpen = false
-                    photoOpen = false
-                    if (!cameraExecutor.isShutdown) {
-                        cameraExecutor.shutdown()
-                        Log.d("PHILIP", "showdown")
+                    if (photoOpen && fromCamera) {
+                        Log.d("PHILIP", "back pressed")
+                        deleteFileFromUri(selectedGalleryImage!!.uri.toUri())
+                        selectedGalleryImage = null
+                        photoOpen = false
+                        cameraOpen = true
+                    } else {
+                        cameraDialog = false
+                        cameraOpen = false
+                        photoOpen = false
+                        if (!cameraExecutor.isShutdown) {
+                            cameraExecutor.shutdown()
+                            Log.d("PHILIP", "showdown")
+                        }
                     }
                 },
                 properties = DialogProperties(
@@ -531,10 +634,19 @@ private fun EditorContent(
                         onImageCaptured = {
                             Log.d("PHILIP", "file captured $it")
                             photoUri = it
+                            selectedGalleryImage = Photo(
+                                uri = it.toString(),
+                                memoId = taskUiState.taskDetails.id,
+                                filename = ""
+                            )
+                            if (!cameraExecutor.isShutdown) {
+                                cameraExecutor.shutdown()
+                                Log.d("PHILIP", "showdown")
+                            }
                             cameraOpen = false
                             photoOpen = true
                         },
-                        onError = { Log.e("kilo", "View error:", it) },
+                        onError = { Log.e("PHILIP", "View error:", it) },
                         onDismiss = {
                             cameraDialog = false
                             cameraOpen = false
@@ -546,30 +658,62 @@ private fun EditorContent(
                     )
                 }
 
-                if (photoOpen) {
+                if (photoOpen && selectedGalleryImage != null) {
                     Surface(
                         color = Color.Black
                     ) {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            Image(
-                                modifier = Modifier.fillMaxSize(),
-                                painter = rememberAsyncImagePainter(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(photoUri)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentScale = ContentScale.Crop
-                                ),
-                                contentDescription = "captured image",
+                            ZoomableImage(
+                                isEditMode = true,
+                                fromCamera = fromCamera,
+                                selectedGalleryImage = selectedGalleryImage!!,
+                                onCloseClicked = {
+                                    selectedGalleryImage = null
+                                    photoOpen = false
+                                    cameraDialog = false
+                                },
+                                onDeleteClicked = {
+                                    // delete inside the gallery
+                                    val photos = taskUiState.taskDetails.photos.toMutableList()
+                                    photos.remove(selectedGalleryImage)
+                                    onValueChange(taskUiState.taskDetails.copy(photos = photos))
+                                    // delete captured image
+                                    selectedGalleryImage = null
+                                    photoOpen = false
+                                    cameraDialog = false
+                                },
+                                onCameraClick = {
+                                    Log.d("PHILIP", "camera clicked")
+                                    photoOpen = false
+                                    cameraOpen = true
+
+                                    // delete captured image
+                                    deleteFileFromUri(selectedGalleryImage!!.uri.toUri())
+                                    selectedGalleryImage = null
+                                },
+                                onUseClicked = {
+                                    val newList = taskUiState.taskDetails.photos.toMutableList()
+                                    newList.add(selectedGalleryImage!!)
+
+                                    onValueChange(taskUiState.taskDetails.copy(photos = newList))
+
+                                    photoOpen = false
+                                    cameraDialog = false
+                                    selectedGalleryImage = null
+
+                                    if (!cameraExecutor.isShutdown) {
+                                        cameraExecutor.shutdown()
+                                        Log.d("PHILIP", "showdown")
+                                    }
+                                }
                             )
                         }
                     }
                 }
-
             }
         }
-    }
 
+    }
 }
 
 @Preview
@@ -587,7 +731,10 @@ fun ViewerContentPreview() {
                     notebookId = -1,
                 ),
                 notebook = Notebook.instance(),
-                total = 1
+                total = 1,
+                photos = listOf(
+                    Photo(0, "test", filename = "", memoId = -1L)
+                ),
             ),
             taskIndex = 0,
             taskSize = 1,
@@ -604,7 +751,7 @@ fun ViewerContentPreview() {
             onValueChange = {},
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
-            taskAppBarState = TaskAppBarState.VIEWER
+            taskAppBarState = TaskAppBarState.VIEWER,
         )
     }
 }
@@ -612,7 +759,7 @@ fun ViewerContentPreview() {
 
 @Preview
 @Composable
-fun EditorContentPrevie() {
+fun EditorContentPreview() {
     MaterialTheme {
         EditorContent(
             taskUiState = TaskUiState(
