@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.data.repository
 
 import android.util.Log
-import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -18,7 +17,6 @@ import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
-import net.pilseong.todocompose.util.deleteFileFromUri
 import javax.inject.Inject
 
 //@ViewModelScoped

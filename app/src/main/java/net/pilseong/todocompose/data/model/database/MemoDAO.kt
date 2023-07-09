@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.MemoTask
-import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.State

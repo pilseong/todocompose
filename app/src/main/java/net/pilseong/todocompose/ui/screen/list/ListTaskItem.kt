@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -51,15 +51,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
+import net.pilseong.todocompose.ui.components.ComposeGallery
+import net.pilseong.todocompose.ui.components.ZoomableImage
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
+import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
@@ -167,170 +173,235 @@ fun TaskItem(
                 else if (stateState == State.NONE) MaterialTheme.colorScheme.surface
                 else stateState.color.copy(alpha = 0.5F)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .padding(vertical = LARGE_PADDING)
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    verticalAlignment = CenterVertically
+                        .padding(vertical = MEDIUM_PADDING)
+                        .fillMaxWidth(),
+//                        .height(56.dp),
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    // 시간 + 중요성
-                    Column(
-                        modifier = Modifier
-                            .weight(2 / 12f)
-                            .fillMaxHeight(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Row(
                     ) {
-                        Text(
+                        // 시간 + 중요성
+                        Column(
                             modifier = Modifier
-                                .weight(6 / 12F)
-                                .fillMaxSize()
-                                .wrapContentHeight(CenterVertically),
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            textAlign = TextAlign.Center,
-                            text = datetime.toLocalTime()
-                                .format(DateTimeFormatter.ofPattern("HH:mm")),
-                            color = Color(
-                                ColorUtils.blendARGB(
-                                    MaterialTheme.colorScheme.onSurface.toArgb(),
-                                    Color.White.toArgb(),
-                                    0.1f
-                                )
-                            ).copy(0.9f),
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .weight(6 / 12F)
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = {
-                                        if (selected.value) {
-                                            selected.value = false
-                                            onLongClickReleased(todoInside.memo.id)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        selected.value = !selected.value
-                                        onLongClickApplied(todoInside.memo.id)
-                                    }
-                                ),
-                            painter = if (selected.value)
-                                painterResource(id = R.drawable.ic_baseline_check_circle_24)
-                            else
-                                painterResource(id = R.drawable.ic_baseline_circle_24),
-                            contentDescription = if (selected.value) "Checked Circle" else "Circle",
-                            tint = if (selected.value) MaterialTheme.colorScheme.primary else todoInside.memo.priority.color
-                        )
-                    }
-
-                    //  제목 내용
-                    Column(
-                        modifier = Modifier
-                            .weight(7 / 12f),
-                    ) {
-                        Text(
-                            text = todoInside.memo.title,
-                            color = MaterialTheme.colorScheme.taskItemContentColor,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                        )
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = todoInside.memo.description,
-                            color = MaterialTheme.colorScheme.taskItemContentColor,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    // favorite and state
-                    Column(
-                        modifier = Modifier
-                            .padding(PaddingValues(end = SMALL_PADDING))
-                            .weight(3 / 12f)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .weight(6 / 12F)
-                                .fillMaxWidth(),
-                            verticalAlignment = CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                                .weight(2 / 12f),
+//                            .fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
+                            Text(
+                                modifier = Modifier
+//                                .weight(6 / 12F)
+//                                .fillMaxSize()
+                                    .wrapContentHeight(CenterVertically),
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                textAlign = TextAlign.Center,
+                                text = datetime.toLocalTime()
+                                    .format(DateTimeFormatter.ofPattern("HH:mm")),
+                                color = Color(
+                                    ColorUtils.blendARGB(
+                                        MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        Color.White.toArgb(),
+                                        0.1f
+                                    )
+                                ).copy(0.9f),
+                            )
                             Icon(
-                                modifier = Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) {
-                                    favoriteOn = !favoriteOn
-                                    onFavoriteClick()
-                                },
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(id = R.string.task_item_star_description),
-                                tint = if (favoriteOn) FavoriteYellow else Color.White
+                                modifier = Modifier
+//                                .weight(6 / 12F)
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            if (selected.value) {
+                                                selected.value = false
+                                                onLongClickReleased(todoInside.memo.id)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            selected.value = !selected.value
+                                            onLongClickApplied(todoInside.memo.id)
+                                        }
+                                    ),
+                                painter = if (selected.value)
+                                    painterResource(id = R.drawable.ic_baseline_check_circle_24)
+                                else
+                                    painterResource(id = R.drawable.ic_baseline_circle_24),
+                                contentDescription = if (selected.value) "Checked Circle" else "Circle",
+                                tint = if (selected.value) MaterialTheme.colorScheme.primary else todoInside.memo.priority.color
                             )
                         }
-                        Row(
+
+                        //  제목 내용
+                        Column(
                             modifier = Modifier
-                                .weight(6 / 12F)
-                                .fillMaxSize(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.Bottom
+                                .weight(7 / 12f),
                         ) {
-                            Surface(
+                            Text(
+                                text = todoInside.memo.title,
+                                color = MaterialTheme.colorScheme.taskItemContentColor,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                            )
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = todoInside.memo.description,
+                                color = MaterialTheme.colorScheme.taskItemContentColor,
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        // favorite and state
+                        Column(
+                            modifier = Modifier
+                                .padding(PaddingValues(end = SMALL_PADDING))
+                                .weight(3 / 12f),
+//                            .fillMaxHeight(),
+                            verticalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(
                                 modifier = Modifier
-                                    .width(80.dp)
-                                    .clickable {
-                                        stateDialogExpanded = !stateDialogExpanded
-                                    },
-                                shape = RoundedCornerShape(4.dp)
+//                                .weight(6 / 12F)
+                                    .fillMaxWidth(),
+                                verticalAlignment = CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    modifier = Modifier.padding(vertical = 4.dp),
-                                    text = stringResource(id = stateState.label),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                Icon(
+                                    modifier = Modifier.clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }
+                                    ) {
+                                        favoriteOn = !favoriteOn
+                                        onFavoriteClick()
+                                    },
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = stringResource(id = R.string.task_item_star_description),
+                                    tint = if (favoriteOn) FavoriteYellow else Color.White
                                 )
                             }
-                        }
-                        // 상태를 선택할 수 있는 DropDownMenu
-                        DropdownMenu(
-                            expanded = stateDialogExpanded,
-                            onDismissRequest = { stateDialogExpanded = false },
-                        ) {
-                            State.values().reversed().forEach { state ->
-                                DropdownMenuItem(
-                                    leadingIcon = {
-                                        Canvas(
-                                            modifier = Modifier
-                                                .offset(0.dp, 0.8.dp)
-                                                .size(PRIORITY_INDICATOR_SIZE)
-                                        ) {
-                                            drawCircle(color = state.color)
-                                        }
-                                    },
-                                    text = {
-                                        Text(
-                                            text = stringResource(id = state.label),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        stateState = state
-                                        onStateSelected(todoInside, state)
-                                        stateDialogExpanded = false
-                                    })
+                            Row(
+//                            modifier = Modifier
+//                                .weight(6 / 12F),
+//                                .fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Surface(
+                                    modifier = Modifier
+                                        .width(80.dp)
+                                        .clickable {
+                                            stateDialogExpanded = !stateDialogExpanded
+                                        },
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(vertical = 4.dp),
+                                        text = stringResource(id = stateState.label),
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    )
+                                }
+                            }
+                            // 상태를 선택할 수 있는 DropDownMenu
+                            DropdownMenu(
+                                expanded = stateDialogExpanded,
+                                onDismissRequest = { stateDialogExpanded = false },
+                            ) {
+                                State.values().reversed().forEach { state ->
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Canvas(
+                                                modifier = Modifier
+                                                    .offset(0.dp, 0.8.dp)
+                                                    .size(PRIORITY_INDICATOR_SIZE)
+                                            ) {
+                                                drawCircle(color = state.color)
+                                            }
+                                        },
+                                        text = {
+                                            Text(
+                                                text = stringResource(id = state.label),
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            stateState = state
+                                            onStateSelected(todoInside, state)
+                                            stateDialogExpanded = false
+                                        })
+                                }
                             }
                         }
                     }
+
+
+                    if (todoTask.photos.isNotEmpty()) {
+                        var photoOpen by remember {
+                            mutableStateOf(false)
+                        }
+
+                        var selectedGalleryImage: Photo? by remember {
+                            mutableStateOf(null)
+                        }
+                        Divider(
+                            modifier = Modifier
+                                .padding(top = SMALL_PADDING)
+                                .height(0.5.dp),
+//                        color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Row {
+                            ComposeGallery(
+                                modifier = Modifier.padding(
+                                    top = MEDIUM_PADDING,
+                                    start = LARGE_PADDING,
+                                    end = LARGE_PADDING
+                                ),
+                                photos = todoTask.photos,
+                                imageSize = 30.dp,
+                                onImageClicked = {
+                                    selectedGalleryImage = it
+                                    photoOpen = true
+                                },
+                            )
+                        }
+                        if (photoOpen && selectedGalleryImage != null) {
+                            Dialog(
+                                onDismissRequest = {
+                                    photoOpen = false
+                                },
+                                properties = DialogProperties(
+                                    dismissOnBackPress = true,
+                                    dismissOnClickOutside = false,
+                                    usePlatformDefaultWidth = false
+                                )
+                            ) {
+                                Surface(
+                                    color = Color.Black
+                                ) {
+                                    Column(modifier = Modifier.fillMaxSize()) {
+                                        ZoomableImage(
+                                            selectedGalleryImage = selectedGalleryImage!!,
+                                            onCloseClicked = {
+                                                selectedGalleryImage = null
+                                                photoOpen = false
+                                            },
+                                            onDeleteClicked = { },
+                                            onCameraClick = {},
+                                            onUseClicked = {}
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }

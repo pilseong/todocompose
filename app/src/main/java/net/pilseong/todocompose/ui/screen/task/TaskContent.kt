@@ -1,9 +1,10 @@
 package net.pilseong.todocompose.ui.screen.task
 
-import android.Manifest
 import android.net.Uri
 import android.util.Log
-import androidx.activity.compose.BackHandler
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,9 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
+import net.pilseong.todocompose.MainActivity
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -92,7 +91,6 @@ import net.pilseong.todocompose.util.deleteFileFromUri
 import net.pilseong.todocompose.util.getOutputDirectory
 import net.pilseong.todocompose.util.savePhotoToInternalStorage
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.Executors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -338,7 +336,8 @@ private fun ViewerContent(
                     Column(
                         modifier = Modifier.weight(1.5F / 12),
                     ) {
-                        Icon(modifier = Modifier.padding(top = 2.dp),
+                        Icon(
+                            modifier = Modifier.padding(top = 2.dp),
                             imageVector = Icons.Filled.Title,
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
@@ -362,7 +361,8 @@ private fun ViewerContent(
                         Column(
                             modifier = Modifier.weight(1.4F / 12),
                         ) {
-                            Icon(modifier = Modifier.padding(top = 2.dp),
+                            Icon(
+                                modifier = Modifier.padding(top = 2.dp),
                                 imageVector = Icons.Filled.Photo,
                                 contentDescription = "Localized description",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
@@ -380,11 +380,6 @@ private fun ViewerContent(
                                 onImagesSelected = {}
                             )
                         }
-
-//                        Spacer(
-//                            modifier = Modifier.height(MEDIUM_PADDING),
-//                        )
-
                     }
                 }
             }
@@ -443,12 +438,12 @@ private fun ViewerContent(
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun EditorContent(
     taskUiState: TaskUiState,
     onValueChange: (TaskDetails) -> Unit,
 ) {
+
     Column(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surface)
@@ -551,13 +546,25 @@ private fun EditorContent(
         var cameraOpen by remember { mutableStateOf(false) }
         var photoOpen by remember { mutableStateOf(false) }
         var photoUri: Uri? by remember { mutableStateOf(null) }
-
-        val cameraPermissionState = rememberPermissionState(
-            Manifest.permission.CAMERA
-        )
-
         var selectedGalleryImage by remember { mutableStateOf<Photo?>(null) }
         var fromCamera by remember { mutableStateOf(false) }
+
+
+        val activityResultLauncher =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                var permissionGranted = true
+                permissions.entries.forEach {
+                    if (it.key in MainActivity.REQUIRED_PERMISSIONS && !it.value)
+                        permissionGranted = false
+                }
+                if (!permissionGranted) {
+                    Toast.makeText(context, "Permission request denied", Toast.LENGTH_SHORT).show()
+                } else {
+                    cameraDialog = true
+                    cameraOpen = true
+                    fromCamera = true
+                }
+            }
 
         ComposeGallery(
             isEditMode = true,
@@ -570,13 +577,14 @@ private fun EditorContent(
                 cameraDialog = true
             },
             onCameraClicked = {
-                if (cameraPermissionState.status.isGranted) {
+                if (!MainActivity.hasPermissions(context)) {
+                    activityResultLauncher.launch(MainActivity.REQUIRED_PERMISSIONS)
+                } else {
                     cameraDialog = true
                     cameraOpen = true
                     fromCamera = true
-                } else {
-                    cameraPermissionState.launchPermissionRequest()
                 }
+
             },
             onImagesSelected = { images ->
                 Log.d("PHILIP", "get from the picker $images")
@@ -602,7 +610,6 @@ private fun EditorContent(
         )
 
         if (cameraDialog) {
-            val cameraExecutor = Executors.newSingleThreadExecutor()
             Dialog(
                 onDismissRequest = {
                     if (photoOpen && fromCamera) {
@@ -615,10 +622,6 @@ private fun EditorContent(
                         cameraDialog = false
                         cameraOpen = false
                         photoOpen = false
-                        if (!cameraExecutor.isShutdown) {
-                            cameraExecutor.shutdown()
-                            Log.d("PHILIP", "showdown")
-                        }
                     }
                 },
                 properties = DialogProperties(
@@ -629,8 +632,8 @@ private fun EditorContent(
             ) {
                 if (cameraOpen) {
                     CameraView(
+                        context = context,
                         outputDirectory = getOutputDirectory(LocalContext.current),
-                        executor = cameraExecutor,
                         onImageCaptured = {
                             Log.d("PHILIP", "file captured $it")
                             photoUri = it
@@ -639,21 +642,12 @@ private fun EditorContent(
                                 memoId = taskUiState.taskDetails.id,
                                 filename = ""
                             )
-                            if (!cameraExecutor.isShutdown) {
-                                cameraExecutor.shutdown()
-                                Log.d("PHILIP", "showdown")
-                            }
                             cameraOpen = false
                             photoOpen = true
                         },
-                        onError = { Log.e("PHILIP", "View error:", it) },
                         onDismiss = {
                             cameraDialog = false
                             cameraOpen = false
-                            if (!cameraExecutor.isShutdown) {
-                                cameraExecutor.shutdown()
-                                Log.d("PHILIP", "showdown")
-                            }
                         }
                     )
                 }
@@ -700,11 +694,6 @@ private fun EditorContent(
                                     photoOpen = false
                                     cameraDialog = false
                                     selectedGalleryImage = null
-
-                                    if (!cameraExecutor.isShutdown) {
-                                        cameraExecutor.shutdown()
-                                        Log.d("PHILIP", "showdown")
-                                    }
                                 }
                             )
                         }

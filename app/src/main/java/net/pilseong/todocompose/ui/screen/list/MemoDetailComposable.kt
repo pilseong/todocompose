@@ -1,17 +1,15 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
-import net.pilseong.todocompose.data.model.ui.GalleryImage
-import net.pilseong.todocompose.data.model.ui.GalleryState
-import net.pilseong.todocompose.data.model.ui.rememberGalleryState
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
@@ -19,6 +17,7 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
+import net.pilseong.todocompose.util.deleteFileFromUri
 
 fun NavGraphBuilder.memoDetailComposable(
     navHostController: NavHostController,
@@ -60,7 +59,15 @@ fun NavGraphBuilder.memoDetailComposable(
         Log.d("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
 
 
-
+        // 뒤로가기 버튼을 눌렀을 대에도 임시 저장된 이미지를 삭제 해야 한다.
+        BackHandler(memoViewModel.taskUiState.taskDetails.photos.isNotEmpty()) {
+            memoViewModel.taskUiState.taskDetails.photos.filter { photo ->  photo.id == 0L}
+                .forEach { photo ->
+                    deleteFileFromUri(photo.uri.toUri())
+                }
+            Log.d("PHILIP", "[MemoNavGraph] BackHandler performed")
+            navHostController.popBackStack()
+        }
 
         // intent 로 전달 받은 데이터 를 화면에 보여 주기 위한 로직
         if (navBackStackEntry.arguments?.getInt(Constants.MEMO_ID_ARGUMENT) == -1) {

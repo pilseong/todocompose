@@ -1,7 +1,5 @@
 package net.pilseong.todocompose.data.model
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey

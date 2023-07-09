@@ -277,20 +277,26 @@ fun StateMenuItems(
     stateSuspended: Boolean = true,
     stateWaiting: Boolean = true,
     stateNone: Boolean = true,
-    onStateSelected: (State) -> Unit
+    onStateSelected: (State) -> Unit,
+//    onToggleClicked: () -> Unit,
+//    onSetAllOrNothingClicked: (Boolean) -> Unit,
 ) {
+    var trueCounter = 0
+
     State.values().reversed().forEach { state ->
+        val enabled = when (state) {
+            State.NONE -> stateNone
+            State.WAITING -> stateWaiting
+            State.SUSPENDED -> stateSuspended
+            State.ACTIVE -> stateActive
+            State.CANCELLED -> stateCancelled
+            State.COMPLETED -> stateCompleted
+        }
+        if (enabled) trueCounter++
         DropdownMenuItem(
             text = {
                 StateItem(state = state,
-                    enabled = when (state) {
-                        State.NONE -> stateNone
-                        State.WAITING -> stateWaiting
-                        State.SUSPENDED -> stateSuspended
-                        State.ACTIVE -> stateActive
-                        State.CANCELLED -> stateCancelled
-                        State.COMPLETED -> stateCompleted
-                    },
+                    enabled = enabled,
                     text = stringResource(id = state.label),
                     onclick = {
                         onStateSelected(state)
@@ -301,6 +307,21 @@ fun StateMenuItems(
                 onStateSelected(state)
             })
     }
+
+    DropdownMenuItem(
+        text = {
+            Text(text = "토글")
+        },
+        onClick = {
+        })
+
+    DropdownMenuItem(
+        text = {
+            Text(text = if (trueCounter <= 3) "전체 선택" else "모두 해제")
+        },
+        onClick = {
+
+        })
 }
 
 @Composable

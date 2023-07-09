@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.screen.task
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -13,12 +12,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
-import net.pilseong.todocompose.data.model.ui.GalleryState
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
@@ -28,6 +27,7 @@ import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.copyToClipboard
+import net.pilseong.todocompose.util.deleteFileFromUri
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -79,6 +79,12 @@ fun TaskScreen(
                 },
                 onEditClicked = onEditClicked,
                 onBackClick = onBackClick,
+                clearAddedPhotos = {
+                    taskUiState.taskDetails.photos.filter { photo ->  photo.id == 0L}
+                        .forEach { photo ->
+                            deleteFileFromUri(photo.uri.toUri())
+                        }
+                }
             )
         },
         content = { paddingValues ->

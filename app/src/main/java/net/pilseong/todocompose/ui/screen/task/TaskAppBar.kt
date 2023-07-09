@@ -47,7 +47,8 @@ fun TaskAppBar(
     onBackClick: () -> Unit,
     toListScreen: (Action) -> Unit,
     onCopyClicked: () -> Unit,
-    onEditClicked: () -> Unit
+    onEditClicked: () -> Unit,
+    clearAddedPhotos: () -> Unit,
 ) {
     when (taskAppBarState) {
         TaskAppBarState.VIEWER -> {
@@ -64,9 +65,10 @@ fun TaskAppBar(
         TaskAppBarState.EDITOR -> {
             EditTaskBar(
                 uiState = taskUiState,
+                edit = taskUiState.taskDetails.id != NEW_ITEM_ID,
                 toListScreen = toListScreen,
                 onBackClick = onBackClick,
-                edit = taskUiState.taskDetails.id != NEW_ITEM_ID
+                clearAddedPhotos = clearAddedPhotos,
             )
 
         }
@@ -80,14 +82,18 @@ fun TaskAppBar(
 @Composable
 fun EditTaskBar(
     uiState: TaskUiState,
+    edit: Boolean = false,
     toListScreen: (Action) -> Unit,
     onBackClick: () -> Unit,
-    edit: Boolean = false
+    clearAddedPhotos: () -> Unit,
 ) {
     TopAppBar(
         navigationIcon = {
             CommonAction(
-                onClicked = { onBackClick() },
+                onClicked = {
+                    clearAddedPhotos()
+                    onBackClick()
+                },
                 icon = Icons.Default.Close,
                 description = stringResource(id = R.string.default_task_bar_close_icon)
             )
@@ -240,7 +246,8 @@ fun EditTaskBarPreview() {
         EditTaskBar(
             uiState = TaskUiState(),
             onBackClick = {},
-            toListScreen = {}
+            toListScreen = {},
+            clearAddedPhotos = {},
         )
     }
 }

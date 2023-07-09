@@ -1,6 +1,8 @@
 package net.pilseong.todocompose
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.text.htmlEncode
 import androidx.lifecycle.lifecycleScope
@@ -65,6 +68,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "CameraXApp"
+        private const val FILENAME_TARGET = "yyyy-MM-dd-HH-mm-ss-SSS"
+
+        val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                android.Manifest.permission.CAMERA
+            ).toTypedArray()
+
+        fun hasPermissions(context: Context) =  REQUIRED_PERMISSIONS.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun getExecutor(context: Context) = ContextCompat.getMainExecutor(context)
     }
 
     override fun onPause() {
