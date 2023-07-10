@@ -24,6 +24,7 @@ object Constants {
     const val PRIORITY_PREFERENCE_KEY = "priority_sort_key"
     const val FAVORITE_ENABLED_PREFERENCE_KEY = "favorite_sort_key"
     const val RECENT_NOTEBOOK_PREFERENCE_KEY = "recent_notebooks_key"
+    const val STATE_LINE_ORDER_PREFERENCE_KEY = "statusLineOrderState"
     const val PRIORITY_FILTER_PREFERENCE_KEY = "priority_filter_key"
     const val STATE_PREFERENCE_KEY = "state_id_key"
     const val DATE_ORDER_PREFERENCE_KEY = "date_order_preference_key"

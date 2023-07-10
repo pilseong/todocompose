@@ -87,11 +87,14 @@
     <string name="priority_low">낮음</string>
     <string name="priority_none">미지정</string>
     <string name="status_completed">완료</string>
-    <string name="status_active">처리</string>
+    <string name="status_active">처리중</string>
     <string name="status_suspended">보류</string>
     <string name="status_cancelled">취소</string>
     <string name="status_waiting">대기</string>
     <string name="status_none">상태없음</string>
+    <string name="status_toggle">반전</string>
+    <string name="status_select_all">전체 선택</string>
+    <string name="status_select_none">전체 해제</string>
     <string name="import_menu_label">가져오기</string>
     <string name="export_menu_label">내보내기</string>
     <string name="settings_menu_label">설정</string>

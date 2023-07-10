@@ -27,9 +27,11 @@ import net.pilseong.todocompose.util.Constants.PREFERENCE_NAME
 import net.pilseong.todocompose.util.Constants.PRIORITY_FILTER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.PRIORITY_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_PREFERENCE_KEY
+import net.pilseong.todocompose.util.Constants.STATE_LINE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
 import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SortOption
+import net.pilseong.todocompose.util.StateEntity
 import java.io.IOException
 import javax.inject.Inject
 
@@ -48,6 +50,7 @@ class DataStoreRepository @Inject constructor(
         val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
         val recentNoteIdsState = stringPreferencesKey(name = RECENT_NOTEBOOK_PREFERENCE_KEY)
+        val statusLineOrderState = stringPreferencesKey(name = STATE_LINE_ORDER_PREFERENCE_KEY)
         val priorityFilterState = intPreferencesKey(name = PRIORITY_FILTER_PREFERENCE_KEY)
         val stateState = intPreferencesKey(name = STATE_PREFERENCE_KEY)
         val noteSortingOrderState = intPreferencesKey(name = NOTE_SORTING_ORDER_ID_PREFERENCE_KEY)
@@ -89,6 +92,19 @@ class DataStoreRepository @Inject constructor(
             val noteIdsStr = preferences[PreferenceKeys.recentNoteIdsState]
             val noteIds = noteIdsStr?.split(",")
 
+            val statusLineString = preferences[PreferenceKeys.statusLineOrderState]
+                ?.split(",")
+                ?.map { it -> StateEntity.values()[it.toInt()] }
+                ?.toMutableList() ?: mutableListOf(
+                StateEntity.NOTE_FILTER,
+                StateEntity.PRIORITY_FILTER,
+                StateEntity.STATE_FILTER,
+                StateEntity.FAVORITE_FILTER,
+                StateEntity.PRIORITY_ORDER,
+                StateEntity.SORTING_ORDER,
+                StateEntity.DATE_BASE_ORDER
+            )
+
             UserData(
                 prioritySortState = Priority.valueOf(
                     preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
@@ -112,11 +128,13 @@ class DataStoreRepository @Inject constructor(
                 priorityFilterState = preferences[PreferenceKeys.priorityFilterState] ?: 15,
                 priorityNone = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 1) == 1,
                 priorityLow = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 2) == 2,
-                priorityMedium = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 4) == 4,
+                priorityMedium = ((preferences[PreferenceKeys.priorityFilterState]
+                    ?: 15) and 4) == 4,
                 priorityHigh = ((preferences[PreferenceKeys.priorityFilterState] ?: 15) and 8) == 8,
 
                 noteSortingOptionState = NoteSortingOption.values()[preferences[PreferenceKeys.noteSortingOrderState]
                     ?: NoteSortingOption.ACCESS_AT.ordinal],
+                statusLineOrderState = statusLineString
             )
         }
 
@@ -126,6 +144,17 @@ class DataStoreRepository @Inject constructor(
             context.dataStore.edit { preferences ->
                 Log.d("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
                 preferences[PreferenceKeys.recentNoteIdsState] = noteIds.joinToString(",")
+            }
+        }
+    }
+
+    suspend fun persistStatusLineOrderState(stateOrder: List<StateEntity>) {
+        withContext(ioDispatcher) {
+            // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
+            context.dataStore.edit { preferences ->
+                Log.d("PHILIP", "[DataStoreRepository]persistStatusLineOrderState $stateOrder")
+                preferences[PreferenceKeys.statusLineOrderState] =
+                    stateOrder.joinToString(",") { it -> it.ordinal.toString() }
             }
         }
     }
@@ -144,7 +173,10 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d("PHILIP", "[DataStoreRepository]persistPriorityFilterState $priorityFilterState")
+                Log.d(
+                    "PHILIP",
+                    "[DataStoreRepository]persistPriorityFilterState $priorityFilterState"
+                )
                 preferences[PreferenceKeys.priorityFilterState] = priorityFilterState
             }
         }

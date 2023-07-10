@@ -50,11 +50,13 @@ import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
+import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
 import java.io.File
 import java.time.ZonedDateTime
 import javax.inject.Inject
+import kotlin.math.abs
 import kotlin.random.Random
 
 
@@ -100,6 +102,7 @@ class MemoViewModel @Inject constructor(
 
     var searchTextString by mutableStateOf("")
     var searchRangeAll by mutableStateOf(false)
+    var searchNoFilterState by mutableStateOf(false)    // 검색 시 모든 필터 제거
     var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
     // snack 바에 결과를 보여주기 위해서 마지막 action의 상태를 저장한다.
@@ -175,6 +178,7 @@ class MemoViewModel @Inject constructor(
         viewModelScope.launch {
             todoRepository.getTasks(
                 query = searchTextString,
+                searchNoFilterState = searchNoFilterState,
                 searchRangeAll = searchRangeAll,
                 sortCondition = uiState.dateOrderState.ordinal,
                 priority = uiState.prioritySortState,
@@ -221,26 +225,76 @@ class MemoViewModel @Inject constructor(
     }
 
 
+    private suspend fun applyStatusLineOrder(statusEntity: StateEntity) {
+        val state = uiState.statusLineOrderState.toMutableList()
+
+        Log.d("PHILIP", "before status order ${state.indexOf(statusEntity)}")
+        state.remove(statusEntity)
+        state.add(0, statusEntity)
+
+        dataStoreRepository.persistStatusLineOrderState(state)
+    }
+
+
     // for saving priority sort state
-    private fun persistPrioritySortState(priority: Priority) {
+    private fun persistPrioritySortState(priority: Priority, statusLineOrderUpdate: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.persistPrioritySortState(priority)
+
+            if (statusLineOrderUpdate)
+                applyStatusLineOrder(StateEntity.PRIORITY_ORDER)
         }
     }
 
-    // for saving priority sort state
-    private fun persistDateOrderState(dateOrderState: SortOption) {
+    // for saving date sort state
+    private fun persistDateOrderState(dateOrderState: SortOption, statusLineOrderUpdate: Boolean) {
         viewModelScope.launch {
+
+            Log.d(
+                "PHILIP",
+                "before ${uiState.dateOrderState.ordinal} after ${dateOrderState.ordinal} ${
+                    abs(uiState.dateOrderState.ordinal - dateOrderState.ordinal)
+                }"
+            )
+            if (statusLineOrderUpdate) {
+                if (abs(uiState.dateOrderState.ordinal - dateOrderState.ordinal) > 1) {
+                    applyStatusLineOrder(StateEntity.DATE_BASE_ORDER)
+                } else {
+                    applyStatusLineOrder(StateEntity.SORTING_ORDER)
+                }
+            }
+
             dataStoreRepository.persistDateOrderState(dateOrderState.ordinal)
+
         }
     }
 
-
-    private fun persistFavoriteEnabledState(favorite: Boolean) {
+    // for saving favorite filter state
+    private fun persistFavoriteEnabledState(favorite: Boolean, statusLineOrderUpdate: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.persistFavoriteEnabledState(favorite)
+
+            if (statusLineOrderUpdate)
+                applyStatusLineOrder(StateEntity.FAVORITE_FILTER)
         }
     }
+
+    private fun persistStateState(state: Int) {
+        viewModelScope.launch {
+            dataStoreRepository.persistStateState(state)
+        }
+    }
+
+
+    private fun persistPriorityFilterState(state: Int, statusLineOrderUpdate: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepository.persistPriorityFilterState(state)
+
+            if (statusLineOrderUpdate)
+                applyStatusLineOrder(StateEntity.PRIORITY_FILTER)
+        }
+    }
+
 
     private fun persistNotebookIdState(id: Long) {
         if (uiState.notebookIdState != id) {
@@ -258,20 +312,6 @@ class MemoViewModel @Inject constructor(
             }
         }
     }
-
-    private fun persistStateState(state: Int) {
-        viewModelScope.launch {
-            dataStoreRepository.persistStateState(state)
-        }
-    }
-
-
-    private fun persistPriorityFilterState(state: Int) {
-        viewModelScope.launch {
-            dataStoreRepository.persistPriorityFilterState(state)
-        }
-    }
-
 
     // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
     // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
@@ -309,12 +349,15 @@ class MemoViewModel @Inject constructor(
         priority: Priority = Priority.NONE,
         sortOrderEnabled: Boolean = false,
         sortDateEnabled: Boolean = false,
+        statusLineOrderUpdate: Boolean = false,
         startDate: Long? = null,
         endDate: Long? = null,
         favorite: Boolean = false,
         notebookId: Long = -1,
         state: State = State.NONE,
+        stateEntity: StateEntity = StateEntity.NOTE_FILTER,
         searchRangeAll: Boolean = false,
+        stateInt: Int = 0,
     ) {
         Log.d(
             "PHILIP",
@@ -384,7 +427,7 @@ class MemoViewModel @Inject constructor(
                 updateAction(action)
                 // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여 져야 한다.
                 if (priority != uiState.prioritySortState) {
-                    persistPrioritySortState(priority)
+                    persistPrioritySortState(priority, statusLineOrderUpdate)
                     updateActionPerformed()
                 }
             }
@@ -399,7 +442,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.UPDATED_AT_DESC -> {
                         if (sortOrderEnabled) {
                             snackBarOrderEnabled = true
-                            persistDateOrderState(SortOption.UPDATED_AT_ASC)
+                            persistDateOrderState(SortOption.UPDATED_AT_ASC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -407,7 +450,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.UPDATED_AT_ASC -> {
                         if (!sortOrderEnabled) {
                             snackBarOrderEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC)
+                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -415,7 +458,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.CREATED_AT_DESC -> {
                         if (sortOrderEnabled) {
                             snackBarOrderEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_ASC)
+                            persistDateOrderState(SortOption.CREATED_AT_ASC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -423,7 +466,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.CREATED_AT_ASC -> {
                         if (!sortOrderEnabled) {
                             snackBarOrderEnabled = false
-                            persistDateOrderState(SortOption.CREATED_AT_DESC)
+                            persistDateOrderState(SortOption.CREATED_AT_DESC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -440,7 +483,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.UPDATED_AT_DESC -> {
                         if (sortDateEnabled) {
                             snackBarDateEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_DESC)
+                            persistDateOrderState(SortOption.CREATED_AT_DESC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -448,7 +491,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.UPDATED_AT_ASC -> {
                         if (sortDateEnabled) {
                             snackBarDateEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_ASC)
+                            persistDateOrderState(SortOption.CREATED_AT_ASC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -456,7 +499,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.CREATED_AT_DESC -> {
                         if (!sortDateEnabled) {
                             snackBarDateEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC)
+                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -464,7 +507,7 @@ class MemoViewModel @Inject constructor(
                     SortOption.CREATED_AT_ASC -> {
                         if (!sortDateEnabled) {
                             snackBarDateEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC)
+                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
                             updateActionPerformed()
                         }
                     }
@@ -473,7 +516,7 @@ class MemoViewModel @Inject constructor(
 
             Action.SORT_FAVORITE_CHANGE -> {
                 updateAction(action)
-                persistFavoriteEnabledState(favorite)
+                persistFavoriteEnabledState(favorite, statusLineOrderUpdate)
                 if (favorite) {
                     updateActionPerformed()
                 }
@@ -490,6 +533,10 @@ class MemoViewModel @Inject constructor(
                 persistStateState(result)
             }
 
+            Action.STATE_MULTIPLE_FILTER_CHANGE -> {
+                persistStateState(stateInt)
+            }
+
             Action.STATE_CHANGE -> {
                 updateState(memo, state)
             }
@@ -500,13 +547,24 @@ class MemoViewModel @Inject constructor(
 
             Action.PRIORITY_FILTER_CHANGE -> {
                 val result = priorityBinaryCalculation(priority)
-                persistPriorityFilterState(result)
+                persistPriorityFilterState(result, statusLineOrderUpdate)
+            }
+
+            Action.SEARCH_NO_FILTER_CHANGE -> {
+                updateSearchNoFilterState(searchRangeAll)
+                updateActionPerformed()
             }
 
             Action.SEARCH_RANGE_CHANGE -> {
                 updateAction(action)
-                updateSearchRange(searchRangeAll)
+                updateSearchRange(searchRangeAll, statusLineOrderUpdate)
                 updateActionPerformed()
+            }
+
+            Action.STATUS_LINE_UPDATE -> {
+                viewModelScope.launch {
+                    applyStatusLineOrder(stateEntity)
+                }
             }
 
             Action.NO_ACTION -> {
@@ -612,11 +670,12 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] addTask performed with $taskUiState"
         )
         val temp = taskUiState.taskDetails.toMemoTask()
-        savedLastMemoTask = if (temp.progression == State.COMPLETED || temp.progression == State.CANCELLED) {
-            temp.copy(
-                finishedAt = ZonedDateTime.now()
-            )
-        } else temp
+        savedLastMemoTask =
+            if (temp.progression == State.COMPLETED || temp.progression == State.CANCELLED) {
+                temp.copy(
+                    finishedAt = ZonedDateTime.now()
+                )
+            } else temp
 
         viewModelScope.launch {
             todoRepository.addMemo(taskUiState.taskDetails)
@@ -631,19 +690,21 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
         // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다.
-         if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
-             updateUiState(taskUiState.taskDetails.copy(
-                 finishedAt = ZonedDateTime.now()
-             ))
+        if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
+            updateUiState(
+                taskUiState.taskDetails.copy(
+                    finishedAt = ZonedDateTime.now()
+                )
+            )
         }
 
         savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
             val deletedPhotosIds = todoRepository.updateMemo(taskUiState.taskDetails)
-            Log.d("PHILIP","delete ids $deletedPhotosIds")
+            Log.d("PHILIP", "delete ids $deletedPhotosIds")
             initialPhotos.forEach { photo ->
-                Log.d("PHILIP","each $photo")
+                Log.d("PHILIP", "each $photo")
                 if (deletedPhotosIds.contains(photo.id)) {
                     deleteFileFromUri(photo.uri.toUri())
                 }
@@ -787,8 +848,22 @@ class MemoViewModel @Inject constructor(
         this.action = Action.DELETE_SELECTED_ITEMS
     }
 
-    private fun updateSearchRange(searchRangeAllParam: Boolean = false) {
+    private fun updateSearchRange(
+        searchRangeAllParam: Boolean = false,
+        statusLineOrderUpdate: Boolean
+    ) {
         searchRangeAll = searchRangeAllParam
+        refreshAllTasks()
+
+        if (statusLineOrderUpdate) {
+            viewModelScope.launch {
+                applyStatusLineOrder(StateEntity.NOTE_FILTER)
+            }
+        }
+    }
+
+    private fun updateSearchNoFilterState(searchRangeAllParam: Boolean = false) {
+        searchNoFilterState = searchRangeAllParam
         refreshAllTasks()
     }
 
@@ -937,6 +1012,7 @@ class MemoViewModel @Inject constructor(
                             refreshAllTasks()
                             getNotebook(uiState.notebookIdState)
                         }
+
                         else -> {}
                     }
                 }

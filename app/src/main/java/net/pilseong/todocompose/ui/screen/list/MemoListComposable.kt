@@ -73,8 +73,7 @@ fun NavGraphBuilder.memoListComposable(
 
         val intentResultLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-                if (uri !=  null)
-                    memoViewModel.handleImport(uri)
+                if (uri != null) memoViewModel.handleImport(uri)
             }
 
         var openDialog by remember { mutableStateOf(false) }
@@ -115,10 +114,8 @@ fun NavGraphBuilder.memoListComposable(
                 dialogMode = 0
                 openDialog = true
             },
-            onSearchIconClicked = {
-                // 초기 로딩 을 위한 데이터 검색
-                memoViewModel.onOpenSearchBar()
-            },
+            // 초기 로딩 을 위한 데이터 검색
+            onSearchIconClicked = { memoViewModel.onOpenSearchBar() },
             onCloseClicked = {
                 if (memoViewModel.searchTextString.isNotEmpty() ||
                     memoViewModel.searchRangeAll
@@ -128,28 +125,19 @@ fun NavGraphBuilder.memoListComposable(
                         Action.SEARCH_RANGE_CHANGE,
                         searchRangeAll = false
                     )
-                } else {
-                    memoViewModel.onCloseSearchBar()
-                }
+                } else memoViewModel.onCloseSearchBar()
             },
-            onSearchClicked = {
-                memoViewModel.refreshAllTasks()
-            },
+            onSearchClicked = { memoViewModel.refreshAllTasks() },
             onTextChange = { text ->
                 memoViewModel.searchTextString = text
                 memoViewModel.refreshAllTasks()
             },
-            onDeleteSelectedClicked = {
-                memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS)
-            },
+            onDeleteSelectedClicked = { memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS) },
             onMoveMemoClicked = {
                 Log.d("PHILIP", "onMoveMemoClicked")
                 memoViewModel.getDefaultNoteCount()
                 dialogMode = 1
                 openDialog = true
-            },
-            onStateSelected = { state ->
-                memoViewModel.handleActions(Action.STATE_FILTER_CHANGE, state = state)
             },
             onStateChange = { task, state ->
                 memoViewModel.handleActions(
@@ -158,9 +146,7 @@ fun NavGraphBuilder.memoListComposable(
                     state = state
                 )
             },
-            onImportClick = {
-                intentResultLauncher.launch("text/plain")
-            },
+            onImportClick = { intentResultLauncher.launch("text/plain") },
             onFabClicked = {
                 memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
                 memoViewModel.setTaskScreenToEditorMode()
@@ -179,11 +165,14 @@ fun NavGraphBuilder.memoListComposable(
                     endDate = end
                 )
             },
-            onExportClick = {
-                memoViewModel.exportData()
-            },
-            onSearchRangeAllClicked = {
-                memoViewModel.handleActions(Action.SEARCH_RANGE_CHANGE, searchRangeAll = it)
+            onExportClick = { memoViewModel.exportData() },
+            onSearchRangeAllClicked = { state, orderUpdate ->
+                memoViewModel.handleActions(
+                    Action.SEARCH_RANGE_CHANGE,
+                    searchRangeAll = state,
+                    statusLineOrderUpdate = orderUpdate
+
+                )
             },
             onDateRangeCloseClick = {
                 memoViewModel.handleActions(
@@ -192,31 +181,36 @@ fun NavGraphBuilder.memoListComposable(
                     endDate = null
                 )
             },
-            onFavoriteSortClick = {
+            onFavoriteSortClick = { orderUpdate ->
                 memoViewModel.handleActions(
                     action = Action.SORT_FAVORITE_CHANGE,
-                    favorite = !uiState.sortFavorite
+                    favorite = !uiState.sortFavorite,
+                    statusLineOrderUpdate = orderUpdate
                 )
             },
-            onOrderEnabledClick = {
+            onOrderEnabledClick = { orderUpdate ->
                 memoViewModel.handleActions(
                     action = Action.SORT_ORDER_CHANGE,
                     sortOrderEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
                             uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
+                    statusLineOrderUpdate = orderUpdate
+
                 )
             },
-            onDateEnabledClick = {
+            onDateEnabledClick = { orderUpdate ->
                 memoViewModel.handleActions(
                     action = Action.SORT_DATE_CHANGE,
                     sortDateEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
                             uiState.dateOrderState == SortOption.CREATED_AT_DESC),
+                    statusLineOrderUpdate = orderUpdate
                 )
             },
-            onPrioritySelected = { priorityAction, priority ->
+            onPrioritySelected = { priorityAction, priority, orderUpdate ->
                 Log.d("PHILIP", "$priorityAction, $priority")
                 memoViewModel.handleActions(
                     priorityAction,
-                    priority = priority
+                    priority = priority,
+                    statusLineOrderUpdate = orderUpdate
                 )
             },
             onFavoriteClick = { todo ->
@@ -225,16 +219,50 @@ fun NavGraphBuilder.memoListComposable(
                     memo = todo.toMemoTask()
                 )
             },
-            onLongClickReleased = {
-                memoViewModel.removeMultiSelectedItem(it)
-            },
-            onLongClickApplied = {
-                memoViewModel.appendMultiSelectedItem(it)
-            },
+            onLongClickReleased = { memoViewModel.removeMultiSelectedItem(it) },
+            onLongClickApplied = { memoViewModel.appendMultiSelectedItem(it) },
             onStateSelectedForMultipleItems = { state ->
                 memoViewModel.handleActions(
                     action = Action.STATE_CHANGE_MULTIPLE,
                     state = state
+                )
+            },
+            onStateSelected = { state ->
+                memoViewModel.handleActions(
+                    Action.STATE_FILTER_CHANGE,
+                    state = state,
+                )
+            },
+            onToggleClicked = {
+                var result = memoViewModel.uiState.stateState
+                for (i in 0..5) {
+                    result += if ((uiState.stateState and (1 shl (i))) == (1 shl (i))) {
+                        -(1 shl (i))
+                    } else {
+                        (1 shl (i))
+                    }
+                }
+                memoViewModel.handleActions(
+                    Action.STATE_MULTIPLE_FILTER_CHANGE,
+                    stateInt = result,
+                )
+            },
+            onSetAllOrNothingClicked = { all ->
+                memoViewModel.handleActions(
+                    Action.STATE_MULTIPLE_FILTER_CHANGE,
+                    stateInt = if (all) 63 else 0,
+                )
+            },
+            onSearchNoFilterClicked = {
+                memoViewModel.handleActions(
+                    Action.SEARCH_NO_FILTER_CHANGE,
+                    searchRangeAll = it
+                )
+            },
+            onStatusLineUpdate = {
+                memoViewModel.handleActions(
+                    Action.STATUS_LINE_UPDATE,
+                    stateEntity = it
                 )
             }
         )
@@ -313,10 +341,11 @@ fun NavGraphBuilder.memoListComposable(
                 // 검색바 조절
             }
 
-            if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchRangeAll) {
+            // 검색어가 있는 있는 경우 검색어 해제 및 전체 필터가 있는 경우 제거
+            if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchNoFilterState) {
                 memoViewModel.searchTextString = ""
                 memoViewModel.handleActions(
-                    Action.SEARCH_RANGE_CHANGE,
+                    Action.SEARCH_NO_FILTER_CHANGE,
                     searchRangeAll = false
                 )
             } else {

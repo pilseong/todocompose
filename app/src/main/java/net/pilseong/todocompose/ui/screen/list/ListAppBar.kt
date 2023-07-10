@@ -71,7 +71,7 @@ fun ListAppBar(
     notebookColor: Color,
     searchAppBarState: SearchAppBarState,
     searchText: String,
-    searchRangeAll: Boolean = false,
+    searchNoFilterState: Boolean = false,
     onImportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     selectedItemsCount: Int,
@@ -85,7 +85,7 @@ fun ListAppBar(
     onDeleteAllClicked: () -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit,
-    onSearchRangeAllClicked: (Boolean) -> Unit,
+    onSearchNoFilterClicked: (Boolean) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
 ) {
 
@@ -167,11 +167,11 @@ fun ListAppBar(
             else -> {
                 SearchAppBar(
                     text = searchText,
-                    searchRangeAll = searchRangeAll,
+                    searchRangeAll = searchNoFilterState,
                     onCloseClicked = onCloseClicked,
                     onSearchClicked = onSearchClicked,
                     onTextChange = onTextChange,
-                    onSearchRangeAllClicked = onSearchRangeAllClicked,
+                    onSearchNoFilterClicked = onSearchNoFilterClicked,
                 )
             }
         }
@@ -379,7 +379,7 @@ fun SearchAppBar(
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
     onSearchClicked: () -> Unit,
-    onSearchRangeAllClicked: (Boolean) -> Unit,
+    onSearchNoFilterClicked: (Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -425,7 +425,7 @@ fun SearchAppBar(
                     Checkbox(
                         checked = searchRangeAll,
                         onCheckedChange = {
-                            onSearchRangeAllClicked(!searchRangeAll)
+                            onSearchNoFilterClicked(!searchRangeAll)
                         })
                 },
                 trailingIcon = {
@@ -469,7 +469,7 @@ fun PreviewSearchAppBar() {
             onTextChange = {},
             onCloseClicked = { /*TODO*/ },
             onSearchClicked = {},
-            onSearchRangeAllClicked = {}
+            onSearchNoFilterClicked = {}
         )
     }
 

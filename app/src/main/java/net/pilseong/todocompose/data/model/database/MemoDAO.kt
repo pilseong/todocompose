@@ -27,180 +27,147 @@ abstract class MemoDAO(
     @Transaction
     @Query(
         "SELECT *, " +
-                "( SELECT COUNT(*) " +
-                "FROM memo_table " +
-                "WHERE deleted = 0 " +
-                "AND ( " +
-                "       CASE :searchRangeAll " +
-                "           WHEN 0 THEN notebook_id = :notebookId " +
+                "(  SELECT COUNT(*) " +
+                "   FROM memo_table " +
+                "   WHERE deleted = 0 " +
+                "   AND (title LIKE :query OR description LIKE :query) " +
+                "   AND ( " +
+                "       CASE :searchNoFilterState " +
                 "           WHEN 1 THEN 1=1 " +
-                "       END) " +
-                "AND (title LIKE :query OR description LIKE :query) " +
-                "AND (" +
-                "       CASE :favorite " +
-                "           WHEN 0 THEN 1=1 " +
-                "           WHEN 1 THEN favorite = 1 " +
-                "       END) " +
-                "AND (" +
-                "       CASE :stateCompleted " +
-                "           WHEN 1 THEN progression = 'COMPLETED'" +
+                "           WHEN 0 THEN " +
+                "           ( " +
+                "               ( " +
+                "                   CASE :searchRangeAll " +
+                "                       WHEN 0 THEN notebook_id = :notebookId " +
+                "                      WHEN 1 THEN 1=1 " +
+                "                   END" +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :favorite " +
+                "                       WHEN 0 THEN 1=1 " +
+                "                       WHEN 1 THEN favorite = 1 " +
+                "                    END" +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :stateCompleted WHEN 1 THEN progression = 'COMPLETED' END " +
+                "                   OR CASE :stateCancelled WHEN 1 THEN progression = 'CANCELLED' END " +
+                "                   OR CASE :stateActive    WHEN 1 THEN progression = 'ACTIVE' END " +
+                "                   OR CASE :stateSuspended WHEN 1 THEN progression = 'SUSPENDED' END " +
+                "                   OR CASE :stateWaiting   WHEN 1 THEN progression = 'WAITING' END " +
+                "                   OR CASE :stateNone      WHEN 1 THEN progression = 'NONE' END" +
+                "              ) " +
+                "              AND (" +
+                "                   CASE :priorityHigh WHEN 1 THEN priority = 'HIGH' END " +
+                "                   OR CASE :priorityMedium WHEN 1 THEN priority = 'MEDIUM' END " +
+                "                   OR CASE :priorityLow    WHEN 1 THEN priority = 'LOW' END " +
+                "                   OR CASE :priorityNone   WHEN 1 THEN priority = 'NONE' END " +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :sortCondition " +
+                "                       WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                   END" +
+                "               ) " +
+                "           ) " +
                 "       END " +
-                "OR " +
-                "       CASE :stateCancelled " +
-                "           WHEN 1 THEN progression = 'CANCELLED' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateActive " +
-                "           WHEN 1 THEN progression = 'ACTIVE' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateSuspended " +
-                "           WHEN 1 THEN progression = 'SUSPENDED' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateWaiting " +
-                "           WHEN 1 THEN progression = 'WAITING' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateNone " +
-                "           WHEN 1 THEN progression = 'NONE' " +
-                "       END" +
-                ") " +
-                "AND (" +
-                "       CASE :priorityHigh " +
-                "           WHEN 1 THEN priority = 'HIGH'" +
-                "       END " +
-                "OR " +
-                "       CASE :priorityMedium " +
-                "           WHEN 1 THEN priority = 'MEDIUM' " +
-                "       END " +
-                "OR " +
-                "       CASE :priorityLow " +
-                "           WHEN 1 THEN priority = 'LOW' " +
-                "       END " +
-                "OR " +
-                "       CASE :priorityNone " +
-                "           WHEN 1 THEN priority = 'NONE' " +
-                "       END " +
-                ") " +
-                "AND (" +
-                "       CASE :sortCondition " +
-                "           WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
-                "       END) " +
-                "ORDER BY " +
-                "CASE :priority " +
-                "   WHEN 'LOW' THEN " +
-                "       CASE " +
-                "           WHEN priority LIKE 'L%' THEN 1 " +
-                "           WHEN priority LIKE 'M%' THEN 2 " +
-                "           WHEN priority LIKE 'H%' THEN 3 " +
-                "           WHEN priority LIKE 'N%' THEN 4 " +
-                "       END " +
-                "   WHEN 'HIGH' THEN" +
-                "       CASE " +
-                "           WHEN priority LIKE 'H%' THEN 1 " +
-                "           WHEN priority LIKE 'M%' THEN 2 " +
-                "           WHEN priority LIKE 'L%' THEN 3 " +
-                "           WHEN priority LIKE 'N%' THEN 4 " +
-                "       END " +
-                "   END, " +
-                "CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
-                "CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
-                "CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
-                "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
+                "   ) " +
+                "   ORDER BY " +
+                "       CASE :priority " +
+                "           WHEN 'LOW' THEN " +
+                "               CASE " +
+                "                   WHEN priority LIKE 'L%' THEN 1 " +
+                "                   WHEN priority LIKE 'M%' THEN 2 " +
+                "                   WHEN priority LIKE 'H%' THEN 3 " +
+                "                   WHEN priority LIKE 'N%' THEN 4 " +
+                "               END " +
+                "           WHEN 'HIGH' THEN" +
+                "               CASE " +
+                "                   WHEN priority LIKE 'H%' THEN 1 " +
+                "                   WHEN priority LIKE 'M%' THEN 2 " +
+                "                   WHEN priority LIKE 'L%' THEN 3 " +
+                "                   WHEN priority LIKE 'N%' THEN 4 " +
+                "               END " +
+                "           END, " +
+                "       CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
+                "       CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
+                "       CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
+                "       CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 ") AS total " +
                 "FROM memo_table " +
                 "WHERE deleted = 0 " +
-                "AND ( " +
-                "       CASE :searchRangeAll " +
-                "           WHEN 0 THEN notebook_id = :notebookId " +
+                "   AND (title LIKE :query OR description LIKE :query) " +
+                "   AND ( " +
+                "       CASE :searchNoFilterState " +
                 "           WHEN 1 THEN 1=1 " +
-                "       END) " +
-                "AND (title LIKE :query OR description LIKE :query) " +
-                "AND (" +
-                "       CASE :favorite " +
-                "           WHEN 0 THEN 1=1 " +
-                "           WHEN 1 THEN favorite = 1 " +
-                "       END) " +
-                "AND (" +
-                "       CASE :stateCompleted " +
-                "           WHEN 1 THEN progression = 'COMPLETED'" +
+                "           WHEN 0 THEN " +
+                "           ( " +
+                "               ( " +
+                "                   CASE :searchRangeAll " +
+                "                       WHEN 0 THEN notebook_id = :notebookId " +
+                "                      WHEN 1 THEN 1=1 " +
+                "                   END" +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :favorite " +
+                "                       WHEN 0 THEN 1=1 " +
+                "                       WHEN 1 THEN favorite = 1 " +
+                "                    END" +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :stateCompleted WHEN 1 THEN progression = 'COMPLETED' END " +
+                "                   OR CASE :stateCancelled WHEN 1 THEN progression = 'CANCELLED' END " +
+                "                   OR CASE :stateActive    WHEN 1 THEN progression = 'ACTIVE' END " +
+                "                   OR CASE :stateSuspended WHEN 1 THEN progression = 'SUSPENDED' END " +
+                "                   OR CASE :stateWaiting   WHEN 1 THEN progression = 'WAITING' END " +
+                "                   OR CASE :stateNone      WHEN 1 THEN progression = 'NONE' END" +
+                "              ) " +
+                "              AND (" +
+                "                   CASE :priorityHigh WHEN 1 THEN priority = 'HIGH' END " +
+                "                   OR CASE :priorityMedium WHEN 1 THEN priority = 'MEDIUM' END " +
+                "                   OR CASE :priorityLow    WHEN 1 THEN priority = 'LOW' END " +
+                "                   OR CASE :priorityNone   WHEN 1 THEN priority = 'NONE' END " +
+                "               ) " +
+                "               AND (" +
+                "                   CASE :sortCondition " +
+                "                       WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                   END" +
+                "               ) " +
+                "           ) " +
                 "       END " +
-                "OR " +
-                "       CASE :stateCancelled " +
-                "           WHEN 1 THEN progression = 'CANCELLED' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateActive " +
-                "           WHEN 1 THEN progression = 'ACTIVE' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateSuspended " +
-                "           WHEN 1 THEN progression = 'SUSPENDED' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateWaiting " +
-                "           WHEN 1 THEN progression = 'WAITING' " +
-                "       END " +
-                "OR " +
-                "       CASE :stateNone " +
-                "           WHEN 1 THEN progression = 'NONE' " +
-                "       END" +
-                ") " +
-                "AND (" +
-                "       CASE :priorityHigh " +
-                "           WHEN 1 THEN priority = 'HIGH'" +
-                "       END " +
-                "OR " +
-                "       CASE :priorityMedium " +
-                "           WHEN 1 THEN priority = 'MEDIUM' " +
-                "       END " +
-                "OR " +
-                "       CASE :priorityLow " +
-                "           WHEN 1 THEN priority = 'LOW' " +
-                "       END " +
-                "OR " +
-                "       CASE :priorityNone " +
-                "           WHEN 1 THEN priority = 'NONE' " +
-                "       END " +
-                ") " +
-                "AND (" +
-                "       CASE :sortCondition " +
-                "           WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
-                "           WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
-                "       END) " +
+                "   ) " +
                 "ORDER BY " +
-                "CASE :priority " +
-                "   WHEN 'LOW' THEN " +
-                "       CASE " +
-                "           WHEN priority LIKE 'L%' THEN 1 " +
-                "           WHEN priority LIKE 'M%' THEN 2 " +
-                "           WHEN priority LIKE 'H%' THEN 3 " +
-                "           WHEN priority LIKE 'N%' THEN 4 " +
-                "       END " +
-                "   WHEN 'HIGH' THEN" +
-                "       CASE " +
-                "           WHEN priority LIKE 'H%' THEN 1 " +
-                "           WHEN priority LIKE 'M%' THEN 2 " +
-                "           WHEN priority LIKE 'L%' THEN 3 " +
-                "           WHEN priority LIKE 'N%' THEN 4 " +
-                "       END " +
-                "   END, " +
-                "CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
-                "CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
-                "CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
-                "CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
+                "   CASE :priority " +
+                "       WHEN 'LOW' THEN " +
+                "           CASE " +
+                "               WHEN priority LIKE 'L%' THEN 1 " +
+                "               WHEN priority LIKE 'M%' THEN 2 " +
+                "               WHEN priority LIKE 'H%' THEN 3 " +
+                "               WHEN priority LIKE 'N%' THEN 4 " +
+                "           END " +
+                "       WHEN 'HIGH' THEN" +
+                "           CASE " +
+                "               WHEN priority LIKE 'H%' THEN 1 " +
+                "               WHEN priority LIKE 'M%' THEN 2 " +
+                "               WHEN priority LIKE 'L%' THEN 3 " +
+                "               WHEN priority LIKE 'N%' THEN 4 " +
+                "           END " +
+                "       END, " +
+                "   CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
+                "   CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
+                "   CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
+                "   CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 "LIMIT :pageSize OFFSET (:page - 1 ) * :pageSize"
     )
     abstract suspend fun getMemosWithNotebooks(
         page: Int,
         pageSize: Int,
         query: String,
+        searchNoFilterState: Boolean = false,
         searchRangeAll: Boolean = false,
         sortCondition: Int = 0,
         priority: String = "HIGH",

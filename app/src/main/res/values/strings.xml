@@ -93,6 +93,9 @@
     <string name="status_cancelled">Cancelled</string>
     <string name="status_waiting">Waiting</string>
     <string name="status_none">None</string>
+    <string name="status_toggle">Toggle</string>
+    <string name="status_select_all">Select All</string>
+    <string name="status_select_none">Deselect All</string>
     <string name="import_menu_label">IMPORT</string>
     <string name="export_menu_label">EXPORT</string>
     <string name="settings_menu_label">SETTINGS</string>

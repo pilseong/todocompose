@@ -60,6 +60,7 @@ import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.SortOption
+import net.pilseong.todocompose.util.StateEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -90,22 +91,24 @@ fun ListScreen(
     onDeleteAllClicked: () -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
     onExportClick: () -> Unit,
-    onSearchRangeAllClicked: (Boolean) -> Unit,
+    onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
     onDateRangeCloseClick: () -> Unit,
-    onFavoriteSortClick: () -> Unit,
-    onOrderEnabledClick: () -> Unit,
-    onDateEnabledClick: () -> Unit,
-    onPrioritySelected: (Action, Priority) -> Unit,
+    onFavoriteSortClick: (Boolean) -> Unit,
+    onOrderEnabledClick: (Boolean) -> Unit,
+    onDateEnabledClick: (Boolean) -> Unit,
+    onPrioritySelected: (Action, Priority, Boolean) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickReleased: (Long) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
+    onToggleClicked: () -> Unit,
+    onSetAllOrNothingClicked: (Boolean) -> Unit,
+    onSearchNoFilterClicked: (Boolean) -> Unit,
+    onStatusLineUpdate: (StateEntity) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        canScroll = {
-            selectedItems.isEmpty()
-        },
+        canScroll = { selectedItems.isEmpty() },
         state = rememberTopAppBarState(
             initialContentOffset = 0F,
             initialHeightOffset = 0F,
@@ -113,14 +116,9 @@ fun ListScreen(
         )
     )
 
-    val offsetState by remember {
-        derivedStateOf {
-            selectedItems.isNotEmpty()
-        }
-    }
+    val offsetState by remember { derivedStateOf { selectedItems.isNotEmpty() } }
 
-    if (offsetState)
-        scrollBehavior.state.heightOffset = 0F
+    if (offsetState) scrollBehavior.state.heightOffset = 0F
 
     Log.d("PHILIP", "size of ${tasks.itemCount}")
 
@@ -132,9 +130,7 @@ fun ListScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
-            SnackbarHost(
-                hostState = snackBarHostState
-            ) { data ->
+            SnackbarHost(hostState = snackBarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -150,14 +146,12 @@ fun ListScreen(
                 notebookColor = selectedNotebook.priority.color,
                 searchAppBarState = searchAppBarState,
                 searchText = searchText,
-                searchRangeAll = memoViewModel.searchRangeAll,
+                searchNoFilterState = memoViewModel.searchNoFilterState,
                 onImportClick = onImportClick,
                 onAppBarTitleClick = onAppBarTitleClick,
                 selectedItemsCount = selectedItems.size,
                 onDeleteSelectedClicked = onDeleteSelectedClicked,
-                onBackButtonClick = {
-                    selectedItems.clear()
-                },
+                onBackButtonClick = { selectedItems.clear() },
                 onSearchIconClicked = onSearchIconClicked,
                 onCloseClicked = onCloseClicked,
                 onTextChange = onTextChange,
@@ -166,17 +160,11 @@ fun ListScreen(
                 onDeleteAllClicked = onDeleteAllClicked,
                 onDateRangePickerConfirmed = onDateRangePickerConfirmed,
                 onExportClick = onExportClick,
-                onSearchRangeAllClicked = onSearchRangeAllClicked,
+                onSearchNoFilterClicked = onSearchNoFilterClicked,
                 onStateSelectedForMultipleItems = onStateSelectedForMultipleItems,
             )
         },
-        bottomBar = {
-            BottomActionBarNavigation(
-                toHomeScreen = toHomeScreen
-            ) {
-                onFabClicked()
-            }
-        }
+        bottomBar = { BottomActionBarNavigation(toHomeScreen = toHomeScreen) { onFabClicked() } }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -204,7 +192,10 @@ fun ListScreen(
                 onDateEnabledClick = onDateEnabledClick,
                 onPrioritySelected = onPrioritySelected,
                 onStateSelected = onStateSelected,
-                onRangeAllEnabledClick = onSearchRangeAllClicked
+                onRangeAllEnabledClick = onSearchRangeAllClicked,
+                onToggleClicked = onToggleClicked,
+                onSetAllOrNothingClicked = onSetAllOrNothingClicked,
+                onStatusLineUpdate = onStatusLineUpdate,
             )
 
             ListContent(
@@ -343,24 +334,27 @@ private fun ListScreenPreview() {
         onSearchClicked = {},
         onDeleteSelectedClicked = {},
         onMoveMemoClicked = {},
-        onStateSelected = {},
+        onStateSelected = { _ -> },
         onStateChange = { _, _ -> },
         onImportClick = {},
         onFabClicked = {},
         onDeleteAllClicked = {},
         onExportClick = {},
-        onSearchRangeAllClicked = {},
+        onSearchRangeAllClicked = {_, _ ->},
         onDateRangePickerConfirmed = { _, _ -> },
         onDateRangeCloseClick = {},
         onFavoriteSortClick = {},
         onOrderEnabledClick = {},
         onDateEnabledClick = {},
-        onPrioritySelected = { _, _ -> },
+        onPrioritySelected = { _, _, _ -> },
         onFavoriteClick = {},
         onLongClickReleased = {},
         onLongClickApplied = {},
         onSwipeToEdit = { _, _ -> },
         onStateSelectedForMultipleItems = {},
-
-        )
+        onToggleClicked = {},
+        onSetAllOrNothingClicked = { _ -> },
+        onSearchNoFilterClicked = {},
+        onStatusLineUpdate = {}
+    )
 }

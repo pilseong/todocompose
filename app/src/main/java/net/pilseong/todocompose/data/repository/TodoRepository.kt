@@ -31,6 +31,7 @@ class TodoRepository @Inject constructor(
 
     fun getTasks(
         query: String,
+        searchNoFilterState: Boolean = false,
         searchRangeAll: Boolean = false,
         sortCondition: Int,
         priority: Priority = Priority.NONE,
@@ -56,6 +57,7 @@ class TodoRepository @Inject constructor(
                 TodoPagingSource(
                     memoDAO = memoDAO,
                     query = query,
+                    searchNoFilterState = searchNoFilterState,
                     searchRangeAll = searchRangeAll,
                     sortCondition = sortCondition,
                     priority = priority,
