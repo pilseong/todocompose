@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DateRangePickerState
 import androidx.compose.material3.DisplayMode
@@ -133,7 +134,10 @@ fun CustomDateRangePicker(
     DateRangePicker(
         state,
         modifier = Modifier,
-        dateFormatter = DatePickerDefaults.dateFormatter(
+//        dateFormatter = DatePickerDefaults.dateFormatter(
+//            selectedDateSkeleton = "MM/dd"
+//        ),
+        dateFormatter = DatePickerFormatter(
             selectedDateSkeleton = "MM/dd"
         ),
         title = {

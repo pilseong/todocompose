@@ -3,6 +3,7 @@ package net.pilseong.todocompose.ui.screen.list
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -58,6 +59,8 @@ fun NavGraphBuilder.memoDetailComposable(
         val taskIndex = memoViewModel.index
         Log.d("PHILIP", "[MemoNavGraph] taskScreen index is $taskIndex")
 
+        val notebooks = memoViewModel.notebooks.collectAsState().value
+
 
         // 뒤로가기 버튼을 눌렀을 대에도 임시 저장된 이미지를 삭제 해야 한다.
         BackHandler(memoViewModel.taskUiState.taskDetails.photos.isNotEmpty()) {
@@ -112,26 +115,31 @@ fun NavGraphBuilder.memoDetailComposable(
         } else {
             TaskScreen(
                 tasks = tasks,
+                notebooks = notebooks,
                 taskIndex = taskIndex,
                 taskAppBarState = taskAppBarState,
                 taskUiState = memoViewModel.taskUiState,
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
                     if (action != Action.NO_ACTION) {
-                        if (action == Action.DELETE) {
-                            memoViewModel.handleActions(
-                                action = action,
-                                memo = tasks[taskIndex]!!.toMemoTask()
-                            )
-                        } else if (action == Action.UPDATE) {
-                            memoViewModel.handleActions(
-                                action = action,
-                                photos = tasks[taskIndex]!!.photos
-                            )
-                        } else {
-                            memoViewModel.handleActions(
-                                action = action
-                            )
+                        when (action) {
+                            Action.DELETE -> {
+                                memoViewModel.handleActions(
+                                    action = action,
+                                    memo = tasks[taskIndex]!!.toMemoTask()
+                                )
+                            }
+                            Action.UPDATE -> {
+                                memoViewModel.handleActions(
+                                    action = action,
+                                    photos = tasks[taskIndex]!!.photos
+                                )
+                            }
+                            else -> {
+                                memoViewModel.handleActions(
+                                    action = action
+                                )
+                            }
                         }
                     } else {
                         memoViewModel.handleActions(Action.NO_ACTION)

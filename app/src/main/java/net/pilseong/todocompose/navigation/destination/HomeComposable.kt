@@ -3,8 +3,6 @@ package net.pilseong.todocompose.navigation.destination
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,11 +34,11 @@ fun NavGraphBuilder.homeComposable(
 
         val openDialog = remember { mutableStateOf(false) }
         val infoDialog = remember { mutableStateOf(false) }
-        var dialogTitle by remember { mutableIntStateOf(R.string.note_screen_create_notebook_dialog_title) }
+        var dialogTitle by remember { mutableStateOf(R.string.note_screen_create_notebook_dialog_title) }
 
         // NoteAction이 add 인지 edit 인지를 구분하여 동일한 방식으로 viewmodel에서 실행
         var action by remember { mutableStateOf(NoteAction.ADD) }
-        var indexSelected by remember { mutableLongStateOf(-1) }
+        var indexSelected by remember { mutableStateOf(-1L) }
 
         when (noteViewModel.uiState) {
             UiState.Loading -> {

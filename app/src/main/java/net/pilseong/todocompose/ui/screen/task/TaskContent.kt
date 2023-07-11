@@ -69,9 +69,11 @@ import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
+import net.pilseong.todocompose.ui.components.NotebooksDropDown
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.components.ZoomableImage
@@ -96,6 +98,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TaskContent(
     task: MemoWithNotebook,
+    notebooks: List<NotebookWithCount>,
     taskUiState: TaskUiState,
     taskIndex: Int = 0,
     taskSize: Int = 0,
@@ -163,6 +166,8 @@ fun TaskContent(
 
     } else {
         EditorContent(
+            task = task,
+            notebooks = notebooks,
             taskUiState = taskUiState,
             onValueChange = onValueChange,
         )
@@ -438,9 +443,12 @@ private fun ViewerContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditorContent(
+    task: MemoWithNotebook,
     taskUiState: TaskUiState,
+    notebooks: List<NotebookWithCount> = emptyList(),
     onValueChange: (TaskDetails) -> Unit,
 ) {
 
@@ -449,6 +457,13 @@ private fun EditorContent(
             .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
     ) {
+        Row {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Surface(tonalElevation = 1.dp) {
+                    NotebooksDropDown(notebooks = notebooks, notebook = task.notebook)
+                }
+            }
+        }
         Row {
             Column(modifier = Modifier.weight(1F)) {
                 Surface(tonalElevation = 1.dp) {
@@ -741,6 +756,7 @@ fun ViewerContentPreview() {
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
             taskAppBarState = TaskAppBarState.VIEWER,
+            notebooks = emptyList()
         )
     }
 }
@@ -751,6 +767,7 @@ fun ViewerContentPreview() {
 fun EditorContentPreview() {
     MaterialTheme {
         EditorContent(
+            task = MemoWithNotebook.instance(),
             taskUiState = TaskUiState(
                 taskDetails = TaskDetails(
                     id = -1,

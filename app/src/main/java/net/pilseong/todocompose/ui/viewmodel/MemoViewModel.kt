@@ -6,8 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -69,11 +69,12 @@ class MemoViewModel @Inject constructor(
 ) : ViewModel() {
 
     var openDialog by mutableStateOf(false)
-    var infoDialogTitle by mutableIntStateOf(R.string.info_import_fail_title)
-    var infoDialogContent by mutableIntStateOf(R.string.info_import_fail_content)
-    var infoDialogCDismissLabel by mutableIntStateOf(R.string.info_dialog_dismiss_label)
+    var infoDialogTitle by mutableStateOf(R.string.info_import_fail_title)
+    var infoDialogContent by mutableStateOf(R.string.info_import_fail_content)
+    var infoDialogCDismissLabel by mutableStateOf(R.string.info_dialog_dismiss_label)
 
 
+    @Stable
     var tasks = MutableStateFlow<PagingData<MemoWithNotebook>>(PagingData.empty())
         private set
 
@@ -86,7 +87,7 @@ class MemoViewModel @Inject constructor(
      */
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
-    var index by mutableIntStateOf(0)
+    var index by mutableStateOf(0)
 
     // list screen 에 있는 search bar 의 표시 상태를 저장 하는 변수
     var searchAppBarState by mutableStateOf(SearchAppBarState.CLOSE)
@@ -1095,6 +1096,7 @@ fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
     notebookId = memo.notebookId
 )
 
+@Stable
 sealed interface UiState {
     object Loading : UiState
     data class Success(val userData: UserData) : UiState

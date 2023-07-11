@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -36,7 +38,6 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,7 +102,7 @@ fun StatusLine(
             val lazyState = rememberLazyListState()
 
             // 처음 기본 화면에 들어 가는 status 갯수를 저장 한다.
-            var initialSize by remember { mutableIntStateOf(0) }
+            var initialSize by remember { mutableStateOf(0) }
             val stateSize by remember {
                 derivedStateOf {
                     if (initialSize == 0 || (lazyState.firstVisibleItemIndex == 0 && !lazyState.canScrollBackward))
@@ -377,8 +377,8 @@ private fun SortingOrder(orderEnabled: Boolean, onOrderEnabledClick: () -> Unit)
         ) {
             Icon(
                 modifier = Modifier.width(12.dp),
-                painter = if (orderEnabled) painterResource(id = R.drawable.ic_baseline_north_24)
-                else painterResource(id = R.drawable.ic_baseline_south_24),
+                imageVector = if (orderEnabled) Icons.Default.ArrowUpward
+                else Icons.Default.ArrowDownward,
                 contentDescription = "arrow"
             )
             Spacer(modifier = Modifier.width(SMALL_PADDING))

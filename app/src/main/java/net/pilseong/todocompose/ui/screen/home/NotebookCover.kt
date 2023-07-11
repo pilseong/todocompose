@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -120,6 +121,7 @@ fun NotebookCover(
                         text = notebook.title,
                         fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
                         fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                        overflow = TextOverflow.Ellipsis,
                         color = if (selected) MaterialTheme.colorScheme.onSurface.copy(
                             alpha = 0.2f
                         )
@@ -153,7 +155,7 @@ fun NotebookCover(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Column(
+                        Column(modifier = Modifier.padding(vertical = 2.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(

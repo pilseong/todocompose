@@ -19,6 +19,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -33,6 +34,7 @@ import net.pilseong.todocompose.util.deleteFileFromUri
 @Composable
 fun TaskScreen(
     tasks: LazyPagingItems<MemoWithNotebook>,
+    notebooks: List<NotebookWithCount>,
     taskIndex: Int,
     taskAppBarState: TaskAppBarState,
     taskUiState: TaskUiState,
@@ -106,6 +108,7 @@ fun TaskScreen(
                         total = 1,
                         photos = emptyList(),
                     ),
+                    notebooks = notebooks,
                     taskUiState = taskUiState,
                     taskSize = tasks.itemCount,
                     taskIndex = taskIndex,

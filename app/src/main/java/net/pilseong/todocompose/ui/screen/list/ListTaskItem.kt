@@ -1,10 +1,10 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,15 +21,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +51,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -74,10 +79,11 @@ import net.pilseong.todocompose.ui.theme.taskItemContentColor
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItem(
     modifier: Modifier = Modifier,
+    index: Int = 0,
     drawEndEdge: Boolean = false,
     todoTask: MemoWithNotebook,
     toTaskScreen: (Long) -> Unit,
@@ -92,9 +98,10 @@ fun TaskItem(
 
     val todoInside by rememberUpdatedState(todoTask)
 
-    val selected = remember(selectedItemsIds.size) {
-        mutableStateOf(selectedItemsIds.contains(todoInside.memo.id))
-    }
+    var selected = remember { mutableStateOf(selectedItemsIds.contains(todoInside.memo.id)) }
+        .apply {
+            value = selectedItemsIds.contains(todoInside.memo.id)
+        }
 
     // 현재 리스트 에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot을 변경하고 있다.
     var favoriteOn by remember { mutableStateOf(todoInside.memo.favorite) }
@@ -117,9 +124,11 @@ fun TaskItem(
         mutableStateOf(drawEndEdge)
     }
 
+    val innerTime by remember { mutableStateOf(datetime) }
+
     Column {
         if (headerEnabled) {
-            DateHeader(datetime)
+            DateHeader(innerTime)
         }
 
         Row(modifier = modifier) {
@@ -180,11 +189,11 @@ fun TaskItem(
 //                        .height(56.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                    ) {
+                    Row(modifier = Modifier.height(56.dp)) {
                         // 시간 + 중요성
                         Column(
                             modifier = Modifier
+                                .padding(top = 2.dp)
                                 .weight(2 / 12f),
 //                            .fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -197,7 +206,7 @@ fun TaskItem(
                                     .wrapContentHeight(CenterVertically),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                                 textAlign = TextAlign.Center,
-                                text = datetime.toLocalTime()
+                                text = innerTime.toLocalTime()
                                     .format(DateTimeFormatter.ofPattern("HH:mm")),
                                 color = Color(
                                     ColorUtils.blendARGB(
@@ -207,28 +216,12 @@ fun TaskItem(
                                     )
                                 ).copy(0.9f),
                             )
+                            Spacer(modifier = modifier.height(4.dp))
                             Icon(
-                                modifier = Modifier
-//                                .weight(6 / 12F)
-                                    .fillMaxWidth()
-                                    .combinedClickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            if (selected.value) {
-                                                selected.value = false
-                                                onLongClickReleased(todoInside.memo.id)
-                                            }
-                                        },
-                                        onLongClick = {
-                                            selected.value = !selected.value
-                                            onLongClickApplied(todoInside.memo.id)
-                                        }
-                                    ),
-                                painter = if (selected.value)
-                                    painterResource(id = R.drawable.ic_baseline_check_circle_24)
+                                imageVector = if (selected.value)
+                                    Icons.Default.CheckCircle
                                 else
-                                    painterResource(id = R.drawable.ic_baseline_circle_24),
+                                    Icons.Default.Circle,
                                 contentDescription = if (selected.value) "Checked Circle" else "Circle",
                                 tint = if (selected.value) MaterialTheme.colorScheme.primary else todoInside.memo.priority.color
                             )
@@ -270,25 +263,31 @@ fun TaskItem(
                                 verticalAlignment = CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                Icon(
-                                    modifier = Modifier.clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() }
+                                CompositionLocalProvider(
+                                    LocalMinimumInteractiveComponentEnforcement provides false,
+                                ) {
+                                    IconButton(
+                                        modifier = Modifier.size(24.dp),
+                                        onClick = {
+                                            Log.i("PHILIP", "test")
+                                            favoriteOn = !favoriteOn
+                                            onFavoriteClick()
+                                        }
                                     ) {
-                                        favoriteOn = !favoriteOn
-                                        onFavoriteClick()
-                                    },
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = stringResource(id = R.string.task_item_star_description),
-                                    tint = if (favoriteOn) FavoriteYellow else Color.White
-                                )
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = stringResource(id = R.string.task_item_star_description),
+                                            tint = if (favoriteOn) FavoriteYellow else Color.White
+                                        )
+                                    }
+                                }
                             }
                             Row(
-//                            modifier = Modifier
+                                modifier = Modifier
+                                    .padding(top = 4.dp)
 //                                .weight(6 / 12F),
-//                                .fillMaxSize(),
+                                    .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.Bottom
                             ) {
                                 Surface(
                                     modifier = Modifier

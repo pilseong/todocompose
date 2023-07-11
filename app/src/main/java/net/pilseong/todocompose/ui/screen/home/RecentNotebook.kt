@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -126,6 +127,7 @@ fun RecentNotebook(
                             Text(
                                 modifier = Modifier.padding(horizontal = SMALL_PADDING),
                                 text = currentNotebook.title,
+                                overflow = TextOverflow.Ellipsis,
                                 fontStyle = MaterialTheme.typography.labelSmall.fontStyle,
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 color = Color(
@@ -149,7 +151,7 @@ fun RecentNotebook(
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(horizontal = SMALL_PADDING)
+                                    .padding(vertical = 2.dp)
                                     .fillMaxWidth(),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally

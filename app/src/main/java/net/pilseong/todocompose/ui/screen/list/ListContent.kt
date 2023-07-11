@@ -36,8 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -148,7 +146,7 @@ fun LazyItemList(
     }
 
     val totalData by remember(tasks.peek(0)?.total) {
-        mutableIntStateOf(tasks.peek(0)?.total ?: 0)
+        mutableStateOf(tasks.peek(0)?.total ?: 0)
     }
     StatusHeader(timeData, totalData)
 
@@ -204,7 +202,7 @@ fun LazyItemList(
             // 화면 의 크기의 반을 swipe 한 경우 처리
             val screenWidth = LocalConfiguration.current.screenWidthDp
             val threshold = remember(screenWidth) { screenWidth * (3 / 5F) }
-            var currentFraction by remember { mutableFloatStateOf(0f) }
+            var currentFraction by remember { mutableStateOf(0f) }
 
             val dismissState = rememberDismissState(
                 confirmValueChange = {
@@ -237,9 +235,21 @@ fun LazyItemList(
                 }
             }
 
+            // lambda 를 통한 클로저의 반복적인 생성으로 인한 recomposition을 방지 한다.
+            // index가 변경할 때 해당 함수가 다시 생성되어야 한다.
+            val favoriteChangeLambda = remember(index) {
+                {
+                    Log.d("PHILIP", "inside lambda $index")
+                    tasks.itemSnapshotList[index]!!.memo.favorite =
+                        !tasks.itemSnapshotList[index]!!.memo.favorite
+
+                    onFavoriteClick(tasks.itemSnapshotList[index]!!)
+                }
+            }
+
             currentFraction = dismissState.progress
             SwipeToDismiss(
-                modifier = Modifier.animateItemPlacement(),
+//                modifier = Modifier.animateItemPlacement(),
                 state = dismissState,
                 background = {
                     ColorBackGround(
@@ -264,11 +274,13 @@ fun LazyItemList(
                         // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
                         // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
                         // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
-                        onFavoriteClick = {
-                            tasks.itemSnapshotList[index]!!.memo.favorite =
-                                !tasks.itemSnapshotList[index]!!.memo.favorite
-                            onFavoriteClick(tasks.itemSnapshotList[index]!!)
-                        },
+
+                        onFavoriteClick = favoriteChangeLambda,
+//                        onFavoriteClick = {
+//                            tasks.itemSnapshotList[index]!!.memo.favorite =
+//                                !tasks.itemSnapshotList[index]!!.memo.favorite
+//                            onFavoriteClick(tasks.itemSnapshotList[index]!!)
+//                        },
                         onLongClickReleased = onLongClickReleased,
                         onLongClickApplied = onLongClickApplied,
                         selectedItemsIds = selectedItemsIds,

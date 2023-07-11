@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,7 +84,7 @@ fun SimpleDatePickerDialog(
                 Column() {
                     DateRangePicker(
                         modifier = Modifier.padding(MEDIUM_PADDING),
-                        dateFormatter = DatePickerDefaults.dateFormatter(
+                        dateFormatter = DatePickerFormatter(
                             selectedDateSkeleton = "MM/dd"
                         ),
                         state = dateRangePickerState,
@@ -102,10 +103,8 @@ fun SimpleDatePickerDialog(
                             }
                         },
                     )
-
                 }
             }
-
         }
     }
 }

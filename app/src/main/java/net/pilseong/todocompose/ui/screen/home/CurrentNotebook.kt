@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -87,7 +88,7 @@ fun CurrentNotebook(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = SMALL_PADDING)
+                        .padding(horizontal = SMALL_PADDING, vertical = 2.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = CenterVertically
@@ -115,6 +116,7 @@ fun CurrentNotebook(
                     .wrapContentHeight(CenterVertically)
                     .fillMaxWidth(),
                 text = currentNotebook.title,
+                overflow = TextOverflow.Ellipsis,
                 fontStyle = MaterialTheme.typography.labelMedium.fontStyle,
                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                 textAlign = TextAlign.Center,
@@ -138,7 +140,7 @@ fun CurrentNotebook(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = SMALL_PADDING)
+                        .padding(vertical = 2.dp)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
