@@ -670,13 +670,16 @@ class MemoViewModel @Inject constructor(
             "PHILIP",
             "[MemoViewModel] addTask performed with $taskUiState"
         )
-        val temp = taskUiState.taskDetails.toMemoTask()
-        savedLastMemoTask =
-            if (temp.progression == State.COMPLETED || temp.progression == State.CANCELLED) {
-                temp.copy(
+
+        if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
+            updateUiState(
+                taskUiState.taskDetails.copy(
                     finishedAt = ZonedDateTime.now()
                 )
-            } else temp
+            )
+        }
+
+        savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
             todoRepository.addMemo(taskUiState.taskDetails)

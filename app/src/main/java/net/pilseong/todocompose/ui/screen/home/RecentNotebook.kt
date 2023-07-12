@@ -92,7 +92,7 @@ fun RecentNotebook(
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .padding(horizontal = SMALL_PADDING)
+                                    .padding(horizontal = SMALL_PADDING, vertical = 2.dp)
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically

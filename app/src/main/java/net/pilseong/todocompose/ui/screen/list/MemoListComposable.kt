@@ -90,6 +90,7 @@ fun NavGraphBuilder.memoListComposable(
             snackBarHostState = snackBarHostState,
             searchAppBarState = memoViewModel.searchAppBarState,
             searchText = memoViewModel.searchTextString,
+            searchRangeAll = memoViewModel.searchRangeAll,
             tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
             selectedItems = memoViewModel.selectedItems,
             selectedNotebook = memoViewModel.selectedNotebook.value,

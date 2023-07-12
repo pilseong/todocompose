@@ -69,6 +69,7 @@ fun ListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     appbarTitle: String,
     notebookColor: Color,
+    searchRangeAll: Boolean = false,
     searchAppBarState: SearchAppBarState,
     searchText: String,
     searchNoFilterState: Boolean = false,
@@ -153,6 +154,7 @@ fun ListAppBar(
             SearchAppBarState.CLOSE -> {
                 DefaultListAppBar(
                     scrollBehavior = scrollBehavior,
+                    searchRangeAll = searchRangeAll,
                     appbarTitle = appbarTitle,
                     notebookColor = notebookColor,
                     onSearchIconClicked = onSearchIconClicked,
@@ -183,6 +185,7 @@ fun ListAppBar(
 @Composable
 fun DefaultListAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
+    searchRangeAll: Boolean = false,
     appbarTitle: String = "Default",
     notebookColor: Color = MaterialTheme.colorScheme.surface,
     onSearchIconClicked: () -> Unit,
@@ -200,7 +203,7 @@ fun DefaultListAppBar(
                     .clickable {
                         onAppBarTitleClick()
                     },
-                text = appbarTitle,
+                text = if (searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else appbarTitle,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )

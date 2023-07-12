@@ -5,7 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -140,9 +140,12 @@ fun PriorityDropDown(
 @Composable
 fun NotebooksDropDown(
     notebooks: List<NotebookWithCount>,
-    notebook: Notebook?,
+    notebookTitle: String?,
+    onNotebookSelected: (Long) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    var notebookTitleInside by remember { mutableStateOf(notebookTitle) }
     val angle by animateFloatAsState(
         targetValue = if (expanded) 180F else 0F
     )
@@ -158,12 +161,13 @@ fun NotebooksDropDown(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Log.d("PHILIP", "notebook data - $notebook")
+        Log.d("PHILIP", "notebook data - $notebookTitleInside")
         Text(
             modifier = Modifier
                 .padding(horizontal = LARGE_PADDING)
                 .weight(1F),
-            text = if (notebook?.title.isNullOrEmpty()) stringResource(id = R.string.default_note_title) else notebook!!.title,
+            text = if (notebookTitleInside.isNullOrEmpty()) stringResource(id = R.string.default_note_title)
+            else notebookTitleInside!!,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -191,63 +195,61 @@ fun NotebooksDropDown(
             Surface(
                 modifier = Modifier
                     .height(300.dp)
-                    .padding(XLARGE_PADDING)
+//                    .padding(XLARGE_PADDING)
                     .fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(4.dp),
                 tonalElevation = 2.dp,
                 shadowElevation = 2.dp,
             ) {
-                LazyColumn(
-                    // contentPadding 은 전체를 감싸는 padding
-                    contentPadding = PaddingValues(LARGE_PADDING),
-                    verticalArrangement = Arrangement.spacedBy(LARGE_PADDING)
-                ) {
-                    items(
-                        items = notebooks,
-                        key = { notebook ->
-                            notebook.id
+                Box(modifier = Modifier.size(width = 300.dp, height = 300.dp)) {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(LARGE_PADDING)) {
+                        items(
+                            items = notebooks,
+                            key = { notebook ->
+                                notebook.id
+                            }
+                        ) { item ->
+                            DropdownMenuItem(text = {
+                                Surface(
+                                    modifier = Modifier
+                                        .height(56.dp)
+                                        .fillMaxWidth(),
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = item.priority.color.copy(alpha = 0.4F),
+                                    tonalElevation = 6.dp,
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .wrapContentHeight(align = Alignment.CenterVertically)
+                                            .padding(start = LARGE_PADDING),
+                                        text = item.title,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Surface(
+                                        modifier = Modifier.fillMaxSize(),
+                                        color = Color.Transparent
+                                    ) {
+                                        Row(horizontalArrangement = Arrangement.End) {
+                                            Badge {
+                                                Text(text = item.memoTotalCount.toString())
+                                            }
+                                        }
+                                    }
+                                }
+                            }, onClick = {
+                                Log.d("PHILIP", "clicked $item")
+                                notebookTitleInside = item.title
+                                onNotebookSelected(item.id)
+                                expanded = false
+                            })
+
                         }
-                    ) { item ->
-                        DropdownMenuItem(text = {item.title }, onClick = { /*TODO*/ })
-//                        Surface(
-//                            modifier = Modifier
-//                                .height(56.dp)
-//                                .fillMaxWidth()
-//                                .clickable {
-////                                        onNotebookClick(
-////                                            item.id,
-////                                            if (dialogMode == 0) Action.NOTEBOOK_CHANGE
-////                                            else
-////                                                if (switchState) Action.COPY_TO else Action.MOVE_TO
-////                                        )
-//                                },
-//                            shape = RoundedCornerShape(4.dp),
-//                            color = item.priority.color.copy(alpha = 0.4F),
-//                            tonalElevation = 6.dp,
-//                        ) {
-//                            Text(
-//                                modifier = Modifier
-//                                    .wrapContentHeight(align = Alignment.CenterVertically)
-//                                    .padding(start = LARGE_PADDING),
-//                                text = item.title,
-//                                maxLines = 1,
-//                                overflow = TextOverflow.Ellipsis
-//                            )
-//                            Surface(
-//                                modifier = Modifier.fillMaxSize(),
-//                                color = Color.Transparent
-//                            ) {
-//                                Row(horizontalArrangement = Arrangement.End) {
-//                                    Badge {
-//                                        Text(text = item.memoTotalCount.toString())
-//                                    }
-//                                }
-//                            }
-//                        }
                     }
                 }
             }
+
         }
     }
 }
@@ -258,7 +260,8 @@ fun NotebooksDropDownPreview() {
     TodoComposeTheme {
         NotebooksDropDown(
             notebooks = emptyList(),
-            notebook = Notebook.instance()
+            notebookTitle = "",
+            onNotebookSelected = {}
         )
     }
 
@@ -276,7 +279,7 @@ fun StatusDropDown(
         targetValue = if (expanded) 180F else 0F
     )
     val focusManager = LocalFocusManager.current
-    var showInitalValue by remember { mutableStateOf(isNew) }
+    var showInitialValue by remember { mutableStateOf(isNew) }
 
     Row(
         modifier = Modifier
@@ -287,7 +290,7 @@ fun StatusDropDown(
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (!showInitalValue) {
+        if (!showInitialValue) {
             Canvas(
                 modifier = Modifier
                     .padding(horizontal = LARGE_PADDING)
@@ -355,7 +358,7 @@ fun StatusDropDown(
                     onClick = {
                         expanded = false
                         onStateSelected(state)
-                        if (showInitalValue) showInitalValue = false
+                        if (showInitialValue) showInitialValue = false
                     })
             }
         }

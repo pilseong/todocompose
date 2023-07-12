@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
@@ -41,22 +45,28 @@ fun SettingsScreen(
             )
         }
     ) { it ->
-        Surface(
-            color = MaterialTheme.colorScheme.onBackground,
+        Column(
             modifier = Modifier
-                .padding(bottom = it.calculateBottomPadding())
-                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(it)
+                .padding(16.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+            // the switch composable
+            SettingsClickableItem(
+                name = R.string.default_note_title,
+                icon = R.drawable.ic_create_note_icon,
+                iconDesc = R.string.badge_order_desc_label,
             ) {
-                Text(
-                    text = "Settings",
-                    modifier = modifier,
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                    style = MaterialTheme.typography.titleLarge
-                )
+                // call ViewModel to toggle the value
+            }
+
+            SettingsSwitchItem(
+                name = R.string.badge_order_desc_label,
+                icon = R.drawable.ic_baseline_low_priority_24,
+                iconDesc = R.string.add_button_icon,
+                state = false
+            ) {
+                // here you can do anything - navigate - open other settings, ...
             }
         }
     }
@@ -90,4 +100,12 @@ fun SettingsAppBar(
 //        actions = {
 //        }
     )
+}
+
+@Preview
+@Composable
+fun PreviewSettingsScreen() {
+    MaterialTheme {
+        SettingsScreen(onClickBottomNavBar = {})
+    }
 }

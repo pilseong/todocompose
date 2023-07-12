@@ -28,7 +28,7 @@
     <string name="label_no">No</string>
     <string name="delete_task_dialog_title">Remove \'%1$s\'?</string>
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
-    <string name="export_memos_dialog_title">Export to Email</string>
+    <string name="export_memos_dialog_title">Export as File</string>
     <string name="import_dialog_title">Import from File</string>
     <string name="delete_all_task_dialog_title">Remove All memos</string>
     <string name="delete_selected_task_dialog_title">Remove Selected Memos</string>
@@ -36,7 +36,7 @@
     <string name="delete_all_tasks_dialog_confirmation">Are you sure to remove all Memos inside \'%1$s\'?</string>
     <string name="delete_selected_tasks_dialog_confirmation">Are you sure to remove all selected memos?</string>
     <string name="delete_selected_notebooks_dialog_confirmation">Are You Sure to Remove All Selected Notebooks? This cannot be revoked</string>
-    <string name="export_all_memos_dialog_confirmation">Are you sure to export all memos through Email?</string>
+    <string name="export_all_memos_dialog_confirmation">Are you sure to export all memos as File?</string>
     <string name="import_dialog_confirmation">Are you sure to restore data From file?</string>
     <string name="delete_label">Delete</string>
     <string name="update_label">Update</string>

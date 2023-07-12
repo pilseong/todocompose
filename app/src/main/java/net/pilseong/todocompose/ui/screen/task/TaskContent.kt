@@ -460,10 +460,19 @@ private fun EditorContent(
         Row {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Surface(tonalElevation = 1.dp) {
-                    NotebooksDropDown(notebooks = notebooks, notebook = task.notebook)
+                    NotebooksDropDown(
+                        notebooks = notebooks,
+                        notebookTitle = task.notebook?.title,
+                        onNotebookSelected = { onValueChange(taskUiState.taskDetails.copy(notebookId = it)) }
+                    )
                 }
             }
         }
+        Divider(
+            modifier = Modifier
+                .height(0.7.dp),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         Row {
             Column(modifier = Modifier.weight(1F)) {
                 Surface(tonalElevation = 1.dp) {
