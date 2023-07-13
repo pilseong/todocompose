@@ -1021,14 +1021,14 @@ class MemoViewModel @Inject constructor(
                     }
                 }
                 .collect {
-                    Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
+//                    Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
                 }
         }
     }
 
     init {
         observeUiState()
-        Log.d("PHILIP", "version: ${Build.VERSION.RELEASE}")
+        Log.d("PHILIP", "[MemoViewModel] init -> version: ${Build.VERSION.RELEASE}")
     }
 }
 

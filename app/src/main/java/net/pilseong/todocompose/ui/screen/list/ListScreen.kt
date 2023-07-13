@@ -16,6 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.NoteAlt
+import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,7 +80,7 @@ fun ListScreen(
     selectedItems: SnapshotStateList<Long>,
     toTaskScreen: () -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
-    toHomeScreen: () -> Unit,
+    toNoteScreen: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onCloseClicked: () -> Unit,
@@ -121,7 +124,7 @@ fun ListScreen(
 
     if (offsetState) scrollBehavior.state.heightOffset = 0F
 
-    Log.d("PHILIP", "size of ${tasks.itemCount}")
+//    Log.d("PHILIP", "[ListScreen] total size of memos ${tasks.itemCount}")
 
     /**
      * view model 을 통제 코드 종료
@@ -166,7 +169,7 @@ fun ListScreen(
                 onStateSelectedForMultipleItems = onStateSelectedForMultipleItems,
             )
         },
-        bottomBar = { BottomActionBarNavigation(toHomeScreen = toHomeScreen) { onFabClicked() } }
+        bottomBar = { BottomActionBarNavigation(toNoteScreen = toNoteScreen) { onFabClicked() } }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -228,7 +231,7 @@ fun ListScreen(
 
 @Composable
 private fun BottomActionBarNavigation(
-    toHomeScreen: () -> Unit,
+    toNoteScreen: () -> Unit,
     onFabClicked: () -> Unit,
 ) {
     BottomAppBar(
@@ -238,9 +241,9 @@ private fun BottomActionBarNavigation(
                 Spacer(modifier = Modifier.width(25.dp))
                 IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
                     onClick = {
-                        toHomeScreen()
+                        toNoteScreen()
                     }) {
-                    Icon(Icons.Filled.Home, contentDescription = "Localized description")
+                    Icon(Icons.Default.NoteAlt, contentDescription = "Localized description")
                 }
                 IconButton(onClick = { /* doSomething() */ }) {
                     Icon(
@@ -268,7 +271,7 @@ private fun BottomActionBarNavigation(
 @Composable
 fun BottomActionBarNavPreview() {
     MaterialTheme {
-        BottomActionBarNavigation(toHomeScreen = {}, onFabClicked = {})
+        BottomActionBarNavigation(toNoteScreen = {}, onFabClicked = {})
     }
 
 }
@@ -328,7 +331,7 @@ private fun ListScreenPreview() {
         uiState = UserData(),
         snackBarHostState = SnackbarHostState(),
         toTaskScreen = {},
-        toHomeScreen = {},
+        toNoteScreen = {},
         onAppBarTitleClick = {},
         onSearchIconClicked = {},
         onCloseClicked = {},

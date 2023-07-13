@@ -35,6 +35,7 @@ import net.pilseong.todocompose.util.deleteFileFromUri
 fun TaskScreen(
     tasks: LazyPagingItems<MemoWithNotebook>,
     notebooks: List<NotebookWithCount>,
+    notebook: Notebook,
     taskIndex: Int,
     taskAppBarState: TaskAppBarState,
     taskUiState: TaskUiState,
@@ -109,6 +110,7 @@ fun TaskScreen(
                         photos = emptyList(),
                     ),
                     notebooks = notebooks,
+                    notebook = notebook,
                     taskUiState = taskUiState,
                     taskSize = tasks.itemCount,
                     taskIndex = taskIndex,

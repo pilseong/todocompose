@@ -249,7 +249,7 @@ fun LazyItemList(
 
             currentFraction = dismissState.progress
             SwipeToDismiss(
-//                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItemPlacement(),
                 state = dismissState,
                 background = {
                     ColorBackGround(

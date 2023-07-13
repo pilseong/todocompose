@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.FiberNew
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,7 +23,6 @@ import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbar
 import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
-import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.NoteSortingOption
@@ -33,32 +31,14 @@ import net.pilseong.todocompose.util.NoteSortingOption
 @Composable
 fun HomeScreen(
     onClickBottomNavBar: (String) -> Unit,
-    onFabClick: () -> Unit,
-    onSelectNotebook: (Long) -> Unit,
-    onSelectNotebookWithLongClick: (Long) -> Unit,
-    onBackButtonClick: () -> Unit,
-    notebooks: List<NotebookWithCount>,
-    currentNotebook: NotebookWithCount,
-    firstRecentNotebook: NotebookWithCount?,
-    secondRecentNotebook: NotebookWithCount?,
-    selectedNotebookIds: SnapshotStateList<Long>,
-    noteSortingOption: NoteSortingOption,
-    onDeleteSelectedClicked: () -> Unit,
-    onEditClick: () -> Unit,
-    onInfoClick: (Long) -> Unit,
-    onSortMenuClick: (NoteSortingOption) -> Unit,
 ) {
-    val scrollBehavior = exitUntilCollapsedScrollBehavior()
-
     Scaffold(
-//        modifier = Modifier.verticalScroll(rememberScrollState()),
         topBar = {
             HomeAppBar(
-                scrollBehavior = scrollBehavior,
-                selectedNotebookIds = selectedNotebookIds,
-                onBackButtonClick = onBackButtonClick,
-                onDeleteSelectedClicked = onDeleteSelectedClicked,
-                onEditClick = onEditClick,
+                selectedNotebookIds = SnapshotStateList(),
+                onDeleteSelectedClicked = {},
+                onBackButtonClick = {},
+                onEditClick = {},
             )
         },
         bottomBar = {
@@ -68,15 +48,8 @@ fun HomeScreen(
                     currentDestination = HOME_ROOT
                 )
         },
-        floatingActionButton = {
-            AddMemoFab(
-                icon = Icons.Default.FiberNew,
-                onFabClicked = {
-                    onFabClick()
-                }
-            )
-        },
-    ) { paddingValues ->
+
+        ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(
@@ -87,19 +60,6 @@ fun HomeScreen(
             Surface(
                 color = MaterialTheme.colorScheme.surface
             ) {
-                NoteContent(
-                    notebooks = notebooks,
-                    selectedNotebookIds = selectedNotebookIds,
-                    onSelectNotebook = onSelectNotebook,
-                    onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
-                    onInfoClick = onInfoClick,
-                    currentNotebook = currentNotebook,
-                    firstRecentNotebook = firstRecentNotebook,
-                    secondRecentNotebook = secondRecentNotebook,
-                    onEmptyImageClick = onFabClick,
-                    onSortMenuClick = onSortMenuClick,
-                    noteSortingOption = noteSortingOption
-                )
             }
         }
     }
@@ -108,7 +68,6 @@ fun HomeScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun HomeAppBar(
-    scrollBehavior: TopAppBarScrollBehavior,
     selectedNotebookIds: SnapshotStateList<Long>,
     onDeleteSelectedClicked: () -> Unit,
     onBackButtonClick: () -> Unit,
@@ -143,38 +102,6 @@ fun PreviewHomeScreen() {
     MaterialTheme {
         HomeScreen(
             onClickBottomNavBar = {},
-            onFabClick = { /*TODO*/ },
-            onSelectNotebook = {},
-            onSelectNotebookWithLongClick = {},
-            onBackButtonClick = {},
-            listOf(
-                NotebookWithCount(
-                    id = 1,
-                    title = "My Love Note",
-                    description = "desc1",
-                    priority = Priority.NONE
-                ),
-                NotebookWithCount(
-                    id = 2,
-                    title = "first notebooksss",
-                    description = "desc2",
-                    priority = Priority.NONE
-                ),
-                NotebookWithCount(
-                    id = 3,
-                    title = "test3",
-                    description = "desc3", priority = Priority.NONE
-                )
-            ),
-            currentNotebook = NotebookWithCount.instance(),
-            selectedNotebookIds = SnapshotStateList(),
-            onDeleteSelectedClicked = {},
-            onEditClick = {},
-            onInfoClick = {},
-            firstRecentNotebook = NotebookWithCount.instance(),
-            secondRecentNotebook = NotebookWithCount.instance(),
-            onSortMenuClick = {},
-            noteSortingOption = NoteSortingOption.ACCESS_AT
         )
     }
 }

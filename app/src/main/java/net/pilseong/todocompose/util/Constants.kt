@@ -10,6 +10,7 @@ object Constants {
     const val MAIN_ROOT = "main_home"
     const val HOME_ROOT = "home_root"
     const val MEMO_ROOT = "memo_root"
+    const val NOTE_LIST = "note_list"
     const val MEMO_LIST = "memo_list"
     const val MEMO_DETAIL = "memo_detail"
     const val SETTINGS = "settings"

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +18,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +42,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
@@ -53,10 +59,12 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerticalContent(
     onSelectNotebook: (Long) -> Unit,
     onInfoClick: (Long) -> Unit,
+    defaultNotebook: NotebookWithCount = NotebookWithCount.instance(),
     currentNotebook: NotebookWithCount,
     firstRecentNotebook: NotebookWithCount?,
     secondRecentNotebook: NotebookWithCount?,
@@ -86,20 +94,39 @@ fun VerticalContent(
                 ),
             ) {
                 // 헤드 타이틀
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.note_screen_recent_notebooks),
-                    color = Color(
-                        ColorUtils.blendARGB(
-                            MaterialTheme.colorScheme.onSurface.toArgb(),
-                            Color.White.toArgb(),
-                            0.2f
-                        )
-                    ).copy(0.9f),
-                    fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
-                    fontSize = MaterialTheme.typography.headlineSmall.fontSize
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.note_screen_recent_notebooks),
+                        color = Color(
+                            ColorUtils.blendARGB(
+                                MaterialTheme.colorScheme.onSurface.toArgb(),
+                                Color.White.toArgb(),
+                                0.2f
+                            )
+                        ).copy(0.9f),
+                        fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                    )
+                    Surface(modifier = Modifier.width(IntrinsicSize.Max)
+                        .height(34.dp)) {
+                        OutlinedButton(
+                            shape = RoundedCornerShape(4.dp),
+                            onClick = { onSelectNotebook(-1) }) {
+                            Text(
+                                text = stringResource(id = R.string.note_select_use_default),
+                            )
+
+                        }
+                        Row(horizontalArrangement = Arrangement.End) {
+                            Badge {
+                                Text(text = defaultNotebook.memoTotalCount.toString())
+                            }
+                        }
+                    }
+                }
 
                 // 오늘 날짜
                 Text(
@@ -279,7 +306,8 @@ fun VerticalContent(
             (screenWidth - (2 * XLARGE_PADDING.value) - (4 * SMALL_PADDING.value)) / 3
         }
         val notebookHeight = remember { notebookWidth * 4 / 3 }
-        val bookShelfHeight = remember { notebookHeight * 2 + (2 * LARGE_PADDING.value) + SMALL_PADDING.value }
+        val bookShelfHeight =
+            remember { notebookHeight * 2 + (2 * LARGE_PADDING.value) + SMALL_PADDING.value }
 
         Surface(
             modifier = Modifier

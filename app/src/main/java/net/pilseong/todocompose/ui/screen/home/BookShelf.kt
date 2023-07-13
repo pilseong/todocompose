@@ -31,7 +31,7 @@ fun BookShelf(
     onSelectNotebook: (Long) -> Unit,
     onInfoClick: (Long) -> Unit
 ) {
-    Log.d("PHILIP", "noteOrder $noteSortingOption")
+//    Log.d("PHILIP", "noteOrder $noteSortingOption")
 
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),

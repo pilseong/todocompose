@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,6 +114,8 @@ fun StatusLine(
             }
             initialSize = stateSize
 
+//            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
+
             LazyRow(
                 modifier = Modifier
                     .padding(vertical = SMALL_PADDING)
@@ -126,13 +129,15 @@ fun StatusLine(
                     key = { _, item -> item }
                 ) { index, item ->
 
-                    val shouldUpdate = remember(index) {
-                        index > initialSize - 1
+                    val shouldUpdate = remember(initialSize) {
+//                        Log.d("PHILIP", "[StatusLine] cal index: $index, initialSize: $initialSize")
+                        index >= initialSize - 1
                     }
 
                     when (item) {
                         StateEntity.NOTE_FILTER -> NoteFilterState(
                             onRangeAllEnabledClick = { state ->
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onRangeAllEnabledClick(state, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -146,6 +151,7 @@ fun StatusLine(
                         StateEntity.PRIORITY_FILTER -> PriorityFilter(uiState,
                             onPrioritySelected = { state, priority ->
                                 // 닫을 때 정렬이 실행되도록 하기 위해 체크 박스 선택 시에는 정렬 없음
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onPrioritySelected(state, priority, false)
                             },
                             onDismiss = {
@@ -168,6 +174,7 @@ fun StatusLine(
                                 onSetAllOrNothingClicked(state)
                             },
                             onDismiss = {
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 if (shouldUpdate) {
                                     onStatusLineUpdate(StateEntity.STATE_FILTER)
                                     scope.launch {
@@ -180,6 +187,7 @@ fun StatusLine(
                         StateEntity.FAVORITE_FILTER -> FavoriteFilter(
                             favoriteOn,
                             onFavoriteClick = {
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onFavoriteClick(shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -192,6 +200,7 @@ fun StatusLine(
                         StateEntity.PRIORITY_ORDER -> PrioritySort(
                             prioritySortState,
                             onPrioritySelected = { state, priority ->
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onPrioritySelected(state, priority, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -203,6 +212,7 @@ fun StatusLine(
 
                         StateEntity.SORTING_ORDER -> SortingOrder(orderEnabled,
                             onOrderEnabledClick = {
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onOrderEnabledClick(shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -215,6 +225,7 @@ fun StatusLine(
                         StateEntity.DATE_BASE_ORDER -> DateBaseOrder(
                             dateEnabled,
                             onDateEnabledClick = {
+                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onDateEnabledClick(shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {

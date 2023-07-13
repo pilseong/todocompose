@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Idea Note</string>
+    <string name="app_name">Idea Notes</string>
     <string name="add_button_icon">Add Memo Button Icon</string>
     <string name="empty_list_content_label">NO MEMO FOUND</string>
     <string name="search_bar_visible_action_icon">Search Bar Show</string>
@@ -115,7 +115,7 @@
     <string name="note_screen_copy_to_notebook_dialog_title">Copy to</string>
     <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
     <string name="date_picker_title">Pick up a date range</string>
-    <string name="note_select_use_default">Default Notebook</string>
+    <string name="note_select_use_default">Use default Notebook</string>
     <string name="close_label">Close</string>
     <string name="save_label">Save</string>
     <string name="info_created_at">Created At</string>

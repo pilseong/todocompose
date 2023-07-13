@@ -34,7 +34,7 @@ import net.pilseong.todocompose.util.SortOption
 fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,
-    toHomeScreen: () -> Unit
+    toNoteScreen: () -> Unit
 ) {
     composable(
         route = Screen.MemoList.route,
@@ -79,11 +79,11 @@ fun NavGraphBuilder.memoListComposable(
         var dialogMode by remember { mutableStateOf(0) }
         val snackBarHostState = remember { SnackbarHostState() }
 
-        Log.d(
-            "PHILIP",
-            "[memoNavGraph] ListScreen called with " +
-                    "${navBackStackEntry.arguments?.getInt(Constants.NOTE_ID_ARGUMENT)}"
-        )
+//        Log.d(
+//            "PHILIP",
+//            "[memoNavGraph] ListScreen called with " +
+//                    "${navBackStackEntry.arguments?.getInt(Constants.NOTE_ID_ARGUMENT)}"
+//        )
 
         ListScreen(
             uiState = uiState,
@@ -108,7 +108,7 @@ fun NavGraphBuilder.memoListComposable(
 
                 toTaskScreen()
             },
-            toHomeScreen = toHomeScreen,
+            toNoteScreen = toNoteScreen,
             onAppBarTitleClick = {
                 memoViewModel.getDefaultNoteCount()
                 dialogMode = 0

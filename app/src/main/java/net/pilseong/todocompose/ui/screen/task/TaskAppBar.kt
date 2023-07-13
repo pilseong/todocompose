@@ -178,7 +178,8 @@ fun DetailTaskBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = task.memo.priority.color.copy(alpha = 0.5F)
+            containerColor = task.notebook?.priority?.color?.copy(alpha = 0.5F) ?:
+            Priority.NONE.color.copy(alpha = 0.5F)
         ),
         actions = {
             DetailTaskBarActions(

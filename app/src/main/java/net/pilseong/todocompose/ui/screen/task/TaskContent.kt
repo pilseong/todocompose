@@ -99,6 +99,7 @@ import java.time.format.DateTimeFormatter
 fun TaskContent(
     task: MemoWithNotebook,
     notebooks: List<NotebookWithCount>,
+    notebook: Notebook,
     taskUiState: TaskUiState,
     taskIndex: Int = 0,
     taskSize: Int = 0,
@@ -168,6 +169,7 @@ fun TaskContent(
         EditorContent(
             task = task,
             notebooks = notebooks,
+            notebook = notebook,
             taskUiState = taskUiState,
             onValueChange = onValueChange,
         )
@@ -195,7 +197,9 @@ private fun ViewerContent(
 ) {
     val scrollState = rememberScrollState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
         var expanded by remember { mutableStateOf(false) }
         var photoOpen by remember {
             mutableStateOf(false)
@@ -205,10 +209,14 @@ private fun ViewerContent(
             mutableStateOf(null)
         }
 
-        Surface {
+        Surface(
+            color = if (task.memo.priority == Priority.NONE) MaterialTheme.colorScheme.surface else
+                task.memo.priority.color.copy(alpha = 0.2f),
+            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .padding(start = XLARGE_PADDING, end = XLARGE_PADDING, bottom = SMALL_PADDING)
+                    .padding(start = XLARGE_PADDING, end = XLARGE_PADDING, bottom = SMALL_PADDING, top = XLARGE_PADDING)
                     .fillMaxWidth()
             ) {
                 // 헤더 부분
@@ -390,7 +398,7 @@ private fun ViewerContent(
             }
         }
 
-        Divider()
+        Divider(modifier =  Modifier.height(0.2.dp))
 
         Spacer(
             modifier = Modifier.height(MEDIUM_PADDING),
@@ -449,6 +457,7 @@ private fun EditorContent(
     task: MemoWithNotebook,
     taskUiState: TaskUiState,
     notebooks: List<NotebookWithCount> = emptyList(),
+    notebook: Notebook,
     onValueChange: (TaskDetails) -> Unit,
 ) {
 
@@ -462,7 +471,7 @@ private fun EditorContent(
                 Surface(tonalElevation = 1.dp) {
                     NotebooksDropDown(
                         notebooks = notebooks,
-                        notebookTitle = task.notebook?.title,
+                        notebookTitle = if (taskUiState.taskDetails.id == NEW_ITEM_ID) notebook.title else task.notebook?.title,
                         onNotebookSelected = { onValueChange(taskUiState.taskDetails.copy(notebookId = it)) }
                     )
                 }
@@ -765,7 +774,8 @@ fun ViewerContentPreview() {
             onSwipeRightOnViewer = {},
             onSwipeLeftOnViewer = {},
             taskAppBarState = TaskAppBarState.VIEWER,
-            notebooks = emptyList()
+            notebooks = emptyList(),
+            notebook = Notebook.instance()
         )
     }
 }
@@ -777,6 +787,7 @@ fun EditorContentPreview() {
     MaterialTheme {
         EditorContent(
             task = MemoWithNotebook.instance(),
+            notebook = Notebook.instance(),
             taskUiState = TaskUiState(
                 taskDetails = TaskDetails(
                     id = -1,

@@ -116,6 +116,7 @@ fun NavGraphBuilder.memoDetailComposable(
             TaskScreen(
                 tasks = tasks,
                 notebooks = notebooks,
+                notebook = memoViewModel.selectedNotebook.value,
                 taskIndex = taskIndex,
                 taskAppBarState = taskAppBarState,
                 taskUiState = memoViewModel.taskUiState,

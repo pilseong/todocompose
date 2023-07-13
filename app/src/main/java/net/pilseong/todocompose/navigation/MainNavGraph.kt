@@ -1,9 +1,21 @@
 package net.pilseong.todocompose.navigation
 
 import android.util.Log
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -14,7 +26,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.homeComposable
-import net.pilseong.todocompose.navigation.destination.memoNavGraph
+import net.pilseong.todocompose.navigation.destination.noteNavGraph
+import net.pilseong.todocompose.ui.components.AppDrawerHeader
+import net.pilseong.todocompose.ui.components.LightDarkThemeItem
+import net.pilseong.todocompose.ui.components.ScreenNavigationButton
 import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
 import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.Constants.MAIN_ROOT
@@ -31,40 +46,79 @@ fun MainNavGraph(
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }
 
-    NavHost(
-        navController = navHostController,
-        startDestination = startDestination
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                AppDrawerHeader()
+                Divider(
+                    color = MaterialTheme.colorScheme.onSurface.copy(
+                        alpha =
+                        .2f
+                    )
+                )
+                ScreenNavigationButton(
+                    icon = Icons.Filled.Home,
+                    label = "Notes",
+                    isSelected = false,
+                    onClick = {
+//                onScreenSelected.invoke(Screen.Notes)
+                    }
+                )
+                ScreenNavigationButton(
+                    icon = Icons.Filled.Delete,
+                    label = "Trash",
+                    isSelected = false,
+                    onClick = {
+//                onScreenSelected.invoke(Screen.Trash)
+                    }
+                )
+                LightDarkThemeItem()
+//                Text("Drawer title", modifier = Modifier.padding(16.dp))
+//                Divider()
+//                NavigationDrawerItem(
+//                    label = { Text(text = "Drawer Item") },
+//                    selected = false,
+//                    onClick = { /*TODO*/ }
+//                )
+//                // ...other drawer items
+            }
+        }
     ) {
-        navigation(
-            startDestination = HOME_ROOT,
-            route = MAIN_ROOT,
+        NavHost(
+            navController = navHostController,
+            startDestination = startDestination
         ) {
-            homeComposable(
-                navHostController = navHostController,
-                viewModelStoreOwner = viewModelStoreOwner,
-                route = HOME_ROOT
-            )
-
-            memoNavGraph(
-                navHostController = navHostController,
-                toTaskScreen = {
-                    navHostController.navigate(Screen.MemoDetail.route)
-                },
-                toListScreen = {
-                    navHostController.navigate(Screen.MemoList.route)
-                },
-                toHomeScreen = {
-                    navHostController.popBackStack(Screen.Home.route, true)
-                    navHostController.navigate(Screen.Home.route)
-                }
-            )
-
-            composable(
-                route = BottomBarScreen.Settings.route
+            navigation(
+                startDestination = HOME_ROOT,
+                route = MAIN_ROOT,
             ) {
-                SettingsScreen(onClickBottomNavBar = { route ->
-                    navHostController.navigate(route)
-                })
+                homeComposable(
+                    navHostController = navHostController,
+                    viewModelStoreOwner = viewModelStoreOwner,
+                    route = HOME_ROOT
+                )
+
+                noteNavGraph(
+                    navHostController = navHostController,
+                    toTaskScreen = {
+                        navHostController.navigate(Screen.MemoDetail.route)
+                    },
+                    toListScreen = {
+                        navHostController.navigate(Screen.MemoList.route)
+                    },
+                    toNoteScreen = {
+//                    navHostController.popBackStack(Screen.Home.route, true)
+                        navHostController.navigate(Screen.Note.route)
+                    }
+                )
+
+                composable(
+                    route = BottomBarScreen.Settings.route
+                ) {
+                    SettingsScreen(onClickBottomNavBar = { route ->
+                        navHostController.navigate(route)
+                    })
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Idea Note</string>
+    <string name="app_name">Idea Notes</string>
     <string name="add_button_icon">เพิ่ม Memo</string>
     <string name="empty_list_content_label">ไม่พบการค้นหา</string>
     <string name="search_bar_visible_action_icon">แท็บค้นหา</string>

@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.components.SortMenuItems
@@ -54,9 +59,11 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteContent(
     notebooks: List<NotebookWithCount>,
+    defaultNotebook: NotebookWithCount = NotebookWithCount.instance(),
     selectedNotebookIds: SnapshotStateList<Long>,
     noteSortingOption: NoteSortingOption,
     onSelectNotebook: (Long) -> Unit,
@@ -81,8 +88,8 @@ fun NoteContent(
                 horizontalArrangement = Arrangement.spacedBy(LARGE_PADDING)
             ) {
                 Column(modifier = Modifier.weight(3F)) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = stringResource(id = R.string.note_screen_recent_notebooks),
@@ -96,6 +103,22 @@ fun NoteContent(
                             fontStyle = MaterialTheme.typography.headlineSmall.fontStyle,
                             fontSize = MaterialTheme.typography.headlineSmall.fontSize
                         )
+                        Surface(modifier = Modifier.width(IntrinsicSize.Max)
+                            .height(34.dp)) {
+                            OutlinedButton(
+                                shape = RoundedCornerShape(4.dp),
+                                onClick = { onSelectNotebook(-1) }) {
+                                Text(
+                                    text = stringResource(id = R.string.note_select_use_default),
+                                )
+
+                            }
+                            Row(horizontalArrangement = Arrangement.End) {
+                                Badge {
+                                    Text(text = defaultNotebook.memoTotalCount.toString())
+                                }
+                            }
+                        }
                     }
                     Spacer(modifier = Modifier.height(LARGE_PADDING))
                     Row {
@@ -314,17 +337,18 @@ fun NoteContent(
 
         else -> {
             VerticalContent(
-                onSelectNotebook,
-                onInfoClick,
-                currentNotebook,
-                firstRecentNotebook,
-                secondRecentNotebook,
-                onSortMenuClick,
-                noteSortingOption,
-                notebooks,
-                selectedNotebookIds,
-                onSelectNotebookWithLongClick,
-                onEmptyImageClick
+                onSelectNotebook = onSelectNotebook,
+                onInfoClick = onInfoClick,
+                defaultNotebook = defaultNotebook,
+                currentNotebook = currentNotebook,
+                firstRecentNotebook = firstRecentNotebook,
+                secondRecentNotebook = secondRecentNotebook,
+                onSortMenuClick = onSortMenuClick,
+                noteSortingOption = noteSortingOption,
+                notebooks = notebooks,
+                selectedNotebookIds = selectedNotebookIds,
+                onSelectNotebookWithLongClick = onSelectNotebookWithLongClick,
+                onEmptyImageClick = onEmptyImageClick,
             )
         }
     }
