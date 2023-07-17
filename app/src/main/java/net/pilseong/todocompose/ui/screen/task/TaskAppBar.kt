@@ -1,16 +1,20 @@
 package net.pilseong.todocompose.ui.screen.task
 
 import android.util.Log
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -19,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -33,7 +39,9 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
+import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
@@ -49,6 +57,7 @@ fun TaskAppBar(
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit,
     clearAddedPhotos: () -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
     when (taskAppBarState) {
         TaskAppBarState.VIEWER -> {
@@ -69,6 +78,7 @@ fun TaskAppBar(
                 toListScreen = toListScreen,
                 onBackClick = onBackClick,
                 clearAddedPhotos = clearAddedPhotos,
+                onValueChange = onValueChange,
             )
 
         }
@@ -86,6 +96,7 @@ fun EditTaskBar(
     toListScreen: (Action) -> Unit,
     onBackClick: () -> Unit,
     clearAddedPhotos: () -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
     TopAppBar(
         navigationIcon = {
@@ -106,6 +117,22 @@ fun EditTaskBar(
         },
         actions = {
             // done action
+            Switch(
+                modifier = Modifier.padding(end = LARGE_PADDING),
+                thumbContent = {
+                    if (!uiState.taskDetails.isTask) {
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            imageVector = Icons.Default.EditCalendar,
+                            contentDescription = "clock icon"
+                        )
+                    }
+                },
+                checked = uiState.taskDetails.isTask,
+                onCheckedChange = {
+                    onValueChange(uiState.taskDetails.copy(isTask = !uiState.taskDetails.isTask))
+
+                })
             CommonAction(
                 enabled = uiState.isEntryValid,
                 onClicked = {
@@ -178,8 +205,8 @@ fun DetailTaskBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = task.notebook?.priority?.color?.copy(alpha = 0.5F) ?:
-            Priority.NONE.color.copy(alpha = 0.5F)
+            containerColor = task.notebook?.priority?.color?.copy(alpha = 0.5F)
+                ?: Priority.NONE.color.copy(alpha = 0.5F)
         ),
         actions = {
             DetailTaskBarActions(
@@ -249,6 +276,7 @@ fun EditTaskBarPreview() {
             onBackClick = {},
             toListScreen = {},
             clearAddedPhotos = {},
+            onValueChange = {}
         )
     }
 }

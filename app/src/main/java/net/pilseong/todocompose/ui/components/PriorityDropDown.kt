@@ -164,8 +164,10 @@ fun NotebooksDropDown(
         Log.d("PHILIP", "notebook data - $notebookTitleInside")
         Text(
             modifier = Modifier
-                .padding(horizontal = LARGE_PADDING)
+                .padding(start = XLARGE_PADDING)
                 .weight(1F),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 2,
             text = if (notebookTitleInside.isNullOrEmpty()) stringResource(id = R.string.default_note_title)
             else notebookTitleInside!!,
             style = MaterialTheme.typography.titleSmall,

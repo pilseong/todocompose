@@ -1,21 +1,19 @@
 package net.pilseong.todocompose.navigation
 
 import android.util.Log
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -24,15 +22,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import kotlinx.coroutines.launch
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.homeComposable
 import net.pilseong.todocompose.navigation.destination.noteNavGraph
+import net.pilseong.todocompose.ui.components.AppDrawer
 import net.pilseong.todocompose.ui.components.AppDrawerHeader
 import net.pilseong.todocompose.ui.components.LightDarkThemeItem
 import net.pilseong.todocompose.ui.components.ScreenNavigationButton
 import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
 import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.Constants.MAIN_ROOT
+import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 @Composable
 fun MainNavGraph(
@@ -45,42 +46,22 @@ fun MainNavGraph(
     val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }
+    
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
+        drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                AppDrawerHeader()
-                Divider(
-                    color = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha =
-                        .2f
-                    )
-                )
-                ScreenNavigationButton(
-                    icon = Icons.Filled.Home,
-                    label = "Notes",
-                    isSelected = false,
-                    onClick = {
-//                onScreenSelected.invoke(Screen.Notes)
+                AppDrawer(onScreenSelected = { to ->
+                    navHostController.popBackStack(to, true)
+                    navHostController.navigate(to)
+
+                    scope.launch {
+                        drawerState.close()
                     }
-                )
-                ScreenNavigationButton(
-                    icon = Icons.Filled.Delete,
-                    label = "Trash",
-                    isSelected = false,
-                    onClick = {
-//                onScreenSelected.invoke(Screen.Trash)
-                    }
-                )
-                LightDarkThemeItem()
-//                Text("Drawer title", modifier = Modifier.padding(16.dp))
-//                Divider()
-//                NavigationDrawerItem(
-//                    label = { Text(text = "Drawer Item") },
-//                    selected = false,
-//                    onClick = { /*TODO*/ }
-//                )
-//                // ...other drawer items
+                })
             }
         }
     ) {
@@ -89,7 +70,7 @@ fun MainNavGraph(
             startDestination = startDestination
         ) {
             navigation(
-                startDestination = HOME_ROOT,
+                startDestination = MEMO_ROOT,
                 route = MAIN_ROOT,
             ) {
                 homeComposable(
@@ -108,7 +89,13 @@ fun MainNavGraph(
                     },
                     toNoteScreen = {
 //                    navHostController.popBackStack(Screen.Home.route, true)
-                        navHostController.navigate(Screen.Note.route)
+                        navHostController.navigate(Screen.Notes.route)
+                    },
+                    toTaskManagementScreen = {
+                        navHostController.navigate(Screen.MemoTaskManager.route)
+                    },
+                    toScreen = {
+                        navHostController.navigate(it)
                     }
                 )
 

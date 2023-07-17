@@ -8,9 +8,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -83,14 +85,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TaskItem(
     modifier: Modifier = Modifier,
-    index: Int = 0,
     drawEndEdge: Boolean = false,
     todoTask: MemoWithNotebook,
     toTaskScreen: (Long) -> Unit,
     headerEnabled: Boolean = true,
     datetime: ZonedDateTime,
     onFavoriteClick: () -> Unit,
-    onLongClickReleased: (Long) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItemsIds: SnapshotStateList<Long>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
@@ -98,7 +98,7 @@ fun TaskItem(
 
     val todoInside by rememberUpdatedState(todoTask)
 
-    var selected = remember { mutableStateOf(selectedItemsIds.contains(todoInside.memo.id)) }
+    val selected = remember { mutableStateOf(selectedItemsIds.contains(todoInside.memo.id)) }
         .apply {
             value = selectedItemsIds.contains(todoInside.memo.id)
         }
@@ -128,10 +128,16 @@ fun TaskItem(
 
     Column {
         if (headerEnabled) {
-            DateHeader(innerTime)
+            DateHeader(
+                modifier = Modifier.padding(
+                    top = LARGE_PADDING,
+                    bottom = SMALL_PADDING,
+                ),
+                innerTime
+            )
         }
 
-        Row(modifier = modifier) {
+        Row {
             // item 을 감싸는 라인을 그려 준다
             Box(modifier = Modifier
                 .width(10.dp)
@@ -186,23 +192,19 @@ fun TaskItem(
                     modifier = Modifier
                         .padding(vertical = MEDIUM_PADDING)
                         .fillMaxWidth(),
-//                        .height(56.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Row(modifier = Modifier.height(56.dp)) {
+                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                         // 시간 + 중요성
                         Column(
                             modifier = Modifier
                                 .padding(top = 2.dp)
                                 .weight(2 / 12f),
-//                            .fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 modifier = Modifier
-//                                .weight(6 / 12F)
-//                                .fillMaxSize()
                                     .wrapContentHeight(CenterVertically),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                                 textAlign = TextAlign.Center,
@@ -230,22 +232,29 @@ fun TaskItem(
                         //  제목 내용
                         Column(
                             modifier = Modifier
+                                .fillMaxHeight()
                                 .weight(7 / 12f),
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 text = todoInside.memo.title,
                                 color = MaterialTheme.colorScheme.taskItemContentColor,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
+                                style = if (todoInside.memo.description.isNotBlank())
+                                    MaterialTheme.typography.bodyLarge
+                                else MaterialTheme.typography.bodySmall,
+                                maxLines = if (todoInside.memo.description.isNotBlank()) 1 else 2
                             )
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = todoInside.memo.description,
-                                color = MaterialTheme.colorScheme.taskItemContentColor,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+
+                            if (todoInside.memo.description.isNotBlank()) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = todoInside.memo.description,
+                                    color = MaterialTheme.colorScheme.taskItemContentColor,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
 
                         // favorite and state
@@ -253,12 +262,10 @@ fun TaskItem(
                             modifier = Modifier
                                 .padding(PaddingValues(end = SMALL_PADDING))
                                 .weight(3 / 12f),
-//                            .fillMaxHeight(),
                             verticalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Row(
                                 modifier = Modifier
-//                                .weight(6 / 12F)
                                     .fillMaxWidth(),
                                 verticalAlignment = CenterVertically,
                                 horizontalArrangement = Arrangement.Center
@@ -285,7 +292,6 @@ fun TaskItem(
                             Row(
                                 modifier = Modifier
                                     .padding(top = 4.dp)
-//                                .weight(6 / 12F),
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                             ) {
@@ -353,7 +359,6 @@ fun TaskItem(
                             modifier = Modifier
                                 .padding(top = SMALL_PADDING)
                                 .height(0.5.dp),
-//                        color = MaterialTheme.colorScheme.onSurface,
                         )
                         Row {
                             ComposeGallery(
@@ -386,10 +391,10 @@ fun TaskItem(
                                 ) {
                                     Column(modifier = Modifier.fillMaxSize()) {
                                         ZoomableImage(
-                                            selectedGalleryImage = selectedGalleryImage!!,
+                                            selectedGalleryImage = selectedGalleryImage,
                                             onCloseClicked = {
-                                                selectedGalleryImage = null
                                                 photoOpen = false
+                                                selectedGalleryImage = null
                                             },
                                             onDeleteClicked = { },
                                             onCameraClick = {},
@@ -400,7 +405,6 @@ fun TaskItem(
                             }
                         }
                     }
-
                 }
             }
         }
@@ -416,7 +420,8 @@ fun TaskItemPreview() {
             todoTask = MemoWithNotebook(
                 memo = MemoTask(
                     1, "필성 힘내!!!",
-                    "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                    "",
+//                    "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                     Priority.HIGH,
                     notebookId = -1,
                     progression = State.COMPLETED
@@ -428,7 +433,6 @@ fun TaskItemPreview() {
             toTaskScreen = {},
             datetime = ZonedDateTime.now(),
             onFavoriteClick = {},
-            onLongClickReleased = {},
             onLongClickApplied = {},
             selectedItemsIds = SnapshotStateList(),
             onStateSelected = { _, _ -> }

@@ -3,6 +3,7 @@ package net.pilseong.todocompose.navigation.destination
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -21,10 +22,10 @@ sealed class BottomBarScreen(
         title = R.string.bottom_nav_label_home,
         icon = Icons.Default.Home
     )
-    object Memo: BottomBarScreen(
+    object Note: BottomBarScreen(
         route = MEMO_ROOT,
         title = R.string.bottom_nav_label_memo,
-        icon = Icons.Default.StickyNote2
+        icon = Icons.Default.NoteAlt
     )
     object Settings: BottomBarScreen(
         route = SETTINGS,

@@ -25,7 +25,10 @@ import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.util.Constants
+import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.Constants.MAIN_ROOT
+import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -79,7 +82,7 @@ class MainActivity : ComponentActivity() {
                 android.Manifest.permission.CAMERA
             ).toTypedArray()
 
-        fun hasPermissions(context: Context) =  REQUIRED_PERMISSIONS.all {
+        fun hasPermissions(context: Context) = REQUIRED_PERMISSIONS.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
 

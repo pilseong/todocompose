@@ -1,6 +1,7 @@
 package net.pilseong.todocompose.ui.components
 
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,51 +9,51 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DateRangePickerState
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.compose.ui.window.Dialog
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
+import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -64,6 +65,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleDateRangePickerSheet(
+    titleResource: Int,
     datePickerExpanded: Boolean = false,
     onDismissRequest: () -> Unit,
     onConfirmClick: (Long?, Long?) -> Unit
@@ -73,9 +75,11 @@ fun SimpleDateRangePickerSheet(
             skipPartiallyExpanded = true
         )
         val dateRangePickerState = rememberDateRangePickerState(
-            initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
-                .toEpochMilli(),
-            initialSelectedEndDateMillis = Instant.now().toEpochMilli(),
+            initialSelectedStartDateMillis = convertLocalTime(
+                OffsetDateTime.now().minusDays(7).toInstant()
+                    .toEpochMilli()
+            ),
+            initialSelectedEndDateMillis = convertLocalTime(Instant.now().toEpochMilli()),
             yearRange = IntRange(2000, 2100),
             initialDisplayMode = DisplayMode.Picker
         )
@@ -94,7 +98,53 @@ fun SimpleDateRangePickerSheet(
                         .height(700.dp)
                 ) {
                     CustomDateRangePicker(
+                        titleResource = titleResource,
                         state = dateRangePickerState,
+                        onDismissRequest = onDismissRequest,
+                        onConfirmClick = onConfirmClick,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimpleDatePickerSheet(
+    titleResource: Int,
+    datePickerExpanded: Boolean = false,
+    onDismissRequest: () -> Unit,
+    onConfirmClick: (Long?) -> Unit
+) {
+    if (datePickerExpanded) {
+        val state = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = convertToLocalEndTime(
+                ZonedDateTime.now().toEpochSecond() * 1000, false
+            ),
+            yearRange = IntRange(2000, 2100),
+            initialDisplayMode = DisplayMode.Picker
+        )
+
+        ModalBottomSheet(
+            onDismissRequest = {
+                Log.d("PHILIP", "SimpleDateRangePickerSheet onDismissRequest")
+                onDismissRequest()
+            },
+            sheetState = state,
+        ) {
+            Column(modifier = Modifier.padding(horizontal = XLARGE_PADDING)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(700.dp)
+                ) {
+                    CustomDatePicker(
+                        titleResource = titleResource,
+                        state = datePickerState,
                         onDismissRequest = onDismissRequest,
                         onConfirmClick = onConfirmClick,
                     )
@@ -109,8 +159,10 @@ fun SimpleDateRangePickerSheet(
 fun PreviewSimpleDateRangePickerSheet() {
     MaterialTheme {
         SimpleDateRangePickerSheet(
+            titleResource = R.string.date_picker_title,
             datePickerExpanded = true,
-            onDismissRequest = { /*TODO*/ }, onConfirmClick = { _, _ -> })
+            onDismissRequest = { /*TODO*/ },
+            onConfirmClick = { _, _ -> })
     }
 
 }
@@ -128,15 +180,13 @@ fun getFormattedDate(timeInMillis: Long): String {
 @Composable
 fun CustomDateRangePicker(
     state: DateRangePickerState,
+    titleResource: Int,
     onDismissRequest: () -> Unit,
     onConfirmClick: (Long?, Long?) -> Unit
 ) {
     DateRangePicker(
         state,
         modifier = Modifier,
-//        dateFormatter = DatePickerDefaults.dateFormatter(
-//            selectedDateSkeleton = "MM/dd"
-//        ),
         dateFormatter = DatePickerFormatter(
             selectedDateSkeleton = "MM/dd"
         ),
@@ -148,7 +198,7 @@ fun CustomDateRangePicker(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = stringResource(id = R.string.date_picker_title),
+                    text = stringResource(id = titleResource),
                     fontStyle = MaterialTheme.typography.titleMedium.fontStyle,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize
                 )
@@ -233,7 +283,96 @@ fun CustomDateRangePicker(
     )
 }
 
-private fun convertToLocalEndTime(timestamp: Long?, isStart: Boolean): Long? {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomDatePicker(
+    state: DatePickerState,
+    titleResource: Int,
+    onDismissRequest: () -> Unit,
+    onConfirmClick: (Long?) -> Unit
+) {
+    DatePicker(
+        state = state,
+        modifier = Modifier,
+        dateFormatter = DatePickerFormatter(
+            selectedDateSkeleton = "MM/dd"
+        ),
+        title = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MEDIUM_PADDING),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(id = titleResource),
+                    fontStyle = MaterialTheme.typography.titleMedium.fontStyle,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                )
+            }
+        },
+        headline = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = XLARGE_PADDING,
+                        vertical = LARGE_PADDING
+                    ),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row {
+                    Row(
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = if (state.selectedDateMillis != null)
+                                getFormattedDate(state.selectedDateMillis!!)
+                            else stringResource(id = R.string.datepicker_start_label),
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                onDismissRequest()
+                            },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                    }
+                    Spacer(modifier = Modifier.width(LARGE_PADDING))
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                onConfirmClick(
+                                    convertToLocalEndTime(state.selectedDateMillis, true),
+                                )
+                                onDismissRequest()
+                            },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.Done, contentDescription = "Ok")
+                    }
+                }
+
+            }
+        },
+        showModeToggle = false,
+    )
+}
+
+// 달력에서 선택한 날짜는 UTC기준의 날짜가 나온다. 그래서 로컬시각은 각 날짜에서 offset을 빼주어야 local time과 일치하게 된다.
+// 예를 들어 7월 1일을 선택하면 7월1일 00:00Z 가 반환되는데 이 시간은 7월 1일 09:00+09:00 으로 변환된다.
+// 그래서 달려 기준으로 날짜를 맞추고 싶으면 해당 timestamp에서 offset을 빼주어야 하는 것이다.
+fun convertToLocalEndTime(timestamp: Long?, isStart: Boolean): Long? {
     if (timestamp == null) return null
 
     val instant = Instant.ofEpochMilli(timestamp)
@@ -255,11 +394,26 @@ private fun convertToLocalEndTime(timestamp: Long?, isStart: Boolean): Long? {
 }
 
 
+// 달력은 현재 로컬의 날짜가 보여기게 된다. 현재 시간을 달력 표기에 맞추기 위해서는 UTC기준인 날짜 + offset을 해주어야 한다.
+fun convertLocalTime(timestamp: Long?): Long? {
+    if (timestamp == null) return null
+
+    val instant = Instant.ofEpochMilli(timestamp)
+    val zoned = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+    val changedTime = Instant.ofEpochSecond(instant.epochSecond + zoned.offset.totalSeconds)
+    Log.d("PHILIP", "time change ${OffsetDateTime.ofInstant(changedTime, ZoneId.systemDefault())}")
+    Log.d("PHILIP", "time change ${OffsetDateTime.ofInstant(instant, ZoneId.systemDefault())}")
+    return changedTime.toEpochMilli()
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview16() {
     MaterialTheme {
         SimpleDateRangePickerSheet(
+            titleResource = R.string.date_picker_title,
             datePickerExpanded = true,
             onDismissRequest = {},
             onConfirmClick = { _, _ -> },
@@ -274,14 +428,17 @@ fun GreetingPreview16() {
 @Composable
 fun PreviewDateRangePickerSample() {
     val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = OffsetDateTime.now().minusDays(7).toInstant()
-            .toEpochMilli(),
-        initialSelectedEndDateMillis = Instant.now().toEpochMilli(),
+        initialSelectedStartDateMillis = convertLocalTime(
+            OffsetDateTime.now().minusDays(7).toInstant()
+                .toEpochMilli()
+        ),
+        initialSelectedEndDateMillis = convertLocalTime(Instant.now().toEpochMilli()),
         yearRange = IntRange(2000, 2100), // available years
         initialDisplayMode = DisplayMode.Picker
     )
     MaterialTheme {
         CustomDateRangePicker(
+            titleResource = R.string.date_picker_title,
             state = dateRangePickerState,
             onConfirmClick = { _, _ -> },
             onDismissRequest = {}
@@ -290,72 +447,142 @@ fun PreviewDateRangePickerSample() {
 }
 
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TestCode() {
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    var skipPartiallyExpanded by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = skipPartiallyExpanded
+fun DefaultDatePickerDialog(
+    openDialog: Boolean = false,
+    onConfirm: (Long?) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = convertToLocalEndTime(
+            ZonedDateTime.now().toEpochSecond() * 1000, false
+        ),
+        yearRange = IntRange(2000, 2100),
+        initialDisplayMode = DisplayMode.Picker
     )
 
-// App content
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Row(
-            Modifier.toggleable(
-                value = skipPartiallyExpanded,
-                role = Role.Checkbox,
-                onValueChange = { checked -> skipPartiallyExpanded = checked }
-            )
-        ) {
-            Checkbox(checked = skipPartiallyExpanded, onCheckedChange = null)
-            Spacer(Modifier.width(16.dp))
-            Text("Skip partially expanded State")
-        }
-        Button(onClick = { openBottomSheet = !openBottomSheet }) {
-            Text(text = "Show Bottom Sheet")
-        }
-    }
 
-// Sheet content
-    if (openBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState,
-        ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Button(
-                    // Note: If you provide logic outside of onDismissRequest to remove the sheet,
-                    // you must additionally handle intended state cleanup, if any.
+    if (openDialog) {
+        val confirmEnabled by derivedStateOf { datePickerState.selectedDateMillis != null }
+        DatePickerDialog(
+            onDismissRequest = { onDismissRequest() },
+            confirmButton = {
+                TextButton(
                     onClick = {
-                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                            if (!bottomSheetState.isVisible) {
-                                openBottomSheet = false
-                            }
-                        }
-                    }
+                        onConfirm(datePickerState.selectedDateMillis)
+                    },
+                    enabled = confirmEnabled
                 ) {
-                    Text("Hide Bottom Sheet")
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { onDismissRequest() }
+                ) {
+                    Text("Cancel")
                 }
             }
-            var text by remember { mutableStateOf("") }
-            OutlinedTextField(value = text, onValueChange = { text = it })
-            LazyColumn {
-                items(50) {
-                    ListItem(
-                        headlineContent = { Text("Item $it") },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Favorite,
-                                contentDescription = "Localized description"
-                            )
-                        }
-                    )
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreViewDefaultDatePickerDialog(
+) {
+    TodoComposeTheme() {
+        DefaultDatePickerDialog(
+            openDialog = true,
+            onConfirm = { /*TODO*/ }) { }
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DefaultTimePickerDialog(
+    state : TimePickerState,
+    showTimePicker: Boolean = false,
+    onConfirm: () -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    val showingPicker = remember { mutableStateOf(true) }
+
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            title = if (showingPicker.value) {
+                "Select Time "
+            } else {
+                "Enter Time"
+            },
+            onCancel = onDismissRequest,
+            onConfirm = {
+//                val cal = Calendar.getInstance()
+//                cal.set(Calendar.HOUR_OF_DAY, state.hour)
+//                cal.set(Calendar.MINUTE, state.minute)
+//                cal.set(Calendar.SECOND, 0)
+//                cal.set(Calendar.MILLISECOND, 0)
+//
+//                cal.isLenient = false
+
+                onConfirm()
+
+            },
+        ) {
+            TimePicker(state = state)
+        }
+    }
+}
+
+
+@Composable
+fun TimePickerDialog(
+    title: String,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Dialog(onDismissRequest = {
+        onCancel()
+    }) {
+        Surface(
+            modifier = Modifier
+                .wrapContentHeight()
+                .width(320.dp),
+            shape = RoundedCornerShape(4.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(XLARGE_PADDING),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = title)
+                }
+
+                content()
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = XLARGE_PADDING, bottom = XLARGE_PADDING),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { onCancel() }) {
+                        Text(text = stringResource(id = R.string.label_no))
+                    }
+                    TextButton(onClick = { onConfirm() }) {
+                        Text(text = stringResource(id = R.string.label_yes))
+                    }
+
                 }
             }
         }
@@ -364,11 +591,15 @@ fun TestCode() {
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun PreviewTest() {
-    MaterialTheme {
-        TestCode()
+fun PreviewDefaultTimePickerDialog() {
+    TodoComposeTheme {
+        DefaultTimePickerDialog(
+            state = rememberTimePickerState(),
+            showTimePicker = true,
+            onConfirm = {},
+            onDismissRequest = {}
+        )
     }
 }
-

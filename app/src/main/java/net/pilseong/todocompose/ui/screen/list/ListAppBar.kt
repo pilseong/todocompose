@@ -169,7 +169,7 @@ fun ListAppBar(
             else -> {
                 SearchAppBar(
                     text = searchText,
-                    searchRangeAll = searchNoFilterState,
+                    searchNoFilterState = searchNoFilterState,
                     onCloseClicked = onCloseClicked,
                     onSearchClicked = onSearchClicked,
                     onTextChange = onTextChange,
@@ -288,6 +288,7 @@ fun ListAppBarActions(
 
     var datePickerExpanded by remember { mutableStateOf(false) }
     SimpleDateRangePickerSheet(
+        titleResource = R.string.date_picker_title,
         datePickerExpanded = datePickerExpanded,
         onDismissRequest = {
             datePickerExpanded = false
@@ -378,7 +379,7 @@ fun MenuAction(
 @Composable
 fun SearchAppBar(
     text: String,
-    searchRangeAll: Boolean = false,
+    searchNoFilterState: Boolean = false,
     onTextChange: (String) -> Unit,
     onCloseClicked: () -> Unit,
     onSearchClicked: () -> Unit,
@@ -413,7 +414,7 @@ fun SearchAppBar(
                 },
                 label = {
                     Text(
-                        text = if (searchRangeAll) "전체" else "노트",
+                        text = if (searchNoFilterState) "전체" else "노트",
                         fontSize = MaterialTheme.typography.labelSmall.fontSize
                     )
                 },
@@ -426,9 +427,9 @@ fun SearchAppBar(
                 },
                 leadingIcon = {
                     Checkbox(
-                        checked = searchRangeAll,
+                        checked = searchNoFilterState,
                         onCheckedChange = {
-                            onSearchNoFilterClicked(!searchRangeAll)
+                            onSearchNoFilterClicked(!searchNoFilterState)
                         })
                 },
                 trailingIcon = {

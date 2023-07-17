@@ -21,6 +21,7 @@ data class UserData(
     val firstRecentNotebookId: Long? = null,
     val secondRecentNotebookId: Long? = null,
     val sortFavorite: Boolean = false,
+    val searchRangeAll: Boolean = false,
     val stateState: Int = 31,
     val stateNone: Boolean = true,
     val stateWaiting: Boolean = true,

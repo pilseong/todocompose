@@ -102,7 +102,6 @@ class MemoViewModel @Inject constructor(
         private set
 
     var searchTextString by mutableStateOf("")
-    var searchRangeAll by mutableStateOf(false)
     var searchNoFilterState by mutableStateOf(false)    // 검색 시 모든 필터 제거
     var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
@@ -180,7 +179,7 @@ class MemoViewModel @Inject constructor(
             todoRepository.getTasks(
                 query = searchTextString,
                 searchNoFilterState = searchNoFilterState,
-                searchRangeAll = searchRangeAll,
+                searchRangeAll = uiState.searchRangeAll,
                 sortCondition = uiState.dateOrderState.ordinal,
                 priority = uiState.prioritySortState,
                 notebookId = uiState.notebookIdState,
@@ -558,7 +557,7 @@ class MemoViewModel @Inject constructor(
 
             Action.SEARCH_RANGE_CHANGE -> {
                 updateAction(action)
-                updateSearchRange(searchRangeAll, statusLineOrderUpdate)
+                persistSearchRange(searchRangeAll, statusLineOrderUpdate)
                 updateActionPerformed()
             }
 
@@ -852,15 +851,14 @@ class MemoViewModel @Inject constructor(
         this.action = Action.DELETE_SELECTED_ITEMS
     }
 
-    private fun updateSearchRange(
+    private fun persistSearchRange(
         searchRangeAllParam: Boolean = false,
         statusLineOrderUpdate: Boolean
     ) {
-        searchRangeAll = searchRangeAllParam
-        refreshAllTasks()
+        viewModelScope.launch {
+            dataStoreRepository.persistSearchRangeAllState(searchRangeAll = searchRangeAllParam)
 
-        if (statusLineOrderUpdate) {
-            viewModelScope.launch {
+            if (statusLineOrderUpdate) {
                 applyStatusLineOrder(StateEntity.NOTE_FILTER)
             }
         }
@@ -988,7 +986,7 @@ class MemoViewModel @Inject constructor(
 
     private fun validateInput(uiState: TaskDetails = taskUiState.taskDetails): Boolean {
         return with(uiState) {
-            title.isNotBlank() && description.isNotBlank()
+            title.isNotBlank() && !(isTask && (dueDate == null && progression == State.NONE))
         }
     }
 
@@ -1042,8 +1040,10 @@ data class TaskDetails(
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
     val finishedAt: ZonedDateTime? = null,
+    val dueDate: ZonedDateTime? = null,
     val notebookId: Long = -1,
     var photos: MutableList<Photo> = mutableListOf(),
+    val isTask: Boolean = finishedAt != null || progression != State.NONE
 )
 
 fun TaskDetails.toMemoTask() = MemoTask(
@@ -1056,6 +1056,7 @@ fun TaskDetails.toMemoTask() = MemoTask(
     createdAt = createdAt,
     updatedAt = updatedAt,
     finishedAt = finishedAt,
+    dueDate = dueDate,
     notebookId = notebookId
 )
 
@@ -1069,6 +1070,7 @@ fun MemoTask.toTaskDetails(): TaskDetails = TaskDetails(
     createdAt = createdAt,
     updatedAt = updatedAt,
     finishedAt = finishedAt,
+    dueDate = dueDate,
     notebookId = notebookId
 )
 
@@ -1082,6 +1084,7 @@ fun MemoWithNotebook.toTaskDetails(): TaskDetails = TaskDetails(
     createdAt = memo.createdAt,
     updatedAt = memo.updatedAt,
     finishedAt = memo.finishedAt,
+    dueDate = memo.dueDate,
     notebookId = notebook?.id ?: -1,
     photos = photos.toMutableList()
 )
@@ -1096,6 +1099,7 @@ fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
     createdAt = memo.createdAt,
     updatedAt = memo.updatedAt,
     finishedAt = memo.finishedAt,
+    dueDate = memo.dueDate,
     notebookId = memo.notebookId
 )
 

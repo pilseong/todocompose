@@ -87,16 +87,17 @@ fun TaskScreen(
                         .forEach { photo ->
                             deleteFileFromUri(photo.uri.toUri())
                         }
-                }
+                },
+                onValueChange = onValueChange,
             )
         },
         content = { paddingValues ->
             Column(
                 modifier = Modifier
                     .padding(
-                        top = paddingValues.calculateTopPadding() + LARGE_PADDING,
-                        start = XLARGE_PADDING,
-                        end = XLARGE_PADDING,
+                        top = paddingValues.calculateTopPadding() + SMALL_PADDING,
+                        start = LARGE_PADDING,
+                        end = LARGE_PADDING,
                         bottom = SMALL_PADDING
                     )
                     .fillMaxSize()

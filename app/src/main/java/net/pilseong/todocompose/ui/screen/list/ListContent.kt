@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +27,6 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
@@ -45,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -54,7 +51,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import androidx.paging.LoadState.NotLoading.*
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -89,7 +85,6 @@ fun ListContent(
     header: Boolean = false,
     dateEnabled: Boolean = false,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Long) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItemsIds: SnapshotStateList<Long>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
@@ -104,7 +99,6 @@ fun ListContent(
             onSwipeToEdit = onSwipeToEdit,
             toTaskScreen = toTaskScreen,
             onFavoriteClick = onFavoriteClick,
-            onLongClickReleased = onLongClickReleased,
             onLongClickApplied = onLongClickApplied,
             selectedItemsIds = selectedItemsIds,
             onStateSelected = onStateSelected,
@@ -121,7 +115,6 @@ fun LazyItemList(
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Long) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItemsIds: SnapshotStateList<Long>,
     onStateSelected: (MemoWithNotebook, State) -> Unit,
@@ -148,7 +141,16 @@ fun LazyItemList(
     val totalData by remember(tasks.peek(0)?.total) {
         mutableStateOf(tasks.peek(0)?.total ?: 0)
     }
-    StatusHeader(timeData, totalData)
+    StatusHeader(
+        modifier = Modifier.padding(
+            top = LARGE_PADDING,
+            start = XLARGE_PADDING,
+            end = XLARGE_PADDING,
+            bottom = SMALL_PADDING
+        ),
+        time = timeData,
+        total = totalData
+    )
 
     LazyColumn(
         modifier = Modifier
@@ -160,7 +162,6 @@ fun LazyItemList(
         items(
             count = tasks.itemCount,
             key = tasks.itemKey(key = { item -> item.memo.id }),
-//            contentType = tasks.itemContentType(null)
         ) { index ->
             // index 를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
             val taskInside = remember(index, tasks[index]!!.toString()) { tasks[index]!! }
@@ -207,7 +208,6 @@ fun LazyItemList(
             val dismissState = rememberDismissState(
                 confirmValueChange = {
                     when (it) {
-                        DismissValue.Default -> false
                         DismissValue.DismissedToEnd -> {
                             Log.d("PHILIP", "current $currentFraction")
                             if (currentFraction >= 0.4f && currentFraction < 1f) {
@@ -217,12 +217,7 @@ fun LazyItemList(
                                 )
                             }
                         }
-
-                        DismissValue.DismissedToStart -> {}
-//                                onSwipeToDelete(
-//                                    Action.DELETE,
-//                                    currentItem!!
-//                                )
+                        else -> {}
                     }
                     true
                 },
@@ -239,6 +234,10 @@ fun LazyItemList(
             // index가 변경할 때 해당 함수가 다시 생성되어야 한다.
             val favoriteChangeLambda = remember(index) {
                 {
+                    // favorite 을 클릭 했을 때 화면에 만 반영 하기 위해서 snapshot 의 상태만 변경 한다.
+                    // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
+                    // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
+                    // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
                     Log.d("PHILIP", "inside lambda $index")
                     tasks.itemSnapshotList[index]!!.memo.favorite =
                         !tasks.itemSnapshotList[index]!!.memo.favorite
@@ -247,12 +246,21 @@ fun LazyItemList(
                 }
             }
 
+            val headerEnabled = remember(header, index, currentDate, prevDate) {
+                header && index != 0 && currentDate.toLocalDate()
+                    .toString() != prevDate?.toLocalDate().toString()
+            }
+
             currentFraction = dismissState.progress
             SwipeToDismiss(
                 modifier = Modifier.animateItemPlacement(),
                 state = dismissState,
                 background = {
                     ColorBackGround(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, top = if (headerEnabled) 38.dp else 0.dp)
+                            .height(72.dp),
                         dismissState = dismissState,
                         leftToRightColor = MediumPriorityColor,
                         rightToLeftColor = HighPriorityColor,
@@ -267,21 +275,9 @@ fun LazyItemList(
                         toTaskScreen = {
                             toTaskScreen(index)
                         },
-                        headerEnabled = header && index != 0 && currentDate.toLocalDate()
-                            .toString() != prevDate?.toLocalDate().toString(),
+                        headerEnabled = headerEnabled,
                         datetime = currentDate,
-                        // favorite 을 클릭 했을 때 화면에 만 반영 하기 위해서 snapshot 의 상태만 변경 한다.
-                        // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
-                        // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
-                        // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
-
                         onFavoriteClick = favoriteChangeLambda,
-//                        onFavoriteClick = {
-//                            tasks.itemSnapshotList[index]!!.memo.favorite =
-//                                !tasks.itemSnapshotList[index]!!.memo.favorite
-//                            onFavoriteClick(tasks.itemSnapshotList[index]!!)
-//                        },
-                        onLongClickReleased = onLongClickReleased,
                         onLongClickApplied = onLongClickApplied,
                         selectedItemsIds = selectedItemsIds,
                         onStateSelected = { todo, state ->
@@ -302,38 +298,26 @@ fun LazyItemList(
 
 @Composable
 private fun StatusHeader(
+    modifier: Modifier = Modifier,
     time: ZonedDateTime?,
     total: Int,
 ) {
     val innerTime by rememberUpdatedState(time)
 
-    Surface(
-        modifier = Modifier
-            .height(IntrinsicSize.Max),
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        DateHeader(time = innerTime!!)
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = XLARGE_PADDING)
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.End
         ) {
-            DateHeader(innerTime!!)
-            Column(
-                modifier = Modifier.weight(1F),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(bottom = SMALL_PADDING)
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.total_label, total),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6F),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
+            Text(
+                text = stringResource(id = R.string.total_label, total),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6F),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -348,11 +332,12 @@ fun StatusHeaderPreview() {
 
 @Composable
 fun DateHeader(
+    modifier: Modifier = Modifier,
     time: ZonedDateTime
 ) {
     val innerTime by rememberUpdatedState(newValue = time)
 
-    val backColor by remember(innerTime) {
+    val backgroundColor by remember(innerTime) {
         mutableStateOf(
             if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
                 time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
@@ -365,22 +350,12 @@ fun DateHeader(
     }
 
     Row(
-        modifier = Modifier.padding(
-            top = LARGE_PADDING,
-            bottom = SMALL_PADDING
-        ),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-        ) {
+        Column {
             Text(
-                color = Color(
-                    ColorUtils.blendARGB(
-                        backColor.toArgb(),
-                        Color.White.toArgb(),
-                        0.1f
-                    )
-                ).copy(0.9f),
+                color = backgroundColor.copy(alpha = 0.8f),
                 text = innerTime.toLocalDate().format(
                     DateTimeFormatter.ofPattern(
                         stringResource(id = R.string.note_content_dateformat)
@@ -397,13 +372,17 @@ fun DateHeader(
 @Preview
 @Composable
 fun DateHeaderPreview() {
-    DateHeader(ZonedDateTime.now())
+    DateHeader(
+        modifier = Modifier,
+        ZonedDateTime.now()
+    )
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorBackGround(
+    modifier: Modifier = Modifier,
     dismissState: DismissState,
     leftToRightColor: Color,
     rightToLeftColor: Color,
@@ -438,11 +417,7 @@ fun ColorBackGround(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .background(color)
-            .padding(horizontal = 24.dp),
+        modifier = modifier.background(color),
         contentAlignment = alignment
     ) {
         Icon(
@@ -462,6 +437,10 @@ fun ColorBackGround(
 fun RedBackGroundPreview() {
     TodoComposeTheme {
         ColorBackGround(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .padding(horizontal = 24.dp),
             dismissState = rememberDismissState(),
             leftToRightColor = MediumPriorityColor,
             rightToLeftColor = HighPriorityColor,
@@ -562,7 +541,6 @@ fun ListContentPreview() {
 //            onSwipeToDelete = { _, _ -> },
             onSwipeToEdit = { _, _ -> },
             onFavoriteClick = {},
-            onLongClickReleased = {},
             onLongClickApplied = {},
             selectedItemsIds = SnapshotStateList(),
             onStateSelected = { _, _ -> }

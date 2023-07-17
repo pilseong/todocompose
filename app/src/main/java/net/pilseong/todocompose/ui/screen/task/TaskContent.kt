@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,9 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Card
@@ -35,6 +34,7 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,13 +75,16 @@ import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
+import net.pilseong.todocompose.ui.components.DefaultDatePickerDialog
+import net.pilseong.todocompose.ui.components.DefaultTimePickerDialog
 import net.pilseong.todocompose.ui.components.NotebooksDropDown
 import net.pilseong.todocompose.ui.components.PriorityDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.components.ZoomableImage
-import net.pilseong.todocompose.ui.screen.list.ColorBackGround
+import net.pilseong.todocompose.ui.components.convertToLocalEndTime
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
+import net.pilseong.todocompose.ui.theme.PRIORITY_DROPDOWN_HEIGHT
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
@@ -92,7 +97,14 @@ import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
 import net.pilseong.todocompose.util.getOutputDirectory
 import net.pilseong.todocompose.util.savePhotoToInternalStorage
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,15 +160,7 @@ fun TaskContent(
 
         SwipeToDismiss(
             state = dismissState,
-            background = {
-                ColorBackGround(
-                    dismissState = dismissState,
-                    leftToRightColor = MaterialTheme.colorScheme.surface,
-                    rightToLeftColor = MaterialTheme.colorScheme.surface,
-                    leftIcon = Icons.Default.KeyboardArrowLeft,
-                    rightIcon = Icons.Default.KeyboardArrowRight
-                )
-            },
+            background = {},
             dismissContent = {
                 ViewerContent(
                     task = task
@@ -216,7 +220,12 @@ private fun ViewerContent(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(start = XLARGE_PADDING, end = XLARGE_PADDING, bottom = SMALL_PADDING, top = XLARGE_PADDING)
+                    .padding(
+                        start = XLARGE_PADDING,
+                        end = XLARGE_PADDING,
+                        bottom = SMALL_PADDING,
+                        top = SMALL_PADDING
+                    )
                     .fillMaxWidth()
             ) {
                 // 헤더 부분
@@ -227,20 +236,27 @@ private fun ViewerContent(
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                         )
-                        Icon(
-                            modifier = Modifier.clickable {
-                                expanded = !expanded
-                            },
-                            imageVector = if (expanded) Icons.Filled.ArrowDropDown else Icons.Default.ArrowDropUp,
-                            contentDescription = "Localized description",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
-                        )
+//                        Icon(
+//                            imageVector = if (expanded) Icons.Filled.ArrowDropDown else Icons.Default.ArrowDropUp,
+//                            contentDescription = "Localized description",
+//                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+//                        )
                     }
                     Column(modifier = Modifier.weight(3.5F / 12)) {
                         Column {
-                            if (expanded) {
+                            Text(
+                                text = stringResource(id = R.string.task_content_notebook_name),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
+                            )
+                            Text(
+                                stringResource(id = R.string.badge_priority_label),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
+                            )
+                            if (task.memo.dueDate != null) {
                                 Text(
-                                    text = stringResource(id = R.string.task_content_notebook_name),
+                                    stringResource(id = R.string.info_due_date),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     lineHeight = 20.sp
                                 )
@@ -267,13 +283,7 @@ private fun ViewerContent(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 lineHeight = 20.sp
                             )
-                            if (expanded) {
-                                Text(
-                                    stringResource(id = R.string.badge_priority_label),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    lineHeight = 20.sp
-                                )
-                            }
+
                         }
                     }
                     Column(
@@ -283,14 +293,29 @@ private fun ViewerContent(
                         Column(
                             horizontalAlignment = Alignment.End
                         ) {
-                            if (expanded) {
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = task.notebook?.title
+                                    ?: stringResource(id = R.string.default_note_title),
+                                overflow = TextOverflow.Ellipsis,
+                                lineHeight = 20.sp,
+                                maxLines = 1
+                            )
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = stringResource(id = task.memo.priority.label),
+                                lineHeight = 20.sp
+                            )
+                            if (task.memo.dueDate != null) {
                                 Text(
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    text = task.notebook?.title
-                                        ?: stringResource(id = R.string.default_note_title),
-                                    overflow = TextOverflow.Ellipsis,
-                                    lineHeight = 20.sp,
-                                    maxLines = 1
+                                    text = task.memo.dueDate.toLocalDateTime()
+                                        .format(
+                                            DateTimeFormatter.ofPattern(
+                                                stringResource(id = R.string.task_content_dateformat)
+                                            )
+                                        ),
+                                    lineHeight = 20.sp
                                 )
                             }
                             Text(
@@ -329,13 +354,6 @@ private fun ViewerContent(
                                 text = stringResource(id = task.memo.progression.label),
                                 lineHeight = 20.sp
                             )
-                            if (expanded) {
-                                Text(
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    text = stringResource(id = task.memo.priority.label),
-                                    lineHeight = 20.sp
-                                )
-                            }
                         }
                     }
                 }
@@ -398,28 +416,30 @@ private fun ViewerContent(
             }
         }
 
-        Divider(modifier =  Modifier.height(0.2.dp))
+        Divider(modifier = Modifier.height(0.2.dp))
 
-        Spacer(
-            modifier = Modifier.height(MEDIUM_PADDING),
-        )
+        if (task.memo.description.isNotEmpty()) {
+            Spacer(
+                modifier = Modifier.height(MEDIUM_PADDING),
+            )
 
 
-        Column(modifier = Modifier.verticalScroll(scrollState)) {
-            Card(
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                SelectionContainer {
-                    Text(
-                        modifier = Modifier
-                            .padding(LARGE_PADDING),
-                        text = task.memo.description
-                    )
+            Column(modifier = Modifier.verticalScroll(scrollState)) {
+                Card(
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    SelectionContainer {
+                        Text(
+                            modifier = Modifier
+                                .padding(LARGE_PADDING),
+                            text = task.memo.description
+                        )
+                    }
                 }
             }
         }
-
         if (photoOpen && selectedGalleryImage != null) {
+            Log.d("PHILIP", "photoOpen $photoOpen, selectedImage $selectedGalleryImage")
             Dialog(
                 onDismissRequest = {
                     photoOpen = false
@@ -435,10 +455,14 @@ private fun ViewerContent(
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         ZoomableImage(
-                            selectedGalleryImage = selectedGalleryImage!!,
+                            selectedGalleryImage = selectedGalleryImage,
                             onCloseClicked = {
-                                selectedGalleryImage = null
                                 photoOpen = false
+                                selectedGalleryImage = null
+                                Log.d(
+                                    "PHILIP",
+                                    "INSIDE close clicked - photoOpen $photoOpen, selectedImage $selectedGalleryImage"
+                                )
                             },
                             onDeleteClicked = { },
                             onCameraClick = {},
@@ -466,8 +490,8 @@ private fun EditorContent(
             .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
     ) {
-        Row {
-            Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.weight(7.5F / 12F)) {
                 Surface(tonalElevation = 1.dp) {
                     NotebooksDropDown(
                         notebooks = notebooks,
@@ -476,14 +500,7 @@ private fun EditorContent(
                     )
                 }
             }
-        }
-        Divider(
-            modifier = Modifier
-                .height(0.7.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Row {
-            Column(modifier = Modifier.weight(1F)) {
+            Row(modifier = Modifier.weight(4.5F / 12F)) {
                 Surface(tonalElevation = 1.dp) {
                     PriorityDropDown(
                         isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
@@ -492,21 +509,217 @@ private fun EditorContent(
                     )
                 }
             }
-            Column(modifier = Modifier.weight(1F)) {
-                Surface(tonalElevation = 1.dp) {
-                    StatusDropDown(
-                        isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
-                        state = taskUiState.taskDetails.progression,
-                        onStateSelected = { onValueChange(taskUiState.taskDetails.copy(progression = it)) }
-                    )
-                }
-            }
         }
         Divider(
             modifier = Modifier
                 .height(0.7.dp),
             color = MaterialTheme.colorScheme.onSurface,
         )
+
+
+        // task switch 를 해제할 때만 실행되는 부분
+        LaunchedEffect(key1 = taskUiState.taskDetails.isTask) {
+            if (!taskUiState.taskDetails.isTask) {
+                onValueChange(
+                    taskUiState.taskDetails.copy(
+                        progression = State.NONE,
+                        dueDate = null
+                    )
+                )
+            }
+        }
+
+        if (taskUiState.taskDetails.isTask) {
+
+            Surface(tonalElevation = 1.dp) {
+                Row(modifier = Modifier.weight(1f)) {
+                    StatusDropDown(
+                        isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
+                        state = taskUiState.taskDetails.progression,
+                        onStateSelected = {
+                            onValueChange(
+                                taskUiState.taskDetails.copy(
+                                    progression = it
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+
+            Divider(
+                modifier = Modifier
+                    .height(0.7.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+
+            val focusManager = LocalFocusManager.current
+
+            var openDialog by remember { mutableStateOf(false) }
+            var showTimePicker by remember { mutableStateOf(false) }
+            val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+            var timeHours by remember { mutableStateOf<Int?>(null) }
+            var timeMinutes by remember { mutableStateOf<Int?>(null) }
+
+            val timePickerState = rememberTimePickerState()
+
+            DefaultDatePickerDialog(
+                openDialog = openDialog,
+                onConfirm = { it ->
+                    if (it != null) {
+                        var instant = convertToLocalEndTime(it, true)
+                        var offset = OffsetDateTime.ofInstant(
+                            Instant.ofEpochMilli(instant!!),
+                            ZoneId.systemDefault()
+                        )
+                        Log.d("PHILIP", "current time ${Instant.ofEpochMilli(instant)}")
+                        Log.d("PHILIP", "current time $offset")
+
+                        if (timeHours != null && timeMinutes != null) {
+                            offset = offset.plusHours(timeHours!!.toLong())
+                                .plusMinutes(timeMinutes!!.toLong())
+                        }
+
+                        onValueChange(
+                            taskUiState.taskDetails.copy(
+                                dueDate = ZonedDateTime.ofInstant(
+                                    Instant.ofEpochMilli(offset.toEpochSecond() * 1000),
+                                    ZoneId.systemDefault()
+                                )
+                            )
+                        )
+
+                        openDialog = false
+                    }
+                },
+                onDismissRequest = {
+                    openDialog = false
+                }
+            )
+
+            DefaultTimePickerDialog(
+                state = timePickerState,
+                showTimePicker = showTimePicker,
+                onConfirm = {
+                    timeHours = timePickerState.hour
+                    timeMinutes = timePickerState.minute
+
+                    if (taskUiState.taskDetails.dueDate != null) {
+                        var date = ZonedDateTime.of(
+                            taskUiState.taskDetails.dueDate.year,
+                            taskUiState.taskDetails.dueDate.monthValue,
+                            taskUiState.taskDetails.dueDate.dayOfMonth,
+                            0,
+                            0,
+                            0,
+                            0,
+                            ZoneId.systemDefault()
+                        )
+                        date =
+                            date.plusHours(timeHours!!.toLong())
+                                .plusMinutes(timeMinutes!!.toLong())
+
+                        Log.d("PHILIP", "DATE FROM ${date.toOffsetDateTime()}")
+                        onValueChange(taskUiState.taskDetails.copy(dueDate = date))
+                    }
+                    showTimePicker = false
+                },
+                onDismissRequest = {
+                    showTimePicker = false
+                }
+            )
+
+            Surface(tonalElevation = 1.dp) {
+                Row {
+                    Row(
+                        modifier = Modifier
+                            .weight(6 / 12F)
+                            .height(PRIORITY_DROPDOWN_HEIGHT),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .weight(1F)
+                                .padding(start = XLARGE_PADDING),
+                            text = if (taskUiState.taskDetails.dueDate == null) "마감일"
+                            else {
+                                taskUiState.taskDetails.dueDate
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            stringResource(id = R.string.datepicker_date_format)
+                                        )
+                                    )
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        IconButton(
+                            onClick = {
+//                            datePickerExpanded = true
+                                openDialog = true
+                                focusManager.clearFocus()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EditCalendar,
+                                contentDescription = "마감일 지정",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .weight(6 / 12F)
+                            .height(PRIORITY_DROPDOWN_HEIGHT),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .weight(1F)
+                                .padding(start = XLARGE_PADDING),
+                            text = if (taskUiState.taskDetails.dueDate == null) {
+                                if (timeHours != null && timeMinutes != null) {
+                                    val cal = Calendar.getInstance()
+                                    cal.set(Calendar.HOUR_OF_DAY, timeHours!!)
+                                    cal.set(Calendar.MINUTE, timeMinutes!!)
+                                    cal.set(Calendar.SECOND, 0)
+                                    cal.set(Calendar.MILLISECOND, 0)
+                                    timeFormatter.format(cal.time)
+                                } else
+                                    "시간"
+                            } else {
+                                taskUiState.taskDetails.dueDate.toLocalDateTime()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            "hh:mma"
+                                        )
+                                    )
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        IconButton(
+                            onClick = {
+                                showTimePicker = true
+                                focusManager.clearFocus()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LockClock,
+                                contentDescription = "시간 지정",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                }
+            }
+            Divider(
+                modifier = Modifier
+                    .height(0.7.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -572,7 +785,6 @@ private fun EditorContent(
                 )
             }
         )
-
 
         val context = LocalContext.current
         var cameraDialog by remember { mutableStateOf(false) }
@@ -693,7 +905,7 @@ private fun EditorContent(
                             ZoomableImage(
                                 isEditMode = true,
                                 fromCamera = fromCamera,
-                                selectedGalleryImage = selectedGalleryImage!!,
+                                selectedGalleryImage = selectedGalleryImage,
                                 onCloseClicked = {
                                     selectedGalleryImage = null
                                     photoOpen = false

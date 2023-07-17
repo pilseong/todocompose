@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,12 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.NoteAlt
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Task
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -59,10 +57,8 @@ import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.StateEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,14 +67,15 @@ import net.pilseong.todocompose.util.StateEntity
 fun ListScreen(
     uiState: UserData,
     memoViewModel: MemoViewModel = hiltViewModel(),
+    searchNoFilterState: Boolean = false,
     selectedNotebook: Notebook,
     snackBarHostState: SnackbarHostState,
     tasks: LazyPagingItems<MemoWithNotebook>,
     searchAppBarState: SearchAppBarState = SearchAppBarState.CLOSE,
     searchText: String = "",
-    searchRangeAll: Boolean = false,
     selectedItems: SnapshotStateList<Long>,
     toTaskScreen: () -> Unit,
+    toTaskManagementScreen: () -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     toNoteScreen: () -> Unit,
     onAppBarTitleClick: () -> Unit,
@@ -102,7 +99,6 @@ fun ListScreen(
     onDateEnabledClick: (Boolean) -> Unit,
     onPrioritySelected: (Action, Priority, Boolean) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickReleased: (Long) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
     onToggleClicked: () -> Unit,
@@ -111,7 +107,7 @@ fun ListScreen(
     onStatusLineUpdate: (StateEntity) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
         canScroll = { selectedItems.isEmpty() },
         state = rememberTopAppBarState(
             initialContentOffset = 0F,
@@ -149,9 +145,9 @@ fun ListScreen(
                 appbarTitle = selectedNotebook.title,
                 notebookColor = selectedNotebook.priority.color,
                 searchAppBarState = searchAppBarState,
-                searchRangeAll = searchRangeAll,
+                searchRangeAll = uiState.searchRangeAll,
                 searchText = searchText,
-                searchNoFilterState = memoViewModel.searchNoFilterState,
+                searchNoFilterState = searchNoFilterState,
                 onImportClick = onImportClick,
                 onAppBarTitleClick = onAppBarTitleClick,
                 selectedItemsCount = selectedItems.size,
@@ -169,7 +165,12 @@ fun ListScreen(
                 onStateSelectedForMultipleItems = onStateSelectedForMultipleItems,
             )
         },
-        bottomBar = { BottomActionBarNavigation(toNoteScreen = toNoteScreen) { onFabClicked() } }
+        bottomBar = {
+            BottomActionBarNavigation(
+                toTaskManagementScreen = toTaskManagementScreen,
+                toNoteScreen = toNoteScreen,
+            ) { onFabClicked() }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -179,59 +180,36 @@ fun ListScreen(
                 )
                 .fillMaxSize(),
         ) {
-
-            StatusLine(
-                uiState = uiState,
-                prioritySortState = uiState.prioritySortState,
-                orderEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                        uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
-                dateEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                        uiState.dateOrderState == SortOption.CREATED_AT_DESC),
-                searchRangeAll = memoViewModel.searchRangeAll,
-                startDate = memoViewModel.startDate,
-                endDate = memoViewModel.endDate,
-                favoriteOn = memoViewModel.uiState.sortFavorite,
-                onCloseClick = onDateRangeCloseClick,
-                onFavoriteClick = onFavoriteSortClick,
-                onOrderEnabledClick = onOrderEnabledClick,
-                onDateEnabledClick = onDateEnabledClick,
-                onPrioritySelected = onPrioritySelected,
-                onStateSelected = onStateSelected,
-                onRangeAllEnabledClick = onSearchRangeAllClicked,
-                onToggleClicked = onToggleClicked,
-                onSetAllOrNothingClicked = onSetAllOrNothingClicked,
-                onStatusLineUpdate = onStatusLineUpdate,
-            )
-
-            ListContent(
-                tasks = tasks,
-                toTaskScreen = { index ->
-                    memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toMemoTask())
-                    memoViewModel.updateIndex(index)
-                    toTaskScreen()
-                },
-//                    onSwipeToDelete = { action, task ->
-//                        // undo 처리를 위해서 데이터 동기화 필요
-//                        memoViewModel.updateTaskContent(task)
-//                        memoViewModel.handleActions(action, task.id)
-//                    },
-                onSwipeToEdit = onSwipeToEdit,
-                header = true,
-                dateEnabled = (uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                        uiState.dateOrderState == SortOption.CREATED_AT_DESC),
-                onFavoriteClick = onFavoriteClick,
-                onLongClickReleased = onLongClickReleased,
-                onLongClickApplied = onLongClickApplied,
-                selectedItemsIds = selectedItems,
-                onStateSelected = onStateChange,
+            ListView(
+                uiState,
+                memoViewModel,
+                onDateRangeCloseClick,
+                onFavoriteSortClick,
+                onOrderEnabledClick,
+                onDateEnabledClick,
+                onPrioritySelected,
+                onStateSelected,
+                onSearchRangeAllClicked,
+                onToggleClicked,
+                onSetAllOrNothingClicked,
+                onStatusLineUpdate,
+                tasks,
+                toTaskScreen,
+                onSwipeToEdit,
+                onFavoriteClick,
+                onLongClickApplied,
+                selectedItems,
+                onStateChange
             )
         }
     }
 }
 
+
 @Composable
 private fun BottomActionBarNavigation(
     toNoteScreen: () -> Unit,
+    toTaskManagementScreen: () -> Unit,
     onFabClicked: () -> Unit,
 ) {
     BottomAppBar(
@@ -245,10 +223,22 @@ private fun BottomActionBarNavigation(
                     }) {
                     Icon(Icons.Default.NoteAlt, contentDescription = "Localized description")
                 }
+                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
+                    onClick = {
+                        toTaskManagementScreen()
+                    }) {
+                    Icon(Icons.Default.Task, contentDescription = "Task Management")
+                }
+                IconButton(onClick = { /* doSomething() */ }) {
+                    Icon(
+                        Icons.Default.CalendarMonth,
+                        contentDescription = "Scheduling",
+                    )
+                }
                 IconButton(onClick = { /* doSomething() */ }) {
                     Icon(
                         Icons.Default.Settings,
-                        contentDescription = "Localized description",
+                        contentDescription = "Settings",
                     )
                 }
             }
@@ -271,9 +261,11 @@ private fun BottomActionBarNavigation(
 @Composable
 fun BottomActionBarNavPreview() {
     MaterialTheme {
-        BottomActionBarNavigation(toNoteScreen = {}, onFabClicked = {})
+        BottomActionBarNavigation(
+            toNoteScreen = {},
+            toTaskManagementScreen = {},
+            onFabClicked = {})
     }
-
 }
 
 
@@ -339,13 +331,13 @@ private fun ListScreenPreview() {
         onSearchClicked = {},
         onDeleteSelectedClicked = {},
         onMoveMemoClicked = {},
-        onStateSelected = { _ -> },
+        onStateSelected = { },
         onStateChange = { _, _ -> },
         onImportClick = {},
         onFabClicked = {},
         onDeleteAllClicked = {},
         onExportClick = {},
-        onSearchRangeAllClicked = {_, _ ->},
+        onSearchRangeAllClicked = { _, _ -> },
         onDateRangePickerConfirmed = { _, _ -> },
         onDateRangeCloseClick = {},
         onFavoriteSortClick = {},
@@ -353,13 +345,13 @@ private fun ListScreenPreview() {
         onDateEnabledClick = {},
         onPrioritySelected = { _, _, _ -> },
         onFavoriteClick = {},
-        onLongClickReleased = {},
         onLongClickApplied = {},
         onSwipeToEdit = { _, _ -> },
         onStateSelectedForMultipleItems = {},
         onToggleClicked = {},
-        onSetAllOrNothingClicked = { _ -> },
+        onSetAllOrNothingClicked = {},
         onSearchNoFilterClicked = {},
-        onStatusLineUpdate = {}
+        onStatusLineUpdate = {},
+        toTaskManagementScreen = {}
     )
 }

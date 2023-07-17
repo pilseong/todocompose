@@ -132,10 +132,10 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun getCurrentNoteAsFlow(noteId: Long) {
-        Log.d(
-            "PHILIP",
-            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
-        )
+//        Log.d(
+//            "PHILIP",
+//            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
+//        )
 
         if (currentNoteJob != null) currentNoteJob!!.cancel()
 

@@ -27,6 +27,7 @@ import net.pilseong.todocompose.ui.components.MultiSelectAppbarActions
 import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.util.Constants.HOME_ROOT
+import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 import net.pilseong.todocompose.util.NoteSortingOption
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +67,7 @@ fun NoteScreen(
             if (LocalConfiguration.current.screenHeightDp > 500)
                 BottomNavBar(
                     onClick = onClickBottomNavBar,
-                    currentDestination = HOME_ROOT
+                    currentDestination = MEMO_ROOT
                 )
         },
         floatingActionButton = {

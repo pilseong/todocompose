@@ -194,7 +194,7 @@ fun AddImageButton(
 fun ZoomableImage(
     isEditMode: Boolean = false,
     fromCamera: Boolean = false,
-    selectedGalleryImage: Photo,
+    selectedGalleryImage: Photo?,
     onCloseClicked: () -> Unit,
     onDeleteClicked: () -> Unit,
     onCameraClick: () -> Unit,
@@ -227,7 +227,7 @@ fun ZoomableImage(
                     translationY = offsetY
                 ),
             model = ImageRequest.Builder(LocalContext.current)
-                .data(selectedGalleryImage.uri)
+                .data(selectedGalleryImage?.uri)
                 .crossfade(true)
                 .build(),
             contentScale = ContentScale.Fit,

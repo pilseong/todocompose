@@ -14,8 +14,8 @@
     <string name="drop_down_menu_icon">드롭다운 메뉴 화살표 아이콘</string>
     <string name="new_task_appbar_title">메모 추가</string>
     <string name="edit_task_appbar_title">메모 수정</string>
-    <string name="new_task_title_placeholder">제목</string>
-    <string name="new_task_description_placeholder">내용</string>
+    <string name="new_task_title_placeholder">내용</string>
+    <string name="new_task_description_placeholder">설명</string>
     <string name="default_task_bar_back_arrow_icon">뒤로 가기 아이콘</string>
     <string name="default_task_bar_close_icon">화면 끄기 X 아이콘</string>
     <string name="new_task_added_message">메모가 추가되었습니다.</string>
@@ -26,6 +26,8 @@
     <string name="snack_bar_undo_label">삭제취소</string>
     <string name="label_yes">확인</string>
     <string name="label_no">취소</string>
+    <string name="label_Ok">확인</string>
+    <string name="label_cancel">취소</string>
     <string name="delete_task_dialog_title">\'%1$s\' 메모 삭제</string>
     <string name="delete_task_dialog_confirmation">\'%1$s\' 을 정말 삭제하시겠습니까?</string>
     <string name="export_memos_dialog_title">파일로 내보내기</string>
@@ -52,8 +54,9 @@
     <string name="sort_ascending_label">오름차순</string>
     <string name="sort_date_label">생성일자</string>
     <string name="task_content_updated_at_label">수정일자</string>
+    <string name="badge_priority_sorting_label">정렬우선순위</string>
     <string name="badge_priority_label">우선순위</string>
-    <string name="badge_priority_filter_label">정렬우선순위</string>
+    <string name="badge_priority_filter_label">우선순위필터</string>
     <string name="badge_order_label">정렬</string>
     <string name="badge_date_label">일자</string>
     <string name="badge_order_asc_label">오름차순</string>
@@ -63,7 +66,10 @@
     <string name="badge_favorite_label">중요메모</string>
     <string name="badge_search_range_all_label">전체노트</string>
     <string name="badge_search_range_note_label">범위설정</string>
+    <string name="badge_state_filter_label">작업단계필터</string>
     <string name="badge_state_label">작업단계</string>
+    <string name="badge_priority_high_to_low_label">높음->낮음</string>
+    <string name="badge_priority_low_to_high_label">낮음->높음</string>
     <string name="snackbar_message_order_asc_change">오름차순으로 정렬합니다.</string>
     <string name="snackbar_message_order_desc_change">내림차순으로 정렬합니다.</string>
     <string name="snackbar_message_date_created_at_change">생성일을 정렬기준으로 반영합니다.</string>
@@ -121,6 +127,7 @@
     <string name="info_created_at">생성일</string>
     <string name="info_updated_at">수정일</string>
     <string name="info_finished_at">종결일</string>
+    <string name="info_due_date">목표일</string>
     <string name="info_accessed_at">사용일</string>
     <string name="info_priority">노트 중요도</string>
     <string name="info_priority_memos_count">메모 중요도 분포(상/중/하/미지정)</string>

@@ -6,8 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -15,12 +13,10 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
-import net.pilseong.todocompose.ui.screen.home.HomeScreen
 import net.pilseong.todocompose.ui.screen.home.InfoDialog
 import net.pilseong.todocompose.ui.screen.home.NoteAction
 import net.pilseong.todocompose.ui.screen.home.NoteViewModel
 import net.pilseong.todocompose.ui.screen.note.NoteScreen
-import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.UiState
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 
@@ -28,7 +24,7 @@ fun NavGraphBuilder.noteComposable(
     navHostController: NavHostController,
 ) {
     composable(
-        route = Screen.Note.route
+        route = Screen.Notes.route
     ) { navBackStackEntry ->
         val noteViewModel = navBackStackEntry.sharedViewModel<NoteViewModel>(navHostController)
 
@@ -56,6 +52,7 @@ fun NavGraphBuilder.noteComposable(
                     secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
                     defaultNotebook = defaultNotebook,
                     onClickBottomNavBar = { route ->
+                        navHostController.popBackStack(route, true)
                         navHostController.navigate(route)
                     },
                     onFabClick = {

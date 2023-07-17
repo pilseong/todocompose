@@ -27,6 +27,7 @@ import net.pilseong.todocompose.util.Constants.PREFERENCE_NAME
 import net.pilseong.todocompose.util.Constants.PRIORITY_FILTER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.PRIORITY_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_PREFERENCE_KEY
+import net.pilseong.todocompose.util.Constants.SEARCH_RANGE_ALL_ENABLED_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_LINE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
 import net.pilseong.todocompose.util.NoteSortingOption
@@ -44,11 +45,11 @@ class DataStoreRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-
     private object PreferenceKeys {
         val sortState = stringPreferencesKey(name = PRIORITY_PREFERENCE_KEY)
         val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
+        val searchRangeAll = stringPreferencesKey(name = SEARCH_RANGE_ALL_ENABLED_PREFERENCE_KEY)
         val recentNoteIdsState = stringPreferencesKey(name = RECENT_NOTEBOOK_PREFERENCE_KEY)
         val statusLineOrderState = stringPreferencesKey(name = STATE_LINE_ORDER_PREFERENCE_KEY)
         val priorityFilterState = intPreferencesKey(name = PRIORITY_FILTER_PREFERENCE_KEY)
@@ -78,6 +79,15 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
+    suspend fun persistSearchRangeAllState(searchRangeAll: Boolean) {
+        withContext(ioDispatcher) {
+            context.dataStore.edit { preferences ->
+                Log.d("PHILIP", "[DataStoreRepository]persistSearchRangeAllEnabledState $searchRangeAll")
+                preferences[PreferenceKeys.searchRangeAll] = searchRangeAll.toString()
+            }
+        }
+    }
+
     val userData: Flow<UserData> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) {
@@ -87,7 +97,7 @@ class DataStoreRepository @Inject constructor(
             }
         }
         .map { preferences ->
-            Log.d("PHILIP", "[DataStoreRepository]reading $preferences")
+//            Log.d("PHILIP", "[DataStoreRepository]reading $preferences")
 
             val noteIdsStr = preferences[PreferenceKeys.recentNoteIdsState]
             val noteIds = noteIdsStr?.split(",")
@@ -116,7 +126,8 @@ class DataStoreRepository @Inject constructor(
                 secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toLong() else null,
                 sortFavorite = (preferences[PreferenceKeys.favoriteState]
                     ?: false.toString()).toBoolean(),
-
+                searchRangeAll = (preferences[PreferenceKeys.searchRangeAll]
+                    ?: false.toString()).toBoolean(),
                 stateState = preferences[PreferenceKeys.stateState] ?: 63,
                 stateNone = ((preferences[PreferenceKeys.stateState] ?: 63) and 1) == 1,
                 stateWaiting = ((preferences[PreferenceKeys.stateState] ?: 63) and 2) == 2,

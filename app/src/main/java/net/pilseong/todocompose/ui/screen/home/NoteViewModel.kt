@@ -110,7 +110,7 @@ class NoteViewModel @Inject constructor(
         notebookUserInput.value = notebook!!.copy()
     }
 
-    private fun getNotebooksWithCount(noteSortingOption: NoteSortingOption) {
+    private suspend fun getNotebooksWithCount(noteSortingOption: NoteSortingOption) {
         Log.d("PHILIP", "[NoteViewModel] getNotebooksWithCount() called")
         if (notebooksJob != null) {
             notebooksJob!!.cancel()
@@ -131,17 +131,17 @@ class NoteViewModel @Inject constructor(
 
     }
 
-    private fun getCurrentNoteAsFlow(noteId: Long) {
-        Log.d(
-            "PHILIP",
-            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
-        )
+    private suspend fun getCurrentNoteAsFlow(noteId: Long) {
+//        Log.d(
+//            "PHILIP",
+//            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
+//        )
 
         if (currentNoteJob != null) currentNoteJob!!.cancel()
 
 
         // 기본 노트가 아닌 경우
-        currentNoteJob = viewModelScope.launch(Dispatchers.IO) {
+        currentNoteJob = viewModelScope.launch {
             if (noteId >= 0) {
                 notebookRepository.updateAccessTime(noteId)
                 notebookRepository.getNotebookWithCountAsFlow(noteId)
@@ -187,7 +187,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun getFirstNoteAsFlow(noteId: Long?) {
+    private suspend fun getFirstNoteAsFlow(noteId: Long?) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getFirstNote() start observing with $noteId and firstNote ${firstRecentNotebook.value}"
@@ -196,7 +196,7 @@ class NoteViewModel @Inject constructor(
         if (firstNoteJob != null) firstNoteJob!!.cancel()
 
         if (noteId != null) {
-            firstNoteJob = viewModelScope.launch(Dispatchers.IO) {
+            firstNoteJob = viewModelScope.launch {
                 if (noteId >= 0) {
                     notebookRepository.getNotebookWithCountAsFlow(noteId)
                         .stateIn(
@@ -243,7 +243,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun getSecondNoteAsFlow(noteId: Long?) {
+    private suspend fun getSecondNoteAsFlow(noteId: Long?) {
         Log.d(
             "PHILIP",
             "[NoteViewModel] getSecondNoteAsFlow() start observing with $noteId and secondNote: ${secondRecentNotebook.value}"
@@ -252,7 +252,7 @@ class NoteViewModel @Inject constructor(
         if (secondNoteJob != null) secondNoteJob!!.cancel()
 
         if (noteId != null) {
-            secondNoteJob = viewModelScope.launch(Dispatchers.IO) {
+            secondNoteJob = viewModelScope.launch {
                 if (noteId >= 0) {
                     notebookRepository.getNotebookWithCountAsFlow(noteId)
                         .stateIn(
@@ -403,11 +403,11 @@ class NoteViewModel @Inject constructor(
         Log.d("PHILIP", "[NoteViewModel] observeUiState() called")
         viewModelScope.launch {
             uiStateFlow
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(),
-                    initialValue = UiState.Loading
-                )
+//                .stateIn(
+//                    scope = viewModelScope,
+//                    started = SharingStarted.WhileSubscribed(),
+//                    initialValue = UiState.Loading
+//                )
                 .collect {
 //                    Log.d("PHILIP", "[NoteViewModel] observeUiState() executed with $it")
                     when (it) {
@@ -423,6 +423,7 @@ class NoteViewModel @Inject constructor(
                     }
                 }
         }
+
         Log.i("PHILIP", "obser finished")
     }
 

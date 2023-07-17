@@ -22,7 +22,7 @@ fun BottomNavBar(
 ) {
     val screens = listOf(
         BottomBarScreen.Home,
-        BottomBarScreen.Memo,
+        BottomBarScreen.Note,
         BottomBarScreen.Settings
     )
 

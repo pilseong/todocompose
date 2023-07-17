@@ -26,7 +26,8 @@ import net.pilseong.todocompose.util.NoteSortingOption
 
 @Composable
 fun PriorityItem(
-    priority: Priority
+    priority: Priority,
+    label: Int? = null,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Canvas(
@@ -36,7 +37,7 @@ fun PriorityItem(
         ) { drawCircle(color = priority.color) }
         Text(
             modifier = Modifier.padding(LARGE_PADDING),
-            text = stringResource(id = priority.label),
+            text = if (label == null) stringResource(id = priority.label) else  stringResource(id = label),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface
         )

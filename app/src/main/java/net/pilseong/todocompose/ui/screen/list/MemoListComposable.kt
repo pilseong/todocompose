@@ -34,7 +34,8 @@ import net.pilseong.todocompose.util.SortOption
 fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
     toTaskScreen: () -> Unit,
-    toNoteScreen: () -> Unit
+    toNoteScreen: () -> Unit,
+    toTaskManagementScreen: () -> Unit,
 ) {
     composable(
         route = Screen.MemoList.route,
@@ -90,16 +91,17 @@ fun NavGraphBuilder.memoListComposable(
             snackBarHostState = snackBarHostState,
             searchAppBarState = memoViewModel.searchAppBarState,
             searchText = memoViewModel.searchTextString,
-            searchRangeAll = memoViewModel.searchRangeAll,
             tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
             selectedItems = memoViewModel.selectedItems,
             selectedNotebook = memoViewModel.selectedNotebook.value,
+            searchNoFilterState = memoViewModel.searchNoFilterState,
             memoViewModel = memoViewModel,
             toTaskScreen = {
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(Action.NO_ACTION)
                 toTaskScreen()
             },
+            toTaskManagementScreen = toTaskManagementScreen,
             onSwipeToEdit = { index, memo ->
                 memoViewModel.updateIndex(index)
                 memoViewModel.setTaskScreenToEditorMode(memo)
@@ -118,11 +120,11 @@ fun NavGraphBuilder.memoListComposable(
             onSearchIconClicked = { memoViewModel.onOpenSearchBar() },
             onCloseClicked = {
                 if (memoViewModel.searchTextString.isNotEmpty() ||
-                    memoViewModel.searchRangeAll
+                    memoViewModel.searchNoFilterState
                 ) {
                     memoViewModel.searchTextString = ""
                     memoViewModel.handleActions(
-                        Action.SEARCH_RANGE_CHANGE,
+                        Action.SEARCH_NO_FILTER_CHANGE,
                         searchRangeAll = false
                     )
                 } else memoViewModel.onCloseSearchBar()
@@ -219,7 +221,6 @@ fun NavGraphBuilder.memoListComposable(
                     memo = todo.toMemoTask()
                 )
             },
-            onLongClickReleased = { memoViewModel.removeMultiSelectedItem(it) },
             onLongClickApplied = { memoViewModel.appendMultiSelectedItem(it) },
             onStateSelectedForMultipleItems = { state ->
                 memoViewModel.handleActions(
@@ -296,7 +297,7 @@ fun NavGraphBuilder.memoListComposable(
         DisplaySnackBar(
             snackBarHostState = snackBarHostState,
             action = memoViewModel.action,
-            range = memoViewModel.searchRangeAll,
+            range = uiState.searchRangeAll,
             enabled = memoViewModel.actionPerformed,
             title = memoViewModel.savedLastMemoTask.title,
             buttonClicked = { selectedAction, result ->

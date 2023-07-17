@@ -46,6 +46,7 @@ data class MemoTask constructor(
                 createdAt = ZonedDateTime.now(),
                 updatedAt = ZonedDateTime.now(),
                 finishedAt = null,
+                dueDate = null,
                 notebookId = notebookId
             )
         }

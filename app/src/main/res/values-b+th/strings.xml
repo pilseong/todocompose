@@ -14,7 +14,7 @@
     <string name="drop_down_menu_icon">รายการคำสั่ง</string>
     <string name="new_task_appbar_title">เพิ่ม Memo</string>
     <string name="edit_task_appbar_title">แก้ไข Memo</string>
-    <string name="new_task_title_placeholder">ชื่อเรื่อง</string>
+    <string name="new_task_title_placeholder">Content</string>
     <string name="new_task_description_placeholder">รายละเอียด</string>
     <string name="default_task_bar_back_arrow_icon">กลับ</string>
     <string name="default_task_bar_close_icon">ปิด</string>
@@ -40,6 +40,8 @@
     <string name="import_dialog_confirmation">คุณต้องการที่จะกู้คืนข้อมูลจากไฟล์ใช่หรือไม่?</string>
     <string name="delete_label">ลบ</string>
     <string name="update_label">อัพเดท</string>
+    <string name="label_Ok">Ok</string>
+    <string name="label_cancel">Cancel</string>
     <string name="empty_title_popup">เพิ่มหัวข้อ</string>
     <string name="empty_description_popup">เพิ่มคำอธิบาย</string>
     <string name="viewer_appbar_clipboard_icon">Copy ไปยัง clipboard</string>
@@ -52,8 +54,9 @@
     <string name="sort_ascending_label">เรียงจากน้อยไปมาก</string>
     <string name="sort_date_label">เรียงจากวันที่สร้าง Meno</string>
     <string name="task_content_updated_at_label">วันที่อัพเดท</string>
+    <string name="badge_priority_sorting_label">Priority Sorting</string>
     <string name="badge_priority_label">ระดับ</string>
-    <string name="badge_priority_filter_label">ระดับ</string>
+    <string name="badge_priority_filter_label">Priority Filter</string>
     <string name="badge_order_label">เรียงตาม</string>
     <string name="badge_date_label">วันที่</string>
     <string name="badge_order_asc_label">เรียงจากน้อยไปมาก</string>
@@ -63,7 +66,10 @@
     <string name="badge_favorite_label">บันทึกที่ชอบ</string>
     <string name="badge_search_range_all_label">บันทึกทั้งหมด</string>
     <string name="badge_search_range_note_label">ช่วง</string>
+    <string name="badge_state_filter_label">State Filter</string>
     <string name="badge_state_label">สถานะ</string>
+    <string name="badge_priority_high_to_low_label">High->Low</string>
+    <string name="badge_priority_low_to_high_label">Low->High</string>
     <string name="snackbar_message_order_asc_change">เรียงจากน้อยไปมากสำเร็จ</string>
     <string name="snackbar_message_order_desc_change">เรียงจากมากไปน้อยสำเร็จ</string>
     <string name="snackbar_message_date_created_at_change">เรียงตามวันที่สร้างสำเร็จ</string>
@@ -121,6 +127,7 @@
     <string name="info_created_at">สร้างเมื่อ</string>
     <string name="info_updated_at">อัพเดทเมื่อ</string>
     <string name="info_finished_at">เสร็จสิ้นเมื่อ</string>
+    <string name="info_due_date">Due Date</string>
     <string name="info_accessed_at">เปิดอ่านเมื่อ</string>
     <string name="info_priority">ลำดับความสำคัญ</string>
     <string name="info_priority_memos_count">สำดับความสำคัญ(สูง/กลาง/ต่ำ/ไม่ระบุ)</string>

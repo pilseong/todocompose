@@ -14,7 +14,7 @@
     <string name="drop_down_menu_icon">Drop Down Menu Icon</string>
     <string name="new_task_appbar_title">Add Memo</string>
     <string name="edit_task_appbar_title">Edit Memo</string>
-    <string name="new_task_title_placeholder">Title</string>
+    <string name="new_task_title_placeholder">Content</string>
     <string name="new_task_description_placeholder">Description</string>
     <string name="default_task_bar_back_arrow_icon">Arrow backwards Icon</string>
     <string name="default_task_bar_close_icon">Close Icon</string>
@@ -26,6 +26,8 @@
     <string name="snack_bar_undo_label">Undo</string>
     <string name="label_yes">Yes</string>ㄹ
     <string name="label_no">No</string>
+    <string name="label_Ok">Ok</string>
+    <string name="label_cancel">Cancel</string>
     <string name="delete_task_dialog_title">Remove \'%1$s\'?</string>
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
     <string name="export_memos_dialog_title">Export as File</string>
@@ -52,8 +54,9 @@
     <string name="sort_ascending_label">Ascending</string>
     <string name="sort_date_label">Created At</string>
     <string name="task_content_updated_at_label">Updated At</string>
+    <string name="badge_priority_sorting_label">Priority Sorting</string>
     <string name="badge_priority_label">Priority</string>
-    <string name="badge_priority_filter_label">Priority</string>
+    <string name="badge_priority_filter_label">Priority Filter</string>
     <string name="badge_order_label">ORD</string>
     <string name="badge_date_label">DAT</string>
     <string name="badge_order_asc_label">ASC</string>
@@ -63,7 +66,10 @@
     <string name="badge_favorite_label">Favorite</string>
     <string name="badge_search_range_all_label">All Notes</string>
     <string name="badge_search_range_note_label">Range</string>
+    <string name="badge_state_filter_label">State Filter</string>
     <string name="badge_state_label">State</string>
+    <string name="badge_priority_high_to_low_label">High->Low</string>
+    <string name="badge_priority_low_to_high_label">Low->High</string>
     <string name="snackbar_message_order_asc_change">Ascending Ordering applied</string>
     <string name="snackbar_message_order_desc_change">Descending Ordering applied</string>
     <string name="snackbar_message_date_created_at_change">Created time used for ordering</string>
@@ -121,6 +127,7 @@
     <string name="info_created_at">Created At</string>
     <string name="info_updated_at">Updated At</string>
     <string name="info_finished_at">Finished At</string>
+    <string name="info_due_date">Due Date</string>
     <string name="info_accessed_at">Accessed At</string>
     <string name="info_priority">Notebook Priority</string>
     <string name="info_priority_memos_count">Memos Priority(H/M/L/N)</string>

@@ -12,6 +12,7 @@ object Constants {
     const val MEMO_ROOT = "memo_root"
     const val NOTE_LIST = "note_list"
     const val MEMO_LIST = "memo_list"
+    const val MEMO_TASK_MANAGER = "memo_task_manager"
     const val MEMO_DETAIL = "memo_detail"
     const val SETTINGS = "settings"
 
@@ -24,6 +25,7 @@ object Constants {
     const val PREFERENCE_NAME = "todo_preferences"
     const val PRIORITY_PREFERENCE_KEY = "priority_sort_key"
     const val FAVORITE_ENABLED_PREFERENCE_KEY = "favorite_sort_key"
+    const val SEARCH_RANGE_ALL_ENABLED_PREFERENCE_KEY = "search_range_all_key"
     const val RECENT_NOTEBOOK_PREFERENCE_KEY = "recent_notebooks_key"
     const val STATE_LINE_ORDER_PREFERENCE_KEY = "statusLineOrderState"
     const val PRIORITY_FILTER_PREFERENCE_KEY = "priority_filter_key"

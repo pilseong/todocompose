@@ -31,6 +31,7 @@ import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -54,6 +55,7 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
+import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.components.PriorityMenuItems
 import net.pilseong.todocompose.ui.components.StateMenuItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellowColor
@@ -114,7 +116,7 @@ fun StatusLine(
             }
             initialSize = stateSize
 
-//            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
+            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
 
             LazyRow(
                 modifier = Modifier
@@ -130,8 +132,8 @@ fun StatusLine(
                 ) { index, item ->
 
                     val shouldUpdate = remember(initialSize) {
-//                        Log.d("PHILIP", "[StatusLine] cal index: $index, initialSize: $initialSize")
-                        index >= initialSize - 1
+                        Log.d("PHILIP", "[StatusLine] cal index: $index, initialSize: $initialSize")
+                        index >= initialSize
                     }
 
                     when (item) {
@@ -456,8 +458,14 @@ private fun PrioritySort(
             Spacer(modifier = Modifier.width(SMALL_PADDING))
             Text(
                 text = stringResource(
-                    id = if (prioritySortState == Priority.NONE)
-                        R.string.badge_priority_label else prioritySortState.label
+                    id = when (prioritySortState) {
+                        Priority.HIGH -> R.string.badge_priority_high_to_low_label
+                        Priority.LOW -> R.string.badge_priority_low_to_high_label
+                        Priority.NONE -> R.string.badge_priority_sorting_label
+                        else -> {
+                            R.string.badge_priority_sorting_label
+                        }
+                    }
                 ),
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
@@ -466,10 +474,24 @@ private fun PrioritySort(
             expanded = priortySortMemuExpanded,
             onDismissRequest = { priortySortMemuExpanded = false },
         ) {
-            PriorityMenuItems {
-                priortySortMemuExpanded = false
-                onPrioritySelected(Action.PRIORITY_CHANGE, it)
-            }
+            DropdownMenuItem(
+                text = { PriorityItem(priority = Priority.HIGH, label = R.string.badge_priority_high_to_low_label) },
+                onClick = {
+                    priortySortMemuExpanded = false
+                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.HIGH)
+                })
+            DropdownMenuItem(
+                text = { PriorityItem(priority = Priority.LOW, label = R.string.badge_priority_low_to_high_label) },
+                onClick = {
+                    priortySortMemuExpanded = false
+                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.LOW)
+                })
+            DropdownMenuItem(
+                text = { PriorityItem(priority = Priority.NONE) },
+                onClick = {
+                    priortySortMemuExpanded = false
+                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.NONE)
+                })
         }
     }
 }
@@ -555,7 +577,7 @@ private fun StatusFilter(
             )
             Spacer(modifier = Modifier.width(SMALL_PADDING))
             Text(
-                text = stringResource(id = R.string.badge_state_label),
+                text = stringResource(id = R.string.badge_state_filter_label),
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
         }
@@ -619,7 +641,7 @@ private fun PriorityFilter(
             )
             Spacer(modifier = Modifier.width(SMALL_PADDING))
             Text(
-                text = stringResource(id = R.string.badge_priority_label),
+                text = stringResource(id = R.string.badge_priority_filter_label),
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
         }
