@@ -33,12 +33,17 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.alarm.ReminderScheduler
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
@@ -47,16 +52,13 @@ import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
-import net.pilseong.todocompose.util.NoteSortingOption
 import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
 import java.io.File
 import java.time.ZonedDateTime
 import javax.inject.Inject
-import kotlin.math.abs
 import kotlin.random.Random
 
 
@@ -65,14 +67,19 @@ class MemoViewModel @Inject constructor(
     private val todoRepository: TodoRepository,
     private val notebookRepository: NotebookRepository,
     private val dataStoreRepository: DataStoreRepository,
+    private val reminderScheduler: ReminderScheduler,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+
+    fun registerNotification(taskDetails: TaskDetails) {
+        reminderScheduler.start(taskDetails)
+    }
 
     var openDialog by mutableStateOf(false)
     var infoDialogTitle by mutableStateOf(R.string.info_import_fail_title)
     var infoDialogContent by mutableStateOf(R.string.info_import_fail_content)
     var infoDialogCDismissLabel by mutableStateOf(R.string.info_dialog_dismiss_label)
-
 
     @Stable
     var tasks = MutableStateFlow<PagingData<MemoWithNotebook>>(PagingData.empty())
@@ -140,8 +147,8 @@ class MemoViewModel @Inject constructor(
     // 상태 가 필요한 경우 에는 그 상태 를 받아 와서 보여 주어야 한다.
     // date store 에 저장된 경우는 persist 하고 읽는 것 까지 시간이 걸리기 때문에
     // 엑션이 일어난 경우 바로 알 수 있도록 처리를 해 주어야 한다.
-    var snackBarOrderEnabled = false
-    var snackBarDateEnabled = false
+    var snackBarOrderState = SortOption.DESC
+    var snackBarDateState = MemoDateSortingOption.UPDATED_AT
 
     var startDate: Long? = null
     var endDate: Long? = null
@@ -180,7 +187,8 @@ class MemoViewModel @Inject constructor(
                 query = searchTextString,
                 searchNoFilterState = searchNoFilterState,
                 searchRangeAll = uiState.searchRangeAll,
-                sortCondition = uiState.dateOrderState.ordinal,
+                memoDateSortState = uiState.memoDateSortingState,
+                memoOrderState = uiState.dateOrderState,
                 priority = uiState.prioritySortState,
                 notebookId = uiState.notebookIdState,
                 startDate = startDate,
@@ -252,19 +260,15 @@ class MemoViewModel @Inject constructor(
 
             Log.d(
                 "PHILIP",
-                "before ${uiState.dateOrderState.ordinal} after ${dateOrderState.ordinal} ${
-                    abs(uiState.dateOrderState.ordinal - dateOrderState.ordinal)
-                }"
+                "before ${uiState.dateOrderState}"
             )
+
+            dataStoreRepository.persistDateOrderState(dateOrderState)
+
             if (statusLineOrderUpdate) {
-                if (abs(uiState.dateOrderState.ordinal - dateOrderState.ordinal) > 1) {
-                    applyStatusLineOrder(StateEntity.DATE_BASE_ORDER)
-                } else {
-                    applyStatusLineOrder(StateEntity.SORTING_ORDER)
-                }
+                applyStatusLineOrder(StateEntity.SORTING_ORDER)
             }
 
-            dataStoreRepository.persistDateOrderState(dateOrderState.ordinal)
 
         }
     }
@@ -347,10 +351,10 @@ class MemoViewModel @Inject constructor(
         memo: MemoTask = MemoTask.instance(),
         photos: List<Photo> = emptyList(),
         priority: Priority = Priority.NONE,
-        sortOrderEnabled: Boolean = false,
-        sortDateEnabled: Boolean = false,
+        sortOrderState: SortOption = SortOption.DESC,
         statusLineOrderUpdate: Boolean = false,
         startDate: Long? = null,
+        memoSortOption: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
         endDate: Long? = null,
         favorite: Boolean = false,
         notebookId: Long = -1,
@@ -369,8 +373,8 @@ class MemoViewModel @Inject constructor(
                 updateActionPerformed()
             }
 
-            // 업데이트를 실행할 때 원래 사진 리스트와 수정할 사진 리스트를 비교해야 한다.
-            // photos는 원래 사진 리스트를 가지고 있다.
+            // 업 데이트 를 실행할 때 원래 사진 리스트 와 수정할 사진 리스트 를 비교 해야 한다.
+            // photos 는 원래 사진 리스트 를 가지고 있다.
             Action.UPDATE -> {
                 updateTask(photos)
                 updateActionPerformed()
@@ -435,83 +439,35 @@ class MemoViewModel @Inject constructor(
             Action.SORT_ORDER_CHANGE -> {
                 Log.d(
                     "PHILIP",
-                    "[MemoViewModel] handleActions performed with $uiState.dateOrderState, $sortOrderEnabled"
+                    "[MemoViewModel] handleActions performed with ${uiState.dateOrderState}, $sortOrderState"
                 )
                 updateAction(action)
-                when (uiState.dateOrderState) {
-                    SortOption.UPDATED_AT_DESC -> {
-                        if (sortOrderEnabled) {
-                            snackBarOrderEnabled = true
-                            persistDateOrderState(SortOption.UPDATED_AT_ASC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
 
-                    SortOption.UPDATED_AT_ASC -> {
-                        if (!sortOrderEnabled) {
-                            snackBarOrderEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
-
-                    SortOption.CREATED_AT_DESC -> {
-                        if (sortOrderEnabled) {
-                            snackBarOrderEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_ASC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
-
-                    SortOption.CREATED_AT_ASC -> {
-                        if (!sortOrderEnabled) {
-                            snackBarOrderEnabled = false
-                            persistDateOrderState(SortOption.CREATED_AT_DESC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
-                }
+                snackBarOrderState = sortOrderState
+                persistDateOrderState(sortOrderState, statusLineOrderUpdate)
+                updateActionPerformed()
             }
 
-            Action.SORT_DATE_CHANGE -> {
+            Action.MEMO_SORT_DATE_BASE_CHANGE -> {
                 Log.d(
                     "PHILIP",
-                    "[MemoViewModel] handleActions performed with ${uiState.dateOrderState}, $sortDateEnabled"
+                    "[MemoViewModel] handleActions performed with ${uiState.memoDateSortingState}"
                 )
                 updateAction(action)
-                when (uiState.dateOrderState) {
-                    SortOption.UPDATED_AT_DESC -> {
-                        if (sortDateEnabled) {
-                            snackBarDateEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_DESC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
+                snackBarDateState = memoSortOption
 
-                    SortOption.UPDATED_AT_ASC -> {
-                        if (sortDateEnabled) {
-                            snackBarDateEnabled = true
-                            persistDateOrderState(SortOption.CREATED_AT_ASC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
+                viewModelScope.launch {
+                    Log.d(
+                        "PHILIP",
+                        "before ${uiState.memoDateSortingState} after $memoSortOption"
+                    )
+                    if (statusLineOrderUpdate) {
+                        applyStatusLineOrder(StateEntity.DATE_BASE_ORDER)
                     }
+                    dataStoreRepository.persistMemoDateSortingState(memoSortOption)
 
-                    SortOption.CREATED_AT_DESC -> {
-                        if (!sortDateEnabled) {
-                            snackBarDateEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
-
-                    SortOption.CREATED_AT_ASC -> {
-                        if (!sortDateEnabled) {
-                            snackBarDateEnabled = false
-                            persistDateOrderState(SortOption.UPDATED_AT_DESC, statusLineOrderUpdate)
-                            updateActionPerformed()
-                        }
-                    }
                 }
+                updateActionPerformed()
             }
 
             Action.SORT_FAVORITE_CHANGE -> {
@@ -664,6 +620,7 @@ class MemoViewModel @Inject constructor(
         searchAppBarState = SearchAppBarState.OPEN
     }
 
+    // 메모 추가
     private fun addTask() {
         Log.d(
             "PHILIP",
@@ -681,7 +638,11 @@ class MemoViewModel @Inject constructor(
         savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
-            todoRepository.addMemo(taskUiState.taskDetails)
+            val id = todoRepository.addMemo(taskUiState.taskDetails)
+
+            if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                registerNotification(taskUiState.taskDetails.copy(id = id))
+
             refreshAllTasks()
         }
         this.action = Action.ADD
@@ -906,14 +867,20 @@ class MemoViewModel @Inject constructor(
 
                 Log.d(
                     "PHILIP",
-                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size}"
+                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size} ${memos[0]}"
+
                 )
 
                 viewModelScope.launch {
-                    todoRepository.insertMultipleMemos(memos)
-                    notebookRepository.insertMultipleNotebooks(notes)
+                    try {
+                        todoRepository.insertMultipleMemos(memos)
+                        notebookRepository.insertMultipleNotebooks(notes)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     delay(1000)
                     refreshAllTasks()
+
                 }
             } catch (e: JsonParseException) {
                 progressVisible = false
@@ -1041,9 +1008,11 @@ data class TaskDetails(
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
     val finishedAt: ZonedDateTime? = null,
     val dueDate: ZonedDateTime? = null,
+    val reminderType: ReminderTime = ReminderTime.NOT_USED,
+    val reminderOffset: Long? = null,
     val notebookId: Long = -1,
     var photos: MutableList<Photo> = mutableListOf(),
-    val isTask: Boolean = finishedAt != null || progression != State.NONE
+    val isTask: Boolean = dueDate != null || progression != State.NONE
 )
 
 fun TaskDetails.toMemoTask() = MemoTask(
@@ -1057,6 +1026,8 @@ fun TaskDetails.toMemoTask() = MemoTask(
     updatedAt = updatedAt,
     finishedAt = finishedAt,
     dueDate = dueDate,
+    reminderType = reminderType,
+    reminderOffset = reminderOffset,
     notebookId = notebookId
 )
 
@@ -1071,6 +1042,8 @@ fun MemoTask.toTaskDetails(): TaskDetails = TaskDetails(
     updatedAt = updatedAt,
     finishedAt = finishedAt,
     dueDate = dueDate,
+    reminderType = reminderType,
+    reminderOffset = reminderOffset,
     notebookId = notebookId
 )
 
@@ -1085,6 +1058,8 @@ fun MemoWithNotebook.toTaskDetails(): TaskDetails = TaskDetails(
     updatedAt = memo.updatedAt,
     finishedAt = memo.finishedAt,
     dueDate = memo.dueDate,
+    reminderType = memo.reminderType,
+    reminderOffset = memo.reminderOffset,
     notebookId = notebook?.id ?: -1,
     photos = photos.toMutableList()
 )
@@ -1100,6 +1075,8 @@ fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
     updatedAt = memo.updatedAt,
     finishedAt = memo.finishedAt,
     dueDate = memo.dueDate,
+    reminderType = memo.reminderType,
+    reminderOffset = memo.reminderOffset,
     notebookId = memo.notebookId
 )
 

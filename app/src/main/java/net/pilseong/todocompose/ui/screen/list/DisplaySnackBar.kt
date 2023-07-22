@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.util.Action
 
 // enabled 가 true 일 경우만 팝업이 뜬다
@@ -21,8 +23,8 @@ fun DisplaySnackBar(
     duration: SnackbarDuration = SnackbarDuration.Short,
     buttonClicked: (Action, SnackbarResult) -> Unit,
     actionAfterPopup: (Action) -> Unit,
-    orderEnabled: Boolean,
-    dateEnabled: Boolean,
+    orderState: SortOption,
+    memoDateSortingOption: MemoDateSortingOption,
     startDate: Long?,
     endDate: Long?,
 ) {
@@ -47,16 +49,18 @@ fun DisplaySnackBar(
             stringResource(id = R.string.snackbar_message_priority_change)
 
         Action.SORT_ORDER_CHANGE ->
-            if (orderEnabled)
-                stringResource(id = R.string.snackbar_message_order_asc_change)
-            else
-                stringResource(id = R.string.snackbar_message_order_desc_change)
+            when (orderState) {
+                SortOption.DESC -> stringResource(id = R.string.snackbar_message_order_desc_change)
+                SortOption.ASC -> stringResource(id = R.string.snackbar_message_order_asc_change)
+            }
 
-        Action.SORT_DATE_CHANGE ->
-            if (dateEnabled)
-                stringResource(id = R.string.snackbar_message_date_created_at_change)
-            else
-                stringResource(id = R.string.snackbar_message_date_updated_at_change)
+        Action.MEMO_SORT_DATE_BASE_CHANGE ->
+            when (memoDateSortingOption) {
+                MemoDateSortingOption.CREATED_AT -> stringResource(id = R.string.snackbar_message_date_created_at_change)
+                MemoDateSortingOption.UPDATED_AT -> stringResource(id = R.string.snackbar_message_date_updated_at_change)
+                MemoDateSortingOption.FINISHED_AT -> stringResource(id = R.string.snackbar_message_date_finished_at_change)
+                MemoDateSortingOption.DUE_DATE -> stringResource(id = R.string.snackbar_message_date_due_date_change)
+            }
 
         Action.SEARCH_WITH_DATE_RANGE ->
             if (startDate == null && endDate == null)

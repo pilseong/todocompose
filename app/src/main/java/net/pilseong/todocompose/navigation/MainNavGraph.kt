@@ -115,13 +115,13 @@ fun MainNavGraph(
 inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navHostController: NavHostController): T {
     val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
     val parentEntry = remember(this) {
-        Log.d("PHILIP", "sharedViewModel set $navGraphRoute $this")
+//        Log.d("PHILIP", "sharedViewModel set $navGraphRoute $this")
         navHostController.getBackStackEntry(navGraphRoute)
     }
 
-    LaunchedEffect(key1 = this) {
-        Log.d("PHILIP", "sharedViewModel after $parentEntry")
-    }
+//    LaunchedEffect(key1 = this) {
+//        Log.d("PHILIP", "sharedViewModel after $parentEntry")
+//    }
 
     return hiltViewModel(parentEntry)
 }

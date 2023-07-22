@@ -18,11 +18,11 @@ class ZonedDateTypeAdapter: JsonSerializer<ZonedDateTime>, JsonDeserializer<Zone
         @TypeConverter
         @JvmStatic
         fun toZonedDateTime(value: Long?): ZonedDateTime? {
-            if (value != null) {
+            return if (value != null) {
                 val instant = Instant.ofEpochSecond(value)
-                return ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
+                ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
             } else {
-                return null
+                null
             }
         }
 

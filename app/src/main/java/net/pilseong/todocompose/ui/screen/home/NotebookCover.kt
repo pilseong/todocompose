@@ -44,7 +44,7 @@ import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.util.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import net.pilseong.todocompose.util.getPriorityColor
 import java.time.format.DateTimeFormatter
 

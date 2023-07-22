@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.di.IoDispatcher
@@ -30,8 +31,9 @@ import net.pilseong.todocompose.util.Constants.RECENT_NOTEBOOK_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.SEARCH_RANGE_ALL_ENABLED_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_LINE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
-import net.pilseong.todocompose.util.NoteSortingOption
-import net.pilseong.todocompose.util.SortOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.SortOption
+import net.pilseong.todocompose.util.Constants.MEMO_DATE_SORTING_PREFERENCE_KEY
 import net.pilseong.todocompose.util.StateEntity
 import java.io.IOException
 import javax.inject.Inject
@@ -46,8 +48,9 @@ class DataStoreRepository @Inject constructor(
 ) {
 
     private object PreferenceKeys {
-        val sortState = stringPreferencesKey(name = PRIORITY_PREFERENCE_KEY)
-        val dateOrderState = intPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
+        val prioritySortState = stringPreferencesKey(name = PRIORITY_PREFERENCE_KEY)
+        val dateOrderState = stringPreferencesKey(name = DATE_ORDER_PREFERENCE_KEY)
+        val memoDateSortingState = stringPreferencesKey(name = MEMO_DATE_SORTING_PREFERENCE_KEY)
         val favoriteState = stringPreferencesKey(name = FAVORITE_ENABLED_PREFERENCE_KEY)
         val searchRangeAll = stringPreferencesKey(name = SEARCH_RANGE_ALL_ENABLED_PREFERENCE_KEY)
         val recentNoteIdsState = stringPreferencesKey(name = RECENT_NOTEBOOK_PREFERENCE_KEY)
@@ -57,13 +60,22 @@ class DataStoreRepository @Inject constructor(
         val noteSortingOrderState = intPreferencesKey(name = NOTE_SORTING_ORDER_ID_PREFERENCE_KEY)
     }
 
+    suspend fun persistMemoDateSortingState(memoDateSortingOption: MemoDateSortingOption) {
+        withContext(ioDispatcher) {
+            context.dataStore.edit { preferences ->
+                Log.d("PHILIP", "[DataStoreRepository]persistMemoDateSortingState $memoDateSortingOption")
+                preferences[PreferenceKeys.memoDateSortingState] = memoDateSortingOption.name
+            }
+        }
+    }
+
     // data store 에 priority 정보를 저장 한다.
     suspend fun persistPrioritySortState(priority: Priority) {
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
                 Log.d("PHILIP", "[DataStoreRepository]persistPrioritySortState $priority")
-                preferences[PreferenceKeys.sortState] = priority.name
+                preferences[PreferenceKeys.prioritySortState] = priority.name
             }
         }
     }
@@ -104,7 +116,7 @@ class DataStoreRepository @Inject constructor(
 
             val statusLineString = preferences[PreferenceKeys.statusLineOrderState]
                 ?.split(",")
-                ?.map { it -> StateEntity.values()[it.toInt()] }
+                ?.map { StateEntity.values()[it.toInt()] }
                 ?.toMutableList() ?: mutableListOf(
                 StateEntity.NOTE_FILTER,
                 StateEntity.PRIORITY_FILTER,
@@ -117,10 +129,14 @@ class DataStoreRepository @Inject constructor(
 
             UserData(
                 prioritySortState = Priority.valueOf(
-                    preferences[PreferenceKeys.sortState] ?: Priority.NONE.name
+                    preferences[PreferenceKeys.prioritySortState] ?: Priority.NONE.name
                 ),
-                dateOrderState = SortOption.values()[preferences[PreferenceKeys.dateOrderState]
-                    ?: SortOption.UPDATED_AT_DESC.ordinal],
+                memoDateSortingState = MemoDateSortingOption.valueOf(
+                  preferences[PreferenceKeys.memoDateSortingState] ?: MemoDateSortingOption.UPDATED_AT.name
+                ),
+                dateOrderState = SortOption.valueOf(
+                    preferences[PreferenceKeys.dateOrderState] ?: SortOption.DESC.name
+                ),
                 notebookIdState = if (noteIds != null) noteIds[0].toLong() else -1L,
                 firstRecentNotebookId = if (noteIds != null && noteIds.size > 1) noteIds[1].toLong() else null,
                 secondRecentNotebookId = if (noteIds != null && noteIds.size > 2) noteIds[2].toLong() else null,
@@ -165,7 +181,7 @@ class DataStoreRepository @Inject constructor(
             context.dataStore.edit { preferences ->
                 Log.d("PHILIP", "[DataStoreRepository]persistStatusLineOrderState $stateOrder")
                 preferences[PreferenceKeys.statusLineOrderState] =
-                    stateOrder.joinToString(",") { it -> it.ordinal.toString() }
+                    stateOrder.joinToString(",") { it.ordinal.toString() }
             }
         }
     }
@@ -193,12 +209,12 @@ class DataStoreRepository @Inject constructor(
         }
     }
 
-    suspend fun persistDateOrderState(dateOrderState: Int) {
+    suspend fun persistDateOrderState(dateOrderState: SortOption) {
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
                 Log.d("PHILIP", "[DataStoreRepository]persistDateOrderState $dateOrderState")
-                preferences[PreferenceKeys.dateOrderState] = dateOrderState
+                preferences[PreferenceKeys.dateOrderState] = dateOrderState.name
             }
         }
     }

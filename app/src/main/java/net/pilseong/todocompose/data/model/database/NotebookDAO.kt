@@ -9,7 +9,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
-import net.pilseong.todocompose.util.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import java.time.ZonedDateTime
 
 @Dao

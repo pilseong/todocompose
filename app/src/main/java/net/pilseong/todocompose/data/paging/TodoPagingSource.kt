@@ -6,8 +6,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.database.MemoDAO
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.util.Constants
 import java.time.Instant
 
@@ -17,7 +19,8 @@ class TodoPagingSource(
     private val query: String,
     private val searchNoFilterState: Boolean = false,
     private val searchRangeAll: Boolean = false,
-    private val sortCondition: Int,
+    private val memoDateSortState: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
+    private val memoOrderState: SortOption = SortOption.DESC,
     private val priority: Priority,
     private val startDate: Long? = Instant.now().toEpochMilli(),
     private val endDate: Long? = Instant.now().toEpochMilli(),
@@ -58,7 +61,8 @@ class TodoPagingSource(
                         query = "%$query%",
                         searchNoFilterState = searchNoFilterState,
                         searchRangeAll = searchRangeAll,
-                        sortCondition = sortCondition,
+                        memoDateSortState = memoDateSortState,
+                        memoOrderState = memoOrderState,
                         priority = priority.name,
                         startDate = if (startDate != null) Instant.ofEpochMilli(startDate).epochSecond else 0,
                         endDate = if (endDate != null) Instant.ofEpochMilli(endDate).epochSecond else Long.MAX_VALUE,

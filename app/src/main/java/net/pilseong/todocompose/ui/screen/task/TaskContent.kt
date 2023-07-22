@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,8 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LockClock
@@ -73,12 +73,14 @@ import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.ReminderTime
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
 import net.pilseong.todocompose.ui.components.DefaultDatePickerDialog
 import net.pilseong.todocompose.ui.components.DefaultTimePickerDialog
 import net.pilseong.todocompose.ui.components.NotebooksDropDown
 import net.pilseong.todocompose.ui.components.PriorityDropDown
+import net.pilseong.todocompose.ui.components.ReminderDropDown
 import net.pilseong.todocompose.ui.components.StatusDropDown
 import net.pilseong.todocompose.ui.components.ZoomableImage
 import net.pilseong.todocompose.ui.components.convertToLocalEndTime
@@ -199,10 +201,11 @@ fun getDirections(selectedIndex: Int, endIndex: Int): Set<DismissDirection> {
 private fun ViewerContent(
     task: MemoWithNotebook
 ) {
-    val scrollState = rememberScrollState()
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .fillMaxSize()
     ) {
         var expanded by remember { mutableStateOf(false) }
         var photoOpen by remember {
@@ -236,6 +239,18 @@ private fun ViewerContent(
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                         )
+                        if (task.memo.reminderType != ReminderTime.NOT_USED) {
+                            Icon(
+                                Icons.Filled.Alarm,
+                                contentDescription = "Localized description",
+                                tint = if (Calendar.getInstance().timeInMillis <
+                                    (task.memo.dueDate!!.toInstant()
+                                        .toEpochMilli() - task.memo.reminderType.timeInMillis)
+                                ) Color.Red
+                                else MaterialTheme.colorScheme.surface
+                            )
+                        }
+
 //                        Icon(
 //                            imageVector = if (expanded) Icons.Filled.ArrowDropDown else Icons.Default.ArrowDropUp,
 //                            contentDescription = "Localized description",
@@ -256,10 +271,16 @@ private fun ViewerContent(
                             )
                             if (task.memo.dueDate != null) {
                                 Text(
+                                    stringResource(id = R.string.info_reminder),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    lineHeight = 20.sp
+                                )
+                                Text(
                                     stringResource(id = R.string.info_due_date),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     lineHeight = 20.sp
                                 )
+
                             }
                             Text(
                                 text = stringResource(id = R.string.info_created_at),
@@ -278,11 +299,13 @@ private fun ViewerContent(
                                     lineHeight = 20.sp
                                 )
                             }
-                            Text(
-                                stringResource(id = R.string.badge_state_label),
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                lineHeight = 20.sp
-                            )
+                            if (task.memo.progression != State.NONE) {
+                                Text(
+                                    stringResource(id = R.string.badge_state_label),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    lineHeight = 20.sp
+                                )
+                            }
 
                         }
                     }
@@ -307,6 +330,11 @@ private fun ViewerContent(
                                 lineHeight = 20.sp
                             )
                             if (task.memo.dueDate != null) {
+                                Text(
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    text = stringResource(id = task.memo.reminderType.label),
+                                    lineHeight = 20.sp
+                                )
                                 Text(
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     text = task.memo.dueDate.toLocalDateTime()
@@ -349,36 +377,41 @@ private fun ViewerContent(
                                         )
                                 )
                             }
-                            Text(
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                text = stringResource(id = task.memo.progression.label),
-                                lineHeight = 20.sp
-                            )
+                            if (task.memo.progression != State.NONE) {
+                                Text(
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                    text = stringResource(id = task.memo.progression.label),
+                                    lineHeight = 20.sp
+                                )
+                            }
                         }
                     }
                 }
-                // 제목
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = SMALL_PADDING),
-                    horizontalArrangement = Arrangement.Start,
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1.5F / 12),
+                if (task.memo.description.isNotBlank()) {
+                    // 제목
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = SMALL_PADDING),
+                        horizontalArrangement = Arrangement.Start,
                     ) {
-                        Icon(
-                            modifier = Modifier.padding(top = 2.dp),
-                            imageVector = Icons.Filled.Title,
-                            contentDescription = "Localized description",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                        Column(
+                            modifier = Modifier
+                                .weight(1.5F / 12),
+                        ) {
+                            Icon(
+                                modifier = Modifier.padding(top = 2.dp),
+                                imageVector = Icons.Filled.Title,
+                                contentDescription = "Localized description",
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
+                            )
+                        }
+                        Text(
+                            modifier = Modifier.weight(10.5F / 12),
+                            text = task.memo.title
                         )
-                    }
-                    Text(
-                        modifier = Modifier.weight(10.5F / 12),
-                        text = task.memo.title
-                    )
 
+                    }
                 }
 
                 // 사진
@@ -418,26 +451,27 @@ private fun ViewerContent(
 
         Divider(modifier = Modifier.height(0.2.dp))
 
-        if (task.memo.description.isNotEmpty()) {
-            Spacer(
-                modifier = Modifier.height(MEDIUM_PADDING),
-            )
+//        if (task.memo.description.isNotEmpty()) {
+        Spacer(
+            modifier = Modifier.height(MEDIUM_PADDING),
+        )
 
 
-            Column(modifier = Modifier.verticalScroll(scrollState)) {
-                Card(
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    SelectionContainer {
-                        Text(
-                            modifier = Modifier
-                                .padding(LARGE_PADDING),
-                            text = task.memo.description
-                        )
-                    }
+        Column(
+        ) {
+            Card(
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                SelectionContainer {
+                    Text(
+                        modifier = Modifier
+                            .padding(LARGE_PADDING),
+                        text = task.memo.description.ifBlank { task.memo.title }
+                    )
                 }
             }
         }
+//        }
         if (photoOpen && selectedGalleryImage != null) {
             Log.d("PHILIP", "photoOpen $photoOpen, selectedImage $selectedGalleryImage")
             Dialog(
@@ -523,7 +557,8 @@ private fun EditorContent(
                 onValueChange(
                     taskUiState.taskDetails.copy(
                         progression = State.NONE,
-                        dueDate = null
+                        dueDate = null,
+                        reminderType = ReminderTime.NOT_USED
                     )
                 )
             }
@@ -532,18 +567,36 @@ private fun EditorContent(
         if (taskUiState.taskDetails.isTask) {
 
             Surface(tonalElevation = 1.dp) {
-                Row(modifier = Modifier.weight(1f)) {
-                    StatusDropDown(
-                        isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
-                        state = taskUiState.taskDetails.progression,
-                        onStateSelected = {
-                            onValueChange(
-                                taskUiState.taskDetails.copy(
-                                    progression = it
+                Row {
+                    Row(modifier = Modifier.weight(1f)) {
+                        StatusDropDown(
+                            isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
+                            state = taskUiState.taskDetails.progression,
+                            onStateSelected = {
+                                onValueChange(
+                                    taskUiState.taskDetails.copy(
+                                        progression = it
+                                    )
                                 )
-                            )
-                        }
-                    )
+                            }
+                        )
+                    }
+                    Row(modifier = Modifier.weight(1f)) {
+                        ReminderDropDown(
+                            isNew = taskUiState.taskDetails.id == NEW_ITEM_ID,
+                            enabled = taskUiState.taskDetails.dueDate != null,
+                            targetTime = taskUiState.taskDetails.dueDate?.toInstant()
+                                ?.toEpochMilli(),
+                            reminderTime = taskUiState.taskDetails.reminderType,
+                            onTimeSelected = {
+                                onValueChange(
+                                    taskUiState.taskDetails.copy(
+                                        reminderType = it
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
             }
 
@@ -556,7 +609,7 @@ private fun EditorContent(
 
             val focusManager = LocalFocusManager.current
 
-            var openDialog by remember { mutableStateOf(false) }
+            var showDatePicker by remember { mutableStateOf(false) }
             var showTimePicker by remember { mutableStateOf(false) }
             val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
             var timeHours by remember { mutableStateOf<Int?>(null) }
@@ -565,7 +618,7 @@ private fun EditorContent(
             val timePickerState = rememberTimePickerState()
 
             DefaultDatePickerDialog(
-                openDialog = openDialog,
+                openDialog = showDatePicker,
                 onConfirm = { it ->
                     if (it != null) {
                         var instant = convertToLocalEndTime(it, true)
@@ -590,11 +643,11 @@ private fun EditorContent(
                             )
                         )
 
-                        openDialog = false
+                        showDatePicker = false
                     }
                 },
                 onDismissRequest = {
-                    openDialog = false
+                    showDatePicker = false
                 }
             )
 
@@ -657,7 +710,7 @@ private fun EditorContent(
                         IconButton(
                             onClick = {
 //                            datePickerExpanded = true
-                                openDialog = true
+                                showDatePicker = true
                                 focusManager.clearFocus()
                             }
                         ) {
@@ -1008,6 +1061,7 @@ fun EditorContentPreview() {
                     priority = Priority.HIGH,
                     progression = State.NONE,
                     notebookId = -1,
+                    isTask = true
                 )
             ),
             onValueChange = {},

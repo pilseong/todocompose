@@ -1,8 +1,10 @@
 package net.pilseong.todocompose
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -10,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.text.htmlEncode
@@ -23,12 +26,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.navigation.MainNavGraph
 import net.pilseong.todocompose.navigation.Screen
-import net.pilseong.todocompose.ui.screen.home.NoteViewModel
+import net.pilseong.todocompose.ui.viewmodel.NoteViewModel
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
-import net.pilseong.todocompose.util.Constants
-import net.pilseong.todocompose.util.Constants.HOME_ROOT
 import net.pilseong.todocompose.util.Constants.MAIN_ROOT
-import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -40,6 +40,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
+
         Log.d("PHILIP", "[MainActivity] onCreate called")
         lifecycleScope.launch {
             channel.send { handleIntent(intent) }
@@ -125,7 +134,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        Log.d("PHILIP", "[MainActivity]handleIntent is called $intent")
+        Log.d("PHILIP", "[MainActivity] handleIntent is called $intent")
         when {
             intent?.action == Intent.ACTION_SEND -> {
                 if ("text/plain" == intent.type) {

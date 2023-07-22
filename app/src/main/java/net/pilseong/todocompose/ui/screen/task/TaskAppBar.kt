@@ -116,7 +116,6 @@ fun EditTaskBar(
             )
         },
         actions = {
-            // done action
             Switch(
                 modifier = Modifier.padding(end = LARGE_PADDING),
                 thumbContent = {
@@ -133,6 +132,7 @@ fun EditTaskBar(
                     onValueChange(uiState.taskDetails.copy(isTask = !uiState.taskDetails.isTask))
 
                 })
+            // done action
             CommonAction(
                 enabled = uiState.isEntryValid,
                 onClicked = {

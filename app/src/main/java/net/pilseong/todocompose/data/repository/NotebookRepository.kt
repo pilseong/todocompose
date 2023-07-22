@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.database.NotebookDAO
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
-import net.pilseong.todocompose.util.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import javax.inject.Inject
 
 @ActivityRetainedScoped
@@ -51,7 +51,7 @@ class NotebookRepository @Inject constructor(
     }
 
     suspend fun updateAccessTime(id: Long) {
-        Log.d("PHILIP","[NotebookRepository] updateAccessTime $id")
+//        Log.d("PHILIP","[NotebookRepository] updateAccessTime $id")
         notebookDAO.updateAccessTime(id)
     }
 }

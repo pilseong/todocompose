@@ -12,11 +12,11 @@ import androidx.navigation.compose.composable
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
-import net.pilseong.todocompose.ui.screen.home.CreateEditNotebookDialog
-import net.pilseong.todocompose.ui.screen.home.InfoDialog
-import net.pilseong.todocompose.ui.screen.home.NoteAction
-import net.pilseong.todocompose.ui.screen.home.NoteViewModel
+import net.pilseong.todocompose.ui.screen.note.CreateEditNotebookDialog
+import net.pilseong.todocompose.ui.screen.note.InfoDialog
+import net.pilseong.todocompose.ui.screen.note.NoteAction
 import net.pilseong.todocompose.ui.screen.note.NoteScreen
+import net.pilseong.todocompose.ui.viewmodel.NoteViewModel
 import net.pilseong.todocompose.ui.viewmodel.UiState
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 

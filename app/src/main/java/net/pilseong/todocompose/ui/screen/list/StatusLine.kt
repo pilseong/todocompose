@@ -52,7 +52,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.ui.components.PriorityItem
@@ -74,17 +76,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun StatusLine(
     uiState: UserData,
-    prioritySortState: Priority,
-    orderEnabled: Boolean = false,
-    dateEnabled: Boolean = false,
-    searchRangeAll: Boolean = false,
     startDate: Long?,
     endDate: Long?,
-    favoriteOn: Boolean = false,
     onCloseClick: () -> Unit,
     onFavoriteClick: (Boolean) -> Unit,
     onOrderEnabledClick: (Boolean) -> Unit,
-    onDateEnabledClick: (Boolean) -> Unit,
+    onDateSortingChangeClick: (Action, MemoDateSortingOption, Boolean) -> Unit,
     onPrioritySelected: (Action, Priority, Boolean) -> Unit,
     onStateSelected: (State) -> Unit,
     onRangeAllEnabledClick: (Boolean, Boolean) -> Unit,
@@ -147,7 +144,7 @@ fun StatusLine(
                                     }
                                 }
                             },
-                            searchRangeAll
+                            uiState.searchRangeAll
                         )
 
                         StateEntity.PRIORITY_FILTER -> PriorityFilter(uiState,
@@ -187,7 +184,7 @@ fun StatusLine(
                         )
 
                         StateEntity.FAVORITE_FILTER -> FavoriteFilter(
-                            favoriteOn,
+                            uiState.sortFavorite,
                             onFavoriteClick = {
                                 Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onFavoriteClick(shouldUpdate)
@@ -200,10 +197,10 @@ fun StatusLine(
                         )
 
                         StateEntity.PRIORITY_ORDER -> PrioritySort(
-                            prioritySortState,
-                            onPrioritySelected = { state, priority ->
+                            uiState.prioritySortState,
+                            onPrioritySelected = { action, priority ->
                                 Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
-                                onPrioritySelected(state, priority, shouldUpdate)
+                                onPrioritySelected(action, priority, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
                                         lazyState.animateScrollToItem(0, 0)
@@ -212,7 +209,7 @@ fun StatusLine(
                             }
                         )
 
-                        StateEntity.SORTING_ORDER -> SortingOrder(orderEnabled,
+                        StateEntity.SORTING_ORDER -> SortingOrder(uiState.dateOrderState,
                             onOrderEnabledClick = {
                                 Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onOrderEnabledClick(shouldUpdate)
@@ -225,10 +222,10 @@ fun StatusLine(
                         )
 
                         StateEntity.DATE_BASE_ORDER -> DateBaseOrder(
-                            dateEnabled,
-                            onDateEnabledClick = {
+                            uiState.memoDateSortingState,
+                            onSortingSelected = { action, selectedOption ->
                                 Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
-                                onDateEnabledClick(shouldUpdate)
+                                onDateSortingChangeClick(action, selectedOption, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
                                         lazyState.animateScrollToItem(0, 0)
@@ -361,14 +358,90 @@ private fun DateBaseOrder(dateEnabled: Boolean, onDateEnabledClick: () -> Unit) 
 }
 
 @Composable
-private fun SortingOrder(orderEnabled: Boolean, onOrderEnabledClick: () -> Unit) {
+private fun DateBaseOrder(
+    memoDateSortingOption: MemoDateSortingOption,
+    onSortingSelected: (Action, MemoDateSortingOption) -> Unit
+) {
+    var sortMenuExpanded by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .clickable {
+                sortMenuExpanded = true
+            },
+        border = BorderStroke(
+            width = if (memoDateSortingOption == MemoDateSortingOption.UPDATED_AT) 0F.dp else 0.5F.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (memoDateSortingOption == MemoDateSortingOption.UPDATED_AT)
+                Color.Transparent
+            else
+                MaterialTheme.colorScheme
+                    .surfaceColorAtElevation(6.dp)
+        ),
+        shape = RoundedCornerShape(4.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SMALL_PADDING),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                modifier = Modifier.width(12.dp),
+                imageVector = Icons.Default.Sort,
+                contentDescription = "arrow"
+            )
+            Spacer(modifier = Modifier.width(SMALL_PADDING))
+            Text(
+                text = stringResource(
+                    id = when (memoDateSortingOption) {
+                        MemoDateSortingOption.CREATED_AT -> MemoDateSortingOption.CREATED_AT.label
+                        MemoDateSortingOption.UPDATED_AT -> MemoDateSortingOption.UPDATED_AT.label
+                        MemoDateSortingOption.FINISHED_AT -> MemoDateSortingOption.FINISHED_AT.label
+                        MemoDateSortingOption.DUE_DATE -> MemoDateSortingOption.DUE_DATE.label
+                    }
+                ),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            )
+        }
+        DropdownMenu(
+            expanded = sortMenuExpanded,
+            onDismissRequest = { sortMenuExpanded = false },
+        ) {
+            MemoDateSortingOption.values().forEach { menu ->
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = menu.label),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = {
+                        sortMenuExpanded = false
+                        onSortingSelected(Action.MEMO_SORT_DATE_BASE_CHANGE, menu)
+                    })
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SortingOrder(sortOption: SortOption, onOrderEnabledClick: () -> Unit) {
     Card(
         modifier = Modifier
             .clickable {
                 onOrderEnabledClick()
             },
         shape = RoundedCornerShape(4.dp),
-        border = if (orderEnabled)
+        border = if (sortOption == SortOption.DESC)
             BorderStroke(color = Color.Transparent, width = 0.dp)
         else
             BorderStroke(
@@ -376,7 +449,7 @@ private fun SortingOrder(orderEnabled: Boolean, onOrderEnabledClick: () -> Unit)
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (orderEnabled) MaterialTheme.colorScheme
+            containerColor = if (sortOption == SortOption.DESC) MaterialTheme.colorScheme
                 .surfaceColorAtElevation(6.dp)
             else Color.Transparent,
         ),
@@ -390,13 +463,13 @@ private fun SortingOrder(orderEnabled: Boolean, onOrderEnabledClick: () -> Unit)
         ) {
             Icon(
                 modifier = Modifier.width(12.dp),
-                imageVector = if (orderEnabled) Icons.Default.ArrowUpward
+                imageVector = if (sortOption == SortOption.DESC) Icons.Default.ArrowUpward
                 else Icons.Default.ArrowDownward,
                 contentDescription = "arrow"
             )
             Spacer(modifier = Modifier.width(SMALL_PADDING))
             Text(
-                text = if (orderEnabled) stringResource(id = R.string.badge_order_asc_label)
+                text = if (sortOption == SortOption.ASC) stringResource(id = R.string.badge_order_asc_label)
                 else stringResource(id = R.string.badge_order_desc_label),
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
@@ -475,13 +548,23 @@ private fun PrioritySort(
             onDismissRequest = { priortySortMemuExpanded = false },
         ) {
             DropdownMenuItem(
-                text = { PriorityItem(priority = Priority.HIGH, label = R.string.badge_priority_high_to_low_label) },
+                text = {
+                    PriorityItem(
+                        priority = Priority.HIGH,
+                        label = R.string.badge_priority_high_to_low_label
+                    )
+                },
                 onClick = {
                     priortySortMemuExpanded = false
                     onPrioritySelected(Action.PRIORITY_CHANGE, Priority.HIGH)
                 })
             DropdownMenuItem(
-                text = { PriorityItem(priority = Priority.LOW, label = R.string.badge_priority_low_to_high_label) },
+                text = {
+                    PriorityItem(
+                        priority = Priority.LOW,
+                        label = R.string.badge_priority_low_to_high_label
+                    )
+                },
                 onClick = {
                     priortySortMemuExpanded = false
                     onPrioritySelected(Action.PRIORITY_CHANGE, Priority.LOW)
@@ -719,15 +802,12 @@ fun PreviewStatusLine() {
     MaterialTheme {
         StatusLine(
             uiState = UserData(),
-            prioritySortState = Priority.NONE,
-            orderEnabled = false,
-            dateEnabled = false,
             startDate = 333,
             endDate = 222,
             onCloseClick = { /*TODO*/ },
             onFavoriteClick = { /*TODO*/ },
             onOrderEnabledClick = { /*TODO*/ },
-            onDateEnabledClick = { /*TODO*/ },
+            onDateSortingChangeClick = { _, _, _ -> },
             onPrioritySelected = { _, _, _ -> },
             onStateSelected = {},
             onRangeAllEnabledClick = { _, _ -> },

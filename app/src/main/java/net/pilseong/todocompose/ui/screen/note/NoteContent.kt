@@ -53,7 +53,7 @@ import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.util.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale

@@ -74,6 +74,8 @@
     <string name="snackbar_message_order_desc_change">เรียงจากมากไปน้อยสำเร็จ</string>
     <string name="snackbar_message_date_created_at_change">เรียงตามวันที่สร้างสำเร็จ</string>
     <string name="snackbar_message_date_updated_at_change">เรียงตามวันที่อัพเดทสำเร็จ</string>
+    <string name="snackbar_message_date_finished_at_change">Finished time used for ordering</string>
+    <string name="snackbar_message_date_due_date_change">Due date used for ordering</string>
     <string name="snackbar_message_date_range_applied">กรองช่วงวันที่สำเร็จ</string>
     <string name="snackbar_message_date_range_cancelled">ยกเลิกการกรองช่วงวันที่</string>
     <string name="snackbar_favorite_change_message">กรอง favorite note สำเร็จ</string>
@@ -89,6 +91,7 @@
     <string name="task_content_dateformat">HH:mm LLL dd, yyyy</string>
     <string name="task_content_notebook_name">ชื่อบันทึก</string>
     <string name="note_content_today">วันนี้</string>
+    <string name="edit_content_reminderlabel">Reminder Before due-date</string>
     <string name="priority_high">สูง</string>
     <string name="priority_medium">กลาง</string>
     <string name="priority_low">ต่ำ</string>
@@ -120,7 +123,8 @@
     <string name="note_screen_move_to_notebook_dialog_title">ย้ายไปยัง</string>
     <string name="note_screen_copy_to_notebook_dialog_title">Copy to</string>
     <string name="note_screen_edit_notebook_dialog_title">แก้ไขบันทึก</string>
-    <string name="date_picker_title">เลือกช่วงวันที่</string>
+    <string name="date_due_date_picker_title">Pick up a due date</string>
+    <string name="date_search_range_picker_title">เลือกช่วงวันท</string>
     <string name="note_select_use_default">บันทึกเริ่มต้น</string>
     <string name="close_label">ปิด</string>
     <string name="save_label">บันทึก</string>
@@ -128,6 +132,7 @@
     <string name="info_updated_at">อัพเดทเมื่อ</string>
     <string name="info_finished_at">เสร็จสิ้นเมื่อ</string>
     <string name="info_due_date">Due Date</string>
+    <string name="info_reminder">Reminder</string>
     <string name="info_accessed_at">เปิดอ่านเมื่อ</string>
     <string name="info_priority">ลำดับความสำคัญ</string>
     <string name="info_priority_memos_count">สำดับความสำคัญ(สูง/กลาง/ต่ำ/ไม่ระบุ)</string>
@@ -152,5 +157,18 @@
     <string name="info_import_fail_title">ไม่สามารถนำเข้าได้</string>
     <string name="info_import_fail_content">เกิดข้อผิดพลาดในการบันทึกข้อมูลจากไฟล์ กรุณาตรวจสอบไฟล์ต้นทาง</string>
     <string name="info_dialog_dismiss_label">ยกเลิก</string>
+    <string name="memo_sorting_option_created_at">Created At</string>
+    <string name="memo_sorting_option_updated_at">Updated At</string>
+    <string name="memo_sorting_option_finished_at">Finished At</string>
+    <string name="memo_sorting_option_due_date">Due Date</string>
+    <string name="reminder_no_reminder">No Reminder</string>
+    <string name="reminder_on_time">On time</string>
+    <string name="reminder_10minutes">10 minutes ago</string>
+    <string name="reminder_30minutes">30 minutes ago</string>
+    <string name="reminder_an_hour">An Hour ago</string>
+    <string name="reminder_six_hours">6 hours ago</string>
+    <string name="reminder_twelve_hours">12 hours ago</string>
+    <string name="reminder_a_day">A day ago</string>
+    <string name="reminder_two_days">Two days ago</string>
 
 </resources>

@@ -46,9 +46,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.google.android.material.datepicker.DateValidatorPointForward
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -61,6 +63,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,7 +162,7 @@ fun SimpleDatePickerSheet(
 fun PreviewSimpleDateRangePickerSheet() {
     MaterialTheme {
         SimpleDateRangePickerSheet(
-            titleResource = R.string.date_picker_title,
+            titleResource = R.string.date_search_range_picker_title,
             datePickerExpanded = true,
             onDismissRequest = { /*TODO*/ },
             onConfirmClick = { _, _ -> })
@@ -171,7 +174,8 @@ fun PreviewSimpleDateRangePickerSheet() {
 fun getFormattedDate(timeInMillis: Long): String {
     val calender = Calendar.getInstance()
     calender.timeInMillis = timeInMillis
-    val dateFormat = SimpleDateFormat(stringResource(id = R.string.datepicker_date_format))
+    val dateFormat =
+        SimpleDateFormat(stringResource(id = R.string.datepicker_date_format), Locale.getDefault())
     return dateFormat.format(calender.timeInMillis)
 }
 
@@ -379,7 +383,7 @@ fun convertToLocalEndTime(timestamp: Long?, isStart: Boolean): Long? {
     val zoned = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
 
-    // 시작과 끝을 달리해야 한다.
+    // 시작과 끝을 달리 해야 한다.
     // 시작은 6월 1일이면 기본적으로 UTC 기준으로 날짜가 계산되므로 offset을 뺀다.
     // 그러면 정확한 local 0시가 나온다.
     // 끝날은 6월 1일이면 그날의 23시59분까지 범위를 조회하므로 offset을 뺀 후에 하루를 더 해준다. 그리고 1초를 빼준다.
@@ -401,6 +405,7 @@ fun convertLocalTime(timestamp: Long?): Long? {
     val instant = Instant.ofEpochMilli(timestamp)
     val zoned = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
 
+    // 더하기
     val changedTime = Instant.ofEpochSecond(instant.epochSecond + zoned.offset.totalSeconds)
     Log.d("PHILIP", "time change ${OffsetDateTime.ofInstant(changedTime, ZoneId.systemDefault())}")
     Log.d("PHILIP", "time change ${OffsetDateTime.ofInstant(instant, ZoneId.systemDefault())}")
@@ -413,7 +418,7 @@ fun convertLocalTime(timestamp: Long?): Long? {
 fun GreetingPreview16() {
     MaterialTheme {
         SimpleDateRangePickerSheet(
-            titleResource = R.string.date_picker_title,
+            titleResource = R.string.date_search_range_picker_title,
             datePickerExpanded = true,
             onDismissRequest = {},
             onConfirmClick = { _, _ -> },
@@ -438,7 +443,7 @@ fun PreviewDateRangePickerSample() {
     )
     MaterialTheme {
         CustomDateRangePicker(
-            titleResource = R.string.date_picker_title,
+            titleResource = R.string.date_search_range_picker_title,
             state = dateRangePickerState,
             onConfirmClick = { _, _ -> },
             onDismissRequest = {}
@@ -456,14 +461,12 @@ fun DefaultDatePickerDialog(
     onDismissRequest: () -> Unit,
 ) {
 
+    // 화면에 표시할 때는 +offset, 지정해서 계산할 때는 -offset이 필요
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = convertToLocalEndTime(
-            ZonedDateTime.now().toEpochSecond() * 1000, false
-        ),
+        initialSelectedDateMillis = convertLocalTime(Calendar.getInstance().timeInMillis),
         yearRange = IntRange(2000, 2100),
         initialDisplayMode = DisplayMode.Picker
     )
-
 
     if (openDialog) {
         val confirmEnabled by derivedStateOf { datePickerState.selectedDateMillis != null }
@@ -476,18 +479,43 @@ fun DefaultDatePickerDialog(
                     },
                     enabled = confirmEnabled
                 ) {
-                    Text("OK")
+                    Text(stringResource(id = R.string.label_Ok))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { onDismissRequest() }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(id = R.string.label_cancel))
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                title = {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = LARGE_PADDING)
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.date_due_date_picker_title),
+                        textAlign = TextAlign.Center,
+                        fontStyle = MaterialTheme.typography.titleMedium.fontStyle,
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize
+                    )
+                },
+                // 하루 전까지 선택가능해야 한다. -> 시작은 화면에 표출하기 때문에 9시간을 더한 시간을 보여줘야 한다.
+                // 화면과 비교하기 때문에 시간 +offset이 필요하다.
+                dateValidator = { time ->
+                    DateValidatorPointForward.from(
+                        convertLocalTime(
+                            OffsetDateTime.ofInstant(
+                                Instant.ofEpochMilli(Calendar.getInstance().timeInMillis),
+                                ZoneId.systemDefault()
+                            ).minusDays(1).toEpochSecond() * 1000
+                        )!!
+                    ).isValid(time)
+                },
+                state = datePickerState
+            )
         }
     }
 }
@@ -507,7 +535,7 @@ fun PreViewDefaultDatePickerDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultTimePickerDialog(
-    state : TimePickerState,
+    state: TimePickerState,
     showTimePicker: Boolean = false,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,

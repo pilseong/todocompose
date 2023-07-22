@@ -5,22 +5,26 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.database.MemoDAO
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject
+import javax.inject.Singleton
 
-//@ViewModelScoped
-@ActivityRetainedScoped
+@ViewModelScoped
+//@Singleton
 class TodoRepository @Inject constructor(
     private val memoDAO: MemoDAO
 ) {
@@ -33,7 +37,8 @@ class TodoRepository @Inject constructor(
         query: String,
         searchNoFilterState: Boolean = false,
         searchRangeAll: Boolean = false,
-        sortCondition: Int,
+        memoDateSortState: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
+        memoOrderState: SortOption = SortOption.DESC,
         priority: Priority = Priority.NONE,
         startDate: Long? = null,
         endDate: Long? = null,
@@ -59,7 +64,8 @@ class TodoRepository @Inject constructor(
                     query = query,
                     searchNoFilterState = searchNoFilterState,
                     searchRangeAll = searchRangeAll,
-                    sortCondition = sortCondition,
+                    memoDateSortState = memoDateSortState,
+                    memoOrderState = memoOrderState,
                     priority = priority,
                     startDate = startDate,
                     endDate = endDate,
@@ -86,9 +92,9 @@ class TodoRepository @Inject constructor(
         }
     }
 
-    suspend fun addMemo(memo: TaskDetails) {
-        withContext(Dispatchers.IO) {
-            memoDAO.addMemo(memo)
+    suspend fun addMemo(memo: TaskDetails): Long {
+        return  withContext(Dispatchers.IO) {
+            return@withContext memoDAO.addMemo(memo)
         }
     }
 

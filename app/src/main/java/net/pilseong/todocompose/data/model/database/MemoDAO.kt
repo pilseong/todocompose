@@ -9,7 +9,9 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.repository.ZonedDateTypeConverter
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
@@ -63,37 +65,16 @@ abstract class MemoDAO(
                 "                   OR CASE :priorityNone   WHEN 1 THEN priority = 'NONE' END " +
                 "               ) " +
                 "               AND (" +
-                "                   CASE :sortCondition " +
-                "                       WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                   CASE :memoDateSortState " +
+                "                       WHEN 'CREATED_AT' THEN created_at is not NULL AND created_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'UPDATED_AT' THEN updated_at is not NULL AND updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'FINISHED_AT' THEN completed_at is not NULL AND completed_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'DUE_DATE' THEN due_date is not NULL AND due_date BETWEEN :startDate AND :endDate " +
                 "                   END" +
                 "               ) " +
                 "           ) " +
                 "       END " +
                 "   ) " +
-                "   ORDER BY " +
-                "       CASE :priority " +
-                "           WHEN 'LOW' THEN " +
-                "               CASE " +
-                "                   WHEN priority LIKE 'L%' THEN 1 " +
-                "                   WHEN priority LIKE 'M%' THEN 2 " +
-                "                   WHEN priority LIKE 'H%' THEN 3 " +
-                "                   WHEN priority LIKE 'N%' THEN 4 " +
-                "               END " +
-                "           WHEN 'HIGH' THEN" +
-                "               CASE " +
-                "                   WHEN priority LIKE 'H%' THEN 1 " +
-                "                   WHEN priority LIKE 'M%' THEN 2 " +
-                "                   WHEN priority LIKE 'L%' THEN 3 " +
-                "                   WHEN priority LIKE 'N%' THEN 4 " +
-                "               END " +
-                "           END, " +
-                "       CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
-                "       CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
-                "       CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
-                "       CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
                 ") AS total " +
                 "FROM memo_table " +
                 "WHERE deleted = 0 " +
@@ -130,11 +111,11 @@ abstract class MemoDAO(
                 "                   OR CASE :priorityNone   WHEN 1 THEN priority = 'NONE' END " +
                 "               ) " +
                 "               AND (" +
-                "                   CASE :sortCondition " +
-                "                       WHEN 0 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 1 THEN updated_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 2 THEN created_at BETWEEN :startDate AND :endDate " +
-                "                       WHEN 3 THEN created_at BETWEEN :startDate AND :endDate " +
+                "                   CASE :memoDateSortState " +
+                "                       WHEN 'CREATED_AT' THEN created_at is not NULL AND created_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'UPDATED_AT' THEN updated_at is not NULL AND updated_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'FINISHED_AT' THEN completed_at is not NULL AND completed_at BETWEEN :startDate AND :endDate " +
+                "                       WHEN 'DUE_DATE' THEN due_date is not NULL AND due_date BETWEEN :startDate AND :endDate " +
                 "                   END" +
                 "               ) " +
                 "           ) " +
@@ -157,10 +138,14 @@ abstract class MemoDAO(
                 "               WHEN priority LIKE 'N%' THEN 4 " +
                 "           END " +
                 "       END, " +
-                "   CASE WHEN :sortCondition = 0 THEN updated_at END DESC, " +
-                "   CASE WHEN :sortCondition = 1 THEN updated_at END ASC, " +
-                "   CASE WHEN :sortCondition = 2 THEN created_at END DESC, " +
-                "   CASE WHEN :sortCondition = 3 THEN created_at END ASC " +
+                "   CASE WHEN :memoOrderState = 'DESC' AND :memoDateSortState = 'CREATED_AT' THEN created_at END DESC, " +
+                "   CASE WHEN :memoOrderState = 'DESC' AND :memoDateSortState = 'UPDATED_AT' THEN updated_at END DESC, " +
+                "   CASE WHEN :memoOrderState = 'DESC' AND :memoDateSortState = 'FINISHED_AT' THEN completed_at END DESC, " +
+                "   CASE WHEN :memoOrderState = 'DESC' AND :memoDateSortState = 'DUE_DATE' THEN due_date END DESC, " +
+                "   CASE WHEN :memoOrderState = 'ASC' AND :memoDateSortState = 'CREATED_AT' THEN created_at END ASC, " +
+                "   CASE WHEN :memoOrderState = 'ASC' AND :memoDateSortState = 'UPDATED_AT' THEN updated_at END ASC, " +
+                "   CASE WHEN :memoOrderState = 'ASC' AND :memoDateSortState = 'FINISHED_AT' THEN completed_at END ASC, " +
+                "   CASE WHEN :memoOrderState = 'ASC' AND :memoDateSortState = 'DUE_DATE' THEN due_date END ASC " +
                 "LIMIT :pageSize OFFSET (:page - 1 ) * :pageSize"
     )
     abstract suspend fun getMemosWithNotebooks(
@@ -169,7 +154,8 @@ abstract class MemoDAO(
         query: String,
         searchNoFilterState: Boolean = false,
         searchRangeAll: Boolean = false,
-        sortCondition: Int = 0,
+        memoDateSortState: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
+        memoOrderState: SortOption = SortOption.DESC,
         priority: String = "HIGH",
         startDate: Long = Long.MIN_VALUE,
         endDate: Long = Long.MAX_VALUE,
@@ -200,7 +186,7 @@ abstract class MemoDAO(
 
 
     @Transaction
-    open suspend fun addMemo(memo: TaskDetails) {
+    open suspend fun addMemo(memo: TaskDetails): Long {
         val photoDAO = database.getPhotoDAO()
 
         val memoId = addMemo(memo.toMemoTask())
@@ -209,6 +195,8 @@ abstract class MemoDAO(
         photos.forEach { photo ->
             photoDAO.addPhoto(photo.copy(memoId = memoId))
         }
+
+        return memoId
     }
 
     suspend fun updateMemoWithTimestamp(memo: MemoTask) =

@@ -26,7 +26,7 @@
     <string name="snack_bar_undo_label">Undo</string>
     <string name="label_yes">Yes</string>ㄹ
     <string name="label_no">No</string>
-    <string name="label_Ok">Ok</string>
+    <string name="label_Ok">OK</string>
     <string name="label_cancel">Cancel</string>
     <string name="delete_task_dialog_title">Remove \'%1$s\'?</string>
     <string name="delete_task_dialog_confirmation">Are you sure to remove \'%1$s\'?</string>
@@ -74,6 +74,8 @@
     <string name="snackbar_message_order_desc_change">Descending Ordering applied</string>
     <string name="snackbar_message_date_created_at_change">Created time used for ordering</string>
     <string name="snackbar_message_date_updated_at_change">Updated time used for ordering</string>
+    <string name="snackbar_message_date_finished_at_change">Finished time used for ordering</string>
+    <string name="snackbar_message_date_due_date_change">Due date used for ordering</string>
     <string name="snackbar_message_date_range_applied">Date range filter applied</string>
     <string name="snackbar_message_date_range_cancelled">Date range filter removed</string>
     <string name="snackbar_favorite_change_message">Favorite notes filtered</string>
@@ -88,6 +90,7 @@
     <string name="task_item_star_description">Favorite icon</string>
     <string name="task_content_dateformat">HH:mm LLL dd, yyyy</string>
     <string name="task_content_notebook_name">Notebook Name</string>
+    <string name="edit_content_reminderlabel">Reminder Before due-date</string>
     <string name="note_content_today">Today</string>
     <string name="priority_high">High</string>
     <string name="priority_medium">Medium</string>
@@ -120,7 +123,8 @@
     <string name="note_screen_move_to_notebook_dialog_title">Move to</string>
     <string name="note_screen_copy_to_notebook_dialog_title">Copy to</string>
     <string name="note_screen_edit_notebook_dialog_title">Edit Notebook</string>
-    <string name="date_picker_title">Pick up a date range</string>
+    <string name="date_due_date_picker_title">Pick up a due date</string>
+    <string name="date_search_range_picker_title">Pick up a date range</string>
     <string name="note_select_use_default">Use default Notebook</string>
     <string name="close_label">Close</string>
     <string name="save_label">Save</string>
@@ -128,6 +132,7 @@
     <string name="info_updated_at">Updated At</string>
     <string name="info_finished_at">Finished At</string>
     <string name="info_due_date">Due Date</string>
+    <string name="info_reminder">Reminder</string>
     <string name="info_accessed_at">Accessed At</string>
     <string name="info_priority">Notebook Priority</string>
     <string name="info_priority_memos_count">Memos Priority(H/M/L/N)</string>
@@ -152,5 +157,18 @@
     <string name="info_import_fail_title">Import Error</string>
     <string name="info_import_fail_content">Error while saving data from the file. It would be caused by format mis-match or damaged file.</string>
     <string name="info_dialog_dismiss_label">Dismiss</string>
+    <string name="memo_sorting_option_created_at">Created At</string>
+    <string name="memo_sorting_option_updated_at">Updated At</string>
+    <string name="memo_sorting_option_finished_at">Finished At</string>
+    <string name="memo_sorting_option_due_date">Due Date</string>
+    <string name="reminder_no_reminder">No Reminder</string>
+    <string name="reminder_on_time">On time</string>
+    <string name="reminder_10minutes">10 minutes ago</string>
+    <string name="reminder_30minutes">30 minutes ago</string>
+    <string name="reminder_an_hour">An Hour ago</string>
+    <string name="reminder_six_hours">6 hours ago</string>
+    <string name="reminder_twelve_hours">12 hours ago</string>
+    <string name="reminder_a_day">A day ago</string>
+    <string name="reminder_two_days">Two days ago</string>
 
 </resources>

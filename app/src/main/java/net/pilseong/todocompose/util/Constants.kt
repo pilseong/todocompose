@@ -31,6 +31,7 @@ object Constants {
     const val PRIORITY_FILTER_PREFERENCE_KEY = "priority_filter_key"
     const val STATE_PREFERENCE_KEY = "state_id_key"
     const val DATE_ORDER_PREFERENCE_KEY = "date_order_preference_key"
+    const val MEMO_DATE_SORTING_PREFERENCE_KEY = "memo_date_sorting_preference_key"
     const val NOTE_SORTING_ORDER_ID_PREFERENCE_KEY = "note_sorting_order_preference_key"
 
     const val NEW_ITEM_ID: Long = 0L

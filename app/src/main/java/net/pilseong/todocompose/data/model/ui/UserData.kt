@@ -1,13 +1,11 @@
 package net.pilseong.todocompose.data.model.ui
 
-import net.pilseong.todocompose.util.NoteSortingOption
-import net.pilseong.todocompose.util.SortOption
 import net.pilseong.todocompose.util.StateEntity
-import okhttp3.internal.http.StatusLine
 
 data class UserData(
     val prioritySortState: Priority = Priority.NONE,
-    val dateOrderState: SortOption = SortOption.UPDATED_AT_DESC,
+    val dateOrderState: SortOption = SortOption.DESC,
+    val memoDateSortingState: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
     val notebookIdState: Long = -1,
     val statusLineOrderState: MutableList<StateEntity> = mutableListOf(
         StateEntity.NOTE_FILTER,

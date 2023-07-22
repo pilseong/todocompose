@@ -29,7 +29,7 @@ import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.util.SortOption
+import net.pilseong.todocompose.data.model.ui.SortOption
 
 fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
@@ -193,18 +193,16 @@ fun NavGraphBuilder.memoListComposable(
             onOrderEnabledClick = { orderUpdate ->
                 memoViewModel.handleActions(
                     action = Action.SORT_ORDER_CHANGE,
-                    sortOrderEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                            uiState.dateOrderState == SortOption.UPDATED_AT_ASC),
+                    sortOrderState = if (uiState.dateOrderState == SortOption.DESC) SortOption.ASC else SortOption.DESC,
                     statusLineOrderUpdate = orderUpdate
 
                 )
             },
-            onDateEnabledClick = { orderUpdate ->
+            onDateSortingChangeClick = { action, sortingOption, statusOrderUpdate ->
                 memoViewModel.handleActions(
-                    action = Action.SORT_DATE_CHANGE,
-                    sortDateEnabled = !(uiState.dateOrderState == SortOption.CREATED_AT_ASC ||
-                            uiState.dateOrderState == SortOption.CREATED_AT_DESC),
-                    statusLineOrderUpdate = orderUpdate
+                    action = Action.MEMO_SORT_DATE_BASE_CHANGE,
+                    memoSortOption = sortingOption,
+                    statusLineOrderUpdate = statusOrderUpdate
                 )
             },
             onPrioritySelected = { priorityAction, priority, orderUpdate ->
@@ -312,8 +310,8 @@ fun NavGraphBuilder.memoListComposable(
                     memoViewModel.updateAction(Action.NO_ACTION)
                 }
             },
-            orderEnabled = memoViewModel.snackBarOrderEnabled,
-            dateEnabled = memoViewModel.snackBarDateEnabled,
+            orderState = memoViewModel.snackBarOrderState,
+            memoDateSortingOption = memoViewModel.snackBarDateState,
             startDate = memoViewModel.startDate,
             endDate = memoViewModel.endDate,
             actionAfterPopup = { memoViewModel.updateAction(it) }

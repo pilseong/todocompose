@@ -288,7 +288,7 @@ fun ListAppBarActions(
 
     var datePickerExpanded by remember { mutableStateOf(false) }
     SimpleDateRangePickerSheet(
-        titleResource = R.string.date_picker_title,
+        titleResource = R.string.date_search_range_picker_title,
         datePickerExpanded = datePickerExpanded,
         onDismissRequest = {
             datePickerExpanded = false

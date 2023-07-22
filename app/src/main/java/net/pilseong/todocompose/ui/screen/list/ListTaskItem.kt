@@ -89,7 +89,7 @@ fun TaskItem(
     todoTask: MemoWithNotebook,
     toTaskScreen: (Long) -> Unit,
     headerEnabled: Boolean = true,
-    datetime: ZonedDateTime,
+    datetime: ZonedDateTime?,
     onFavoriteClick: () -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItemsIds: SnapshotStateList<Long>,
@@ -161,6 +161,8 @@ fun TaskItem(
                 }
             )
             Spacer(modifier = Modifier.width(10.dp))
+
+            // 실제 task 내용을 보여 주는 부분
             Surface(
                 modifier = Modifier
                     .onGloballyPositioned { layoutPosition ->
@@ -190,7 +192,6 @@ fun TaskItem(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(vertical = MEDIUM_PADDING)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -198,26 +199,28 @@ fun TaskItem(
                         // 시간 + 중요성
                         Column(
                             modifier = Modifier
-                                .padding(top = 2.dp)
+                                .padding(vertical = MEDIUM_PADDING)
                                 .weight(2 / 12f),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Text(
-                                modifier = Modifier
-                                    .wrapContentHeight(CenterVertically),
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                textAlign = TextAlign.Center,
-                                text = innerTime.toLocalTime()
-                                    .format(DateTimeFormatter.ofPattern("HH:mm")),
-                                color = Color(
-                                    ColorUtils.blendARGB(
-                                        MaterialTheme.colorScheme.onSurface.toArgb(),
-                                        Color.White.toArgb(),
-                                        0.1f
-                                    )
-                                ).copy(0.9f),
-                            )
+                            innerTime?.toLocalTime()?.let {
+                                Text(
+                                    modifier = Modifier
+                                        .wrapContentHeight(CenterVertically),
+                                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                    textAlign = TextAlign.Center,
+                                    text = it
+                                        .format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    color = Color(
+                                        ColorUtils.blendARGB(
+                                            MaterialTheme.colorScheme.onSurface.toArgb(),
+                                            Color.White.toArgb(),
+                                            0.1f
+                                        )
+                                    ).copy(0.9f),
+                                )
+                            }
                             Spacer(modifier = modifier.height(4.dp))
                             Icon(
                                 imageVector = if (selected.value)
@@ -225,15 +228,17 @@ fun TaskItem(
                                 else
                                     Icons.Default.Circle,
                                 contentDescription = if (selected.value) "Checked Circle" else "Circle",
-                                tint = if (selected.value) MaterialTheme.colorScheme.primary else todoInside.memo.priority.color
+                                tint = if (selected.value) MaterialTheme.colorScheme.primary
+                                else todoInside.memo.priority.color
                             )
                         }
 
                         //  제목 내용
                         Column(
                             modifier = Modifier
+                                .padding(vertical = MEDIUM_PADDING)
                                 .fillMaxHeight()
-                                .weight(7 / 12f),
+                                .weight(if (todoTask.memo.progression != State.NONE) 7 / 12f else 9 / 12f),
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
@@ -242,7 +247,7 @@ fun TaskItem(
                                 style = if (todoInside.memo.description.isNotBlank())
                                     MaterialTheme.typography.bodyLarge
                                 else MaterialTheme.typography.bodySmall,
-                                maxLines = if (todoInside.memo.description.isNotBlank()) 1 else 2
+                                maxLines = if (todoInside.memo.description.isNotBlank()) 1 else 4
                             )
 
                             if (todoInside.memo.description.isNotBlank()) {
@@ -258,89 +263,132 @@ fun TaskItem(
                         }
 
                         // favorite and state
-                        Column(
-                            modifier = Modifier
-                                .padding(PaddingValues(end = SMALL_PADDING))
-                                .weight(3 / 12f),
-                            verticalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Row(
+                        if (todoTask.memo.progression != State.NONE) {
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                verticalAlignment = CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                    .fillMaxSize()
+                                    .padding(vertical = MEDIUM_PADDING)
+                                    .padding(PaddingValues(end = SMALL_PADDING))
+                                    .weight(3 / 12f),
+                                verticalArrangement = Arrangement.Center,
                             ) {
-                                CompositionLocalProvider(
-                                    LocalMinimumInteractiveComponentEnforcement provides false,
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    verticalAlignment = CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
                                 ) {
-                                    IconButton(
-                                        modifier = Modifier.size(24.dp),
-                                        onClick = {
-                                            Log.i("PHILIP", "test")
-                                            favoriteOn = !favoriteOn
-                                            onFavoriteClick()
-                                        }
+                                    CompositionLocalProvider(
+                                        LocalMinimumInteractiveComponentEnforcement provides false,
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Star,
-                                            contentDescription = stringResource(id = R.string.task_item_star_description),
-                                            tint = if (favoriteOn) FavoriteYellow else Color.White
+                                        IconButton(
+                                            modifier = Modifier.size(24.dp),
+                                            onClick = {
+                                                Log.i("PHILIP", "test")
+                                                favoriteOn = !favoriteOn
+                                                onFavoriteClick()
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = stringResource(id = R.string.task_item_star_description),
+                                                tint = if (favoriteOn) FavoriteYellow else Color.White
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(top = 4.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                ) {
+                                    Surface(
+                                        modifier = Modifier
+                                            .width(80.dp)
+                                            .clickable {
+                                                stateDialogExpanded = !stateDialogExpanded
+                                            },
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            modifier = Modifier.padding(vertical = 4.dp),
+                                            text = stringResource(id = stateState.label),
+                                            textAlign = TextAlign.Center,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                         )
                                     }
                                 }
-                            }
-                            Row(
-                                modifier = Modifier
-                                    .padding(top = 4.dp)
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                Surface(
-                                    modifier = Modifier
-                                        .width(80.dp)
-                                        .clickable {
-                                            stateDialogExpanded = !stateDialogExpanded
-                                        },
-                                    shape = RoundedCornerShape(4.dp)
+
+                                // 상태를 선택할 수 있는 DropDownMenu
+                                DropdownMenu(
+                                    expanded = stateDialogExpanded,
+                                    onDismissRequest = { stateDialogExpanded = false },
                                 ) {
-                                    Text(
-                                        modifier = Modifier.padding(vertical = 4.dp),
-                                        text = stringResource(id = stateState.label),
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    )
+                                    State.values().reversed().forEach { state ->
+                                        DropdownMenuItem(
+                                            leadingIcon = {
+                                                Canvas(
+                                                    modifier = Modifier
+                                                        .offset(0.dp, 0.8.dp)
+                                                        .size(PRIORITY_INDICATOR_SIZE)
+                                                ) {
+                                                    drawCircle(color = state.color)
+                                                }
+                                            },
+                                            text = {
+                                                Text(
+                                                    text = stringResource(id = state.label),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            },
+                                            onClick = {
+                                                stateState = state
+                                                onStateSelected(todoInside, state)
+                                                stateDialogExpanded = false
+                                            })
+                                    }
                                 }
                             }
-                            // 상태를 선택할 수 있는 DropDownMenu
-                            DropdownMenu(
-                                expanded = stateDialogExpanded,
-                                onDismissRequest = { stateDialogExpanded = false },
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1 / 12f),
                             ) {
-                                State.values().reversed().forEach { state ->
-                                    DropdownMenuItem(
-                                        leadingIcon = {
-                                            Canvas(
-                                                modifier = Modifier
-                                                    .offset(0.dp, 0.8.dp)
-                                                    .size(PRIORITY_INDICATOR_SIZE)
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    tonalElevation = 6.dp,
+                                    shadowElevation = 6.dp
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        verticalAlignment = CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        CompositionLocalProvider(
+                                            LocalMinimumInteractiveComponentEnforcement provides false,
+                                        ) {
+                                            IconButton(
+                                                modifier = Modifier.size(24.dp),
+                                                onClick = {
+                                                    Log.i("PHILIP", "test")
+                                                    favoriteOn = !favoriteOn
+                                                    onFavoriteClick()
+                                                }
                                             ) {
-                                                drawCircle(color = state.color)
+                                                Icon(
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = stringResource(id = R.string.task_item_star_description),
+                                                    tint = if (favoriteOn) FavoriteYellow else Color.White
+                                                )
                                             }
-                                        },
-                                        text = {
-                                            Text(
-                                                text = stringResource(id = state.label),
-                                                style = MaterialTheme.typography.labelMedium,
-                                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        },
-                                        onClick = {
-                                            stateState = state
-                                            onStateSelected(todoInside, state)
-                                            stateDialogExpanded = false
-                                        })
+                                        }
+                                    }
                                 }
                             }
                         }

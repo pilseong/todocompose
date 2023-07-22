@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.note
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -18,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import net.pilseong.todocompose.util.NoteSortingOption
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)

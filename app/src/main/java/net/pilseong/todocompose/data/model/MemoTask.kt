@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.ReminderTime
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.util.Constants.MEMO_TABLE
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
@@ -32,7 +33,13 @@ data class MemoTask constructor(
     val notebookId: Long,
     @ColumnInfo(name = "deleted", defaultValue = "0")
     val deleted: Boolean = false,
-) {
+    @ColumnInfo(name = "reminder_type", defaultValue = "NOT_USED")
+    val reminderType: ReminderTime = ReminderTime.NOT_USED,
+    @ColumnInfo(name = "reminder_offset", defaultValue = "-1")
+    val reminderOffset: Long? = null,
+
+
+    ) {
 
     companion object {
         @JvmStatic fun instance(notebookId: Long = -1): MemoTask {
@@ -47,6 +54,8 @@ data class MemoTask constructor(
                 updatedAt = ZonedDateTime.now(),
                 finishedAt = null,
                 dueDate = null,
+                reminderType = ReminderTime.NOT_USED,
+                reminderOffset = null,
                 notebookId = notebookId
             )
         }

@@ -60,6 +60,7 @@ import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
@@ -83,7 +84,7 @@ fun ListContent(
 //    onSwipeToDelete: (Action, MemoWithNotebook) -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     header: Boolean = false,
-    dateEnabled: Boolean = false,
+    memoDateBaseOption: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItemsIds: SnapshotStateList<Long>,
@@ -95,7 +96,7 @@ fun ListContent(
         LazyItemList(
             tasks = tasks,
             header = header,
-            dateEnabled = dateEnabled,
+            memoDateBaseOption = memoDateBaseOption,
             onSwipeToEdit = onSwipeToEdit,
             toTaskScreen = toTaskScreen,
             onFavoriteClick = onFavoriteClick,
@@ -111,7 +112,7 @@ fun ListContent(
 fun LazyItemList(
     tasks: LazyPagingItems<MemoWithNotebook>,
     header: Boolean = false,
-    dateEnabled: Boolean = false,
+    memoDateBaseOption: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     toTaskScreen: (Int) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
@@ -122,21 +123,24 @@ fun LazyItemList(
     // lazy Column 의 화면 데이터 사용
     val listState = rememberLazyListState()
     val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+
+    // 100개의 리스트 의 50번째가 firstVisibleItem 이 었다가 20개 짜리 리스트 로 노트를 변경할 경우
+    // index 가 리스트 보다 많아 지는 경우가 일시적 으로 발생 한다. 예외 처리
     val realIndex = remember(tasks.itemCount, headerIndex) {
         if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
     }
 
-    // 100개의 리스트 의 50번째가 firstVisibleItem 이 었다가 20개 짜리 리스트 로 노트를 변경할 경우
-    // index 가 리스트 보다 많아 지는 경우가 일시적 으로 발생 한다. 예외 처리
-    val timeData by remember(dateEnabled, realIndex) {
-        mutableStateOf(
-            if (dateEnabled) {
-                tasks.peek(realIndex)?.memo?.createdAt
-            } else {
-                tasks.peek(realIndex)?.memo?.updatedAt
+//    val timeData by remember(memoDateBaseOption, realIndex) {
+    val timeData by rememberUpdatedState (
+            when (memoDateBaseOption) {
+                MemoDateSortingOption.CREATED_AT -> tasks.peek(realIndex)?.memo?.createdAt
+                MemoDateSortingOption.UPDATED_AT -> tasks.peek(realIndex)?.memo?.updatedAt
+                MemoDateSortingOption.FINISHED_AT -> tasks.peek(realIndex)?.memo?.finishedAt
+                MemoDateSortingOption.DUE_DATE -> tasks.peek(realIndex)?.memo?.dueDate
             }
-        )
-    }
+    )
+
+    Log.d("PHILIP", "result of timeData $memoDateBaseOption,  $timeData")
 
     val totalData by remember(tasks.peek(0)?.total) {
         mutableStateOf(tasks.peek(0)?.total ?: 0)
@@ -166,37 +170,47 @@ fun LazyItemList(
             // index 를 동일한 경우로만 remember 하면 내용이 변경된 경우에도 제대로 처리가 되지 않는다.
             val taskInside = remember(index, tasks[index]!!.toString()) { tasks[index]!! }
 
-            val currentDate = remember(dateEnabled, index) {
-                if (dateEnabled) taskInside.memo.createdAt else taskInside.memo.updatedAt
-            }
+//            val currentDate = remember(dateEnabled, index) {
+//                if (dateEnabled) taskInside.memo.createdAt else taskInside.memo.updatedAt
+//            }
 
-            val prevDate = remember(dateEnabled, index) {
-                if (dateEnabled) {
-                    if (index == 0) null
-                    else tasks.peek(index - 1)?.memo?.createdAt
-                } else {
-                    if (index == 0) null
-                    else tasks.peek(index - 1)?.memo?.updatedAt
+            val currentDate = remember(memoDateBaseOption, index) {
+                when (memoDateBaseOption) {
+                    MemoDateSortingOption.CREATED_AT -> taskInside.memo.createdAt
+                    MemoDateSortingOption.UPDATED_AT -> taskInside.memo.updatedAt
+                    MemoDateSortingOption.FINISHED_AT -> taskInside.memo.finishedAt
+                    MemoDateSortingOption.DUE_DATE -> taskInside.memo.dueDate
                 }
             }
 
 
-            val drawEndEdge by remember(dateEnabled, index) {
-                val today: ZonedDateTime?
-                val nextDate: ZonedDateTime?
-
-                if (dateEnabled) {
-                    today = tasks[index]?.memo?.createdAt
-                    nextDate = if (index == tasks.itemCount - 1) null
-                    else tasks[index + 1]?.memo?.createdAt
-                } else {
-                    today = tasks[index]?.memo?.updatedAt
-                    nextDate = if (index == tasks.itemCount - 1) null
-                    else tasks[index + 1]?.memo?.updatedAt
+            val prevDate = remember(memoDateBaseOption, index) {
+                if (index == 0) null
+                else {
+                    when (memoDateBaseOption) {
+                        MemoDateSortingOption.CREATED_AT -> tasks.peek(index - 1)?.memo?.createdAt
+                        MemoDateSortingOption.UPDATED_AT -> tasks.peek(index - 1)?.memo?.updatedAt
+                        MemoDateSortingOption.FINISHED_AT -> tasks.peek(index - 1)?.memo?.finishedAt
+                        MemoDateSortingOption.DUE_DATE -> tasks.peek(index - 1)?.memo?.dueDate
+                    }
                 }
+            }
 
+
+            val drawEndEdge by remember(memoDateBaseOption, index) {
+                val nextDate =
+
+                    if (index == tasks.itemCount - 1) null
+                    else {
+                        when (memoDateBaseOption) {
+                            MemoDateSortingOption.CREATED_AT -> tasks.peek(index + 1)?.memo?.createdAt
+                            MemoDateSortingOption.UPDATED_AT -> tasks.peek(index + 1)?.memo?.updatedAt
+                            MemoDateSortingOption.FINISHED_AT -> tasks.peek(index + 1)?.memo?.finishedAt
+                            MemoDateSortingOption.DUE_DATE -> tasks.peek(index + 1)?.memo?.dueDate
+                        }
+                    }
                 mutableStateOf(
-                    today?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
+                    currentDate?.toLocalDate().toString() != nextDate?.toLocalDate().toString()
                 )
             }
 
@@ -217,6 +231,7 @@ fun LazyItemList(
                                 )
                             }
                         }
+
                         else -> {}
                     }
                     true
@@ -230,14 +245,14 @@ fun LazyItemList(
                 }
             }
 
-            // lambda 를 통한 클로저의 반복적인 생성으로 인한 recomposition을 방지 한다.
-            // index가 변경할 때 해당 함수가 다시 생성되어야 한다.
+            // lambda 를 통한 클로저 의 반복 적인 생성 으로 인한 recomposition 을 방지 한다.
+            // index 가 변경할 때 해당 함수가 다시 생성 되어야 한다.
             val favoriteChangeLambda = remember(index) {
                 {
                     // favorite 을 클릭 했을 때 화면에 만 반영 하기 위해서 snapshot 의 상태만 변경 한다.
-                    // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot을 변경해야 한다.
-                    // 클릭하는 순간에는 어떤 방법으로도 snapshot이 반영되지 않았다. 그래서
-                    // 하위 컴포넌트에서 별도의 상태를 관리하도록 rememberUpdateState를 사용하였다.
+                    // list 가 이동 하는 순간 snapshot 이 그려 지기 때문에 snapshot 을 변경 해야 한다.
+                    // 클릭 하는 순간 에는 어떤 방법 으로도 snapshot 이 반영 되지 않았다. 그래서
+                    // 하위 컴포 넌트 에서 별도의 상태를 관리 하도록 rememberUpdateState 를 사용 하였다.
                     Log.d("PHILIP", "inside lambda $index")
                     tasks.itemSnapshotList[index]!!.memo.favorite =
                         !tasks.itemSnapshotList[index]!!.memo.favorite
@@ -247,7 +262,7 @@ fun LazyItemList(
             }
 
             val headerEnabled = remember(header, index, currentDate, prevDate) {
-                header && index != 0 && currentDate.toLocalDate()
+                header && index != 0 && currentDate?.toLocalDate()
                     .toString() != prevDate?.toLocalDate().toString()
             }
 
@@ -308,7 +323,7 @@ private fun StatusHeader(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        DateHeader(time = innerTime!!)
+        DateHeader(time = innerTime)
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.End
@@ -333,14 +348,14 @@ fun StatusHeaderPreview() {
 @Composable
 fun DateHeader(
     modifier: Modifier = Modifier,
-    time: ZonedDateTime
+    time: ZonedDateTime?
 ) {
     val innerTime by rememberUpdatedState(newValue = time)
 
     val backgroundColor by remember(innerTime) {
         mutableStateOf(
-            if (time.toLocalDate().dayOfWeek.toString().take(3) == "SUN" ||
-                time.toLocalDate().dayOfWeek.toString().take(3) == "SAT"
+            if (time?.toLocalDate()?.dayOfWeek.toString().take(3) == "SUN" ||
+                time?.toLocalDate()?.dayOfWeek.toString().take(3) == "SAT"
             ) {
                 WEEKEND_COLOR
             } else {
@@ -356,11 +371,11 @@ fun DateHeader(
         Column {
             Text(
                 color = backgroundColor.copy(alpha = 0.8f),
-                text = innerTime.toLocalDate().format(
+                text = innerTime?.toLocalDate()?.format(
                     DateTimeFormatter.ofPattern(
                         stringResource(id = R.string.note_content_dateformat)
                     )
-                ),
+                ) ?: "",
                 fontStyle = MaterialTheme.typography.titleSmall.fontStyle,
                 fontSize = MaterialTheme.typography.titleSmall.fontSize
             )

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.material.icons.filled.Task
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
@@ -96,7 +98,7 @@ fun ListScreen(
     onDateRangeCloseClick: () -> Unit,
     onFavoriteSortClick: (Boolean) -> Unit,
     onOrderEnabledClick: (Boolean) -> Unit,
-    onDateEnabledClick: (Boolean) -> Unit,
+    onDateSortingChangeClick: (Action, MemoDateSortingOption, Boolean) -> Unit,
     onPrioritySelected: (Action, Priority, Boolean) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickApplied: (Long) -> Unit,
@@ -186,7 +188,7 @@ fun ListScreen(
                 onDateRangeCloseClick,
                 onFavoriteSortClick,
                 onOrderEnabledClick,
-                onDateEnabledClick,
+                onDateSortingChangeClick,
                 onPrioritySelected,
                 onStateSelected,
                 onSearchRangeAllClicked,
@@ -221,24 +223,40 @@ private fun BottomActionBarNavigation(
                     onClick = {
                         toNoteScreen()
                     }) {
-                    Icon(Icons.Default.NoteAlt, contentDescription = "Localized description")
+                    Icon(
+                        Icons.Default.NoteAlt, contentDescription = "Localized description",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
                 }
                 IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
                     onClick = {
+                    }) {
+                    Icon(
+                        Icons.Default.StickyNote2, contentDescription = "Memo list",
+                    )
+                }
+                IconButton(
+                    enabled = true,
+                    onClick = {
                         toTaskManagementScreen()
                     }) {
-                    Icon(Icons.Default.Task, contentDescription = "Task Management")
+                    Icon(
+                        Icons.Default.Task, contentDescription = "Task Manager",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
                 }
                 IconButton(onClick = { /* doSomething() */ }) {
                     Icon(
                         Icons.Default.CalendarMonth,
                         contentDescription = "Scheduling",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
                 IconButton(onClick = { /* doSomething() */ }) {
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -342,7 +360,7 @@ private fun ListScreenPreview() {
         onDateRangeCloseClick = {},
         onFavoriteSortClick = {},
         onOrderEnabledClick = {},
-        onDateEnabledClick = {},
+        onDateSortingChangeClick = { _, _, _ ->},
         onPrioritySelected = { _, _, _ -> },
         onFavoriteClick = {},
         onLongClickApplied = {},

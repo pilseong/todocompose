@@ -96,7 +96,7 @@ fun SimpleDatePickerDialog(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = stringResource(id = R.string.date_picker_title),
+                                    text = stringResource(id = R.string.date_search_range_picker_title),
                                     fontStyle = MaterialTheme.typography.titleLarge.fontStyle,
                                     fontSize = MaterialTheme.typography.titleLarge.fontSize
                                 )
