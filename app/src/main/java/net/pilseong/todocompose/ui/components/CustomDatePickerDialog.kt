@@ -43,6 +43,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -540,12 +541,11 @@ fun DefaultTimePickerDialog(
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    val showingPicker = remember { mutableStateOf(true) }
-
+    val showingPicker by remember { mutableStateOf(true) }
 
     if (showTimePicker) {
         TimePickerDialog(
-            title = if (showingPicker.value) {
+            title = if (showingPicker) {
                 "Select Time "
             } else {
                 "Enter Time"

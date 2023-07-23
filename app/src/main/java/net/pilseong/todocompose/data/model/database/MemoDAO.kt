@@ -209,12 +209,12 @@ abstract class MemoDAO(
         // update memo first
         updateMemo(memo.toMemoTask().copy(updatedAt = ZonedDateTime.now()))
 
-        // update photos
         val photoDAO = database.getPhotoDAO()
 
+        // (기존 사진 - 삭제) (추가는 id 을 으로 판단해 데이터 베이스 업 데이트
         val photoIds = mutableListOf<Long>()
 
-        // 현재 메모에 포함 되어 있는 사진 id를 모두 가져 온다.
+        // (기존 사진) 업 데이트 전 메모에 포함 되어 있는 사진 id를 모두 가져 온다.
         val dbPhotosIds = photoDAO.getPhotoIdsByMemoId(memo.id)
 
         // 수정할 사진 목록을 돌면서 id가 0이면 추가된 사진 이므로 사진을 추가
@@ -335,4 +335,13 @@ abstract class MemoDAO(
             }
         }
     }
+
+    // 알람이 설정된 메모를 가지고 온다.
+    @Query(" SELECT id " +
+            "FROM memo_table " +
+            "WHERE notebook_id = :notebookId " +
+            "   AND deleted = 0 " +
+            "   AND due_date is not null " +
+            "   AND reminder_type != 'NOT_USED'")
+    abstract suspend fun getMemosWithAlarmByNotebookId(notebookId: Long): List<Long>
 }

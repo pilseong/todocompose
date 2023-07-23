@@ -58,6 +58,7 @@ import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
 import java.io.File
 import java.time.ZonedDateTime
+import java.util.Calendar
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -72,8 +73,12 @@ class MemoViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    fun registerNotification(taskDetails: TaskDetails) {
+    private fun registerNotification(taskDetails: TaskDetails) {
         reminderScheduler.start(taskDetails)
+    }
+
+    private fun cancelNotification(id: Long) {
+        reminderScheduler.cancel(id)
     }
 
     var openDialog by mutableStateOf(false)
@@ -349,7 +354,7 @@ class MemoViewModel @Inject constructor(
     fun handleActions(
         action: Action,
         memo: MemoTask = MemoTask.instance(),
-        photos: List<Photo> = emptyList(),
+        memoWithNotebook: MemoWithNotebook = MemoWithNotebook.instance(),
         priority: Priority = Priority.NONE,
         sortOrderState: SortOption = SortOption.DESC,
         statusLineOrderUpdate: Boolean = false,
@@ -376,7 +381,7 @@ class MemoViewModel @Inject constructor(
             // 업 데이트 를 실행할 때 원래 사진 리스트 와 수정할 사진 리스트 를 비교 해야 한다.
             // photos 는 원래 사진 리스트 를 가지고 있다.
             Action.UPDATE -> {
-                updateTask(photos)
+                updateTask(memoWithNotebook)
                 updateActionPerformed()
             }
 
@@ -638,8 +643,9 @@ class MemoViewModel @Inject constructor(
         savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
-            val id = todoRepository.addMemo(taskUiState.taskDetails)
 
+            // 알림 설정
+            val id = todoRepository.addMemo(taskUiState.taskDetails)
             if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
                 registerNotification(taskUiState.taskDetails.copy(id = id))
 
@@ -648,13 +654,15 @@ class MemoViewModel @Inject constructor(
         this.action = Action.ADD
     }
 
-    private fun updateTask(initialPhotos: List<Photo>) {
+    private fun updateTask(memoWithNotebook: MemoWithNotebook) {
         Log.d(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
-        // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다.
-        if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
+        // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
+        if ((memoWithNotebook.memo.progression != State.COMPLETED && memoWithNotebook.memo.progression != State.CANCELLED) &&
+            taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED
+        ) {
             updateUiState(
                 taskUiState.taskDetails.copy(
                     finishedAt = ZonedDateTime.now()
@@ -665,14 +673,32 @@ class MemoViewModel @Inject constructor(
         savedLastMemoTask = taskUiState.taskDetails.toMemoTask()
 
         viewModelScope.launch {
+
+            // 데이터 베이스 에 저장 하고 삭제된 사진 id만 리스트 로 가져 온다.
             val deletedPhotosIds = todoRepository.updateMemo(taskUiState.taskDetails)
             Log.d("PHILIP", "delete ids $deletedPhotosIds")
-            initialPhotos.forEach { photo ->
+
+            // 데이터 베이스 를 정리 후 실제 파일을 삭제 한다.
+            memoWithNotebook.photos.forEach { photo ->
                 Log.d("PHILIP", "each $photo")
                 if (deletedPhotosIds.contains(photo.id)) {
                     deleteFileFromUri(photo.uri.toUri())
                 }
             }
+
+
+            // 알람 설정 부분
+            // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
+            if (taskUiState.taskDetails.dueDate != null &&
+                Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
+                    .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
+            ) {
+                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                    registerNotification(taskUiState.taskDetails)
+                else if (memoWithNotebook.memo.reminderType != ReminderTime.NOT_USED && taskUiState.taskDetails.reminderType == ReminderTime.NOT_USED)
+                    cancelNotification(taskUiState.taskDetails.id)
+            }
+
             refreshAllTasks()
         }
         this.action = Action.UPDATE
@@ -683,6 +709,18 @@ class MemoViewModel @Inject constructor(
 
         viewModelScope.launch {
             todoRepository.deleteMemo(task.id)
+
+            // 알람 설정 부분
+            // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
+            if (taskUiState.taskDetails.dueDate != null &&
+                Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
+                    .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
+            ) {
+                // 알람이 설정된 경우는 삭제 한다.
+                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                    cancelNotification(taskUiState.taskDetails.id)
+            }
+
             refreshAllTasks()
         }
         this.action = Action.DELETE
@@ -797,7 +835,17 @@ class MemoViewModel @Inject constructor(
 
     private fun deleteAllTasks() {
         viewModelScope.launch {
+
+
+            val memoIdsWithAlarm =
+                todoRepository.getMemosWithAlarmByNotebookId(uiState.notebookIdState)
+
+            memoIdsWithAlarm.forEach { id ->
+                cancelNotification(id)
+            }
+
             todoRepository.deleteAllMemosInNote(uiState.notebookIdState)
+
             refreshAllTasks()
         }
         this.action = Action.DELETE_ALL
@@ -806,6 +854,11 @@ class MemoViewModel @Inject constructor(
     private fun deleteSelectedTasks() {
         viewModelScope.launch {
             todoRepository.deleteSelectedMemos(selectedItems)
+
+            selectedItems.forEach { id ->
+                cancelNotification(id)
+            }
+
             selectedItems.clear()
             refreshAllTasks()
         }

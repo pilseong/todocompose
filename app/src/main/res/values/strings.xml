@@ -37,7 +37,7 @@
     <string name="delete_selected_notebook_dialog_title">Remove Selected Notebook(s)</string>
     <string name="delete_all_tasks_dialog_confirmation">Are you sure to remove all Memos inside \'%1$s\'?</string>
     <string name="delete_selected_tasks_dialog_confirmation">Are you sure to remove all selected memos?</string>
-    <string name="delete_selected_notebooks_dialog_confirmation">Are You Sure to Remove All Selected Notebooks? This cannot be revoked</string>
+    <string name="delete_selected_notebooks_dialog_confirmation">Are you sure to remove all selected notebooks? This cannot be revoked</string>
     <string name="export_all_memos_dialog_confirmation">Are you sure to export all memos as File?</string>
     <string name="import_dialog_confirmation">Are you sure to restore data From file?</string>
     <string name="delete_label">Delete</string>
@@ -170,5 +170,6 @@
     <string name="reminder_twelve_hours">12 hours ago</string>
     <string name="reminder_a_day">A day ago</string>
     <string name="reminder_two_days">Two days ago</string>
+    <string name="reminder_text">[Reminder]A task with the due date at %1$s</string>
 
 </resources>

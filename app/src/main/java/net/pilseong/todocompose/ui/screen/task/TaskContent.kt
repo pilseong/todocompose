@@ -247,7 +247,7 @@ private fun ViewerContent(
                                     (task.memo.dueDate!!.toInstant()
                                         .toEpochMilli() - task.memo.reminderType.timeInMillis)
                                 ) Color.Red
-                                else MaterialTheme.colorScheme.surface
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                             )
                         }
 
@@ -616,7 +616,6 @@ private fun EditorContent(
             var timeMinutes by remember { mutableStateOf<Int?>(null) }
 
             val timePickerState = rememberTimePickerState()
-
             DefaultDatePickerDialog(
                 openDialog = showDatePicker,
                 onConfirm = { it ->

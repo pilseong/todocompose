@@ -36,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -123,21 +124,28 @@ fun LazyItemList(
     // lazy Column 의 화면 데이터 사용
     val listState = rememberLazyListState()
     val headerIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    val scope = rememberCoroutineScope()
 
     // 100개의 리스트 의 50번째가 firstVisibleItem 이 었다가 20개 짜리 리스트 로 노트를 변경할 경우
     // index 가 리스트 보다 많아 지는 경우가 일시적 으로 발생 한다. 예외 처리
     val realIndex = remember(tasks.itemCount, headerIndex) {
         if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
+
+    }
+
+    // 추가 할 때 스크롤 을 제일 위로 올리기 위함
+    LaunchedEffect(key1 = tasks.itemCount) {
+        listState.scrollToItem(0, 0)
     }
 
 //    val timeData by remember(memoDateBaseOption, realIndex) {
-    val timeData by rememberUpdatedState (
-            when (memoDateBaseOption) {
-                MemoDateSortingOption.CREATED_AT -> tasks.peek(realIndex)?.memo?.createdAt
-                MemoDateSortingOption.UPDATED_AT -> tasks.peek(realIndex)?.memo?.updatedAt
-                MemoDateSortingOption.FINISHED_AT -> tasks.peek(realIndex)?.memo?.finishedAt
-                MemoDateSortingOption.DUE_DATE -> tasks.peek(realIndex)?.memo?.dueDate
-            }
+    val timeData by rememberUpdatedState(
+        when (memoDateBaseOption) {
+            MemoDateSortingOption.CREATED_AT -> tasks.peek(realIndex)?.memo?.createdAt
+            MemoDateSortingOption.UPDATED_AT -> tasks.peek(realIndex)?.memo?.updatedAt
+            MemoDateSortingOption.FINISHED_AT -> tasks.peek(realIndex)?.memo?.finishedAt
+            MemoDateSortingOption.DUE_DATE -> tasks.peek(realIndex)?.memo?.dueDate
+        }
     )
 
     Log.d("PHILIP", "result of timeData $memoDateBaseOption,  $timeData")

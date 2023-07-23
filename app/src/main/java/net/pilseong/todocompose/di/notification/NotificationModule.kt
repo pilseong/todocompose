@@ -25,8 +25,6 @@ object NotificationModule {
         @ApplicationContext context: Context
     ): NotificationCompat.Builder {
         return NotificationCompat.Builder(context, "1")
-            .setContentTitle("Welcome")
-            .setContentText("Hello Pilseong")
             .setSmallIcon(R.drawable.logo)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
     }

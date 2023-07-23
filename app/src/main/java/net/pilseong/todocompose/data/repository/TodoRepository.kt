@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +20,6 @@ import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @ViewModelScoped
 //@Singleton
@@ -93,7 +91,7 @@ class TodoRepository @Inject constructor(
     }
 
     suspend fun addMemo(memo: TaskDetails): Long {
-        return  withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             return@withContext memoDAO.addMemo(memo)
         }
     }
@@ -107,11 +105,9 @@ class TodoRepository @Inject constructor(
 
     // updatedAt 이 변경 되는 일반 업 데이트, 메모 내부의 사진도 업데이트 한다.
     suspend fun updateMemo(memoTask: TaskDetails): List<Long> {
-        var deletePhotoIds: List<Long>
-        withContext(Dispatchers.IO) {
-            deletePhotoIds = memoDAO.updateMemoWithTimestamp(memoTask)
+        return withContext(Dispatchers.IO) {
+            return@withContext memoDAO.updateMemoWithTimestamp(memoTask)
         }
-        return deletePhotoIds
     }
 
     // updatedAt 을 수정 하지 않는 메모의 업 데이터, 하나의 state를 변경할 때 사용
@@ -174,4 +170,10 @@ class TodoRepository @Inject constructor(
     fun getMemoCount(notebookId: Int): Flow<DefaultNoteMemoCount> =
         memoDAO.getMemoCount(notebookId)
 
+
+    suspend fun getMemosWithAlarmByNotebookId(notebookId: Long): List<Long> {
+        return withContext(Dispatchers.IO) {
+            return@withContext memoDAO.getMemosWithAlarmByNotebookId(notebookId = notebookId)
+        }
+    }
 }

@@ -43,6 +43,10 @@ class NoteViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    private fun cancelNotification(id: Long) {
+        reminderScheduler.cancel(id)
+    }
+
     var selectedNotebooks = mutableStateListOf<Long>()
     var defaultNotebook = mutableStateOf<NotebookWithCount>(
         NotebookWithCount.instance(
@@ -73,21 +77,33 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    // 선택된 노트들을 삭제한다. 삭제 시 recent에 있는 경우 같이 제거 처리 한다.
+    // 선택된 노트들 을 삭제 한다. 삭제 시 recent 에 있는 경우 같이 제거 처리 한다.
     fun deleteSelectedNotebooks() {
         val userData = (uiState as UiState.Success).userData
+
         viewModelScope.launch(Dispatchers.IO) {
 
-            // recent 노트에 있는 경우 제거해 주어야 한다.
+            // recent 노트에 있는 경우 제거해 주어야 한다. recentNotes 에 selected, recent 노트들 을 다 집어 넣는다.
             val recentNotes = mutableListOf<String>()
+
+            // 저장 하는 순서가 중요 하댜
             recentNotes.add(userData.notebookIdState.toString())
             if (userData.firstRecentNotebookId != null) recentNotes.add(userData.firstRecentNotebookId.toString())
             if (userData.secondRecentNotebookId != null) recentNotes.add(userData.secondRecentNotebookId.toString())
+
             val beforeCount = recentNotes.size
-            recentNotes.removeIf { it -> selectedNotebooks.contains(it.toLong()) }
+            recentNotes.removeIf { selectedNotebooks.contains(it.toLong()) }
             val afterCount = recentNotes.size
 
-            // D B에서 삭제
+            // 설정 된 알람 을 모두 해제 한다.
+            selectedNotebooks.forEach { notebookId ->
+                val memoIdsWithAlarm = memoRepository.getMemosWithAlarmByNotebookId(notebookId = notebookId)
+                memoIdsWithAlarm.forEach {
+                    cancelNotification(it)
+                }
+            }
+
+            // DB 에서 삭제
             notebookRepository.deleteMultipleNotebooks(selectedNotebooks)
 
             // 삭제된 부분이 있는 경우만 persist 한다.

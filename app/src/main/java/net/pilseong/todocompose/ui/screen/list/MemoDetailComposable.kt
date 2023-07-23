@@ -133,7 +133,7 @@ fun NavGraphBuilder.memoDetailComposable(
                             Action.UPDATE -> {
                                 memoViewModel.handleActions(
                                     action = action,
-                                    photos = tasks[taskIndex]!!.photos
+                                    memoWithNotebook = tasks[taskIndex]!!
                                 )
                             }
                             else -> {

@@ -7,5 +7,5 @@ interface AlarmScheduler {
 
     fun start(taskDetails: TaskDetails)
 
-    fun cancel(taskDetails: TaskDetails)
+    fun cancel(id: Long)
 }

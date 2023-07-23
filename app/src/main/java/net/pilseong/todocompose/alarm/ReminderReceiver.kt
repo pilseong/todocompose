@@ -17,6 +17,7 @@ import net.pilseong.todocompose.data.repository.TodoRepository
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -30,7 +31,6 @@ class ReminderReceiver(): BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
-        Log.d("PHILIP", "[ReminderReceiver] onReceive is called")
         if (ActivityCompat.checkSelfPermission(
                 context!!,
                 Manifest.permission.POST_NOTIFICATIONS
@@ -46,18 +46,29 @@ class ReminderReceiver(): BroadcastReceiver() {
             return
         }
 
-        val title = intent?.getStringExtra("CONTENT")
+
+        val id = intent!!.getLongExtra("ID", -1)
+        val title = intent.getStringExtra("CONTENT")
         val description = intent?.getStringExtra("DESCRIPTION")
-        val dueDateMilli = intent?.getLongExtra("DUE_DATE", 0)
+        val dueDateMilli = intent.getLongExtra("DUE_DATE", 0)
+
+        val format = context.resources.getString(R.string.task_content_dateformat)
+        val target = ZonedDateTime.ofInstant(Instant.ofEpochMilli(dueDateMilli), ZoneId.systemDefault())
+        val reminderText = context.resources.getString(R.string.reminder_text, target.toLocalDateTime().format(DateTimeFormatter.ofPattern(format)))
+//        val alarmInfoString = "[IDEA NOTE] There is a task with the due date at ${target.toLocalDateTime().format(DateTimeFormatter.ofPattern(format))}"
+
+
+        Log.d("PHILIP", "[ReminderReceiver] onReceive is called $id")
 
 //        Calendar.
-        Instant.ofEpochMilli(dueDateMilli!!)
+        Instant.ofEpochMilli(dueDateMilli)
 
 
-        notificationManager.notify(1, notificationCompatBuilder
+        notificationManager.notify(id.toInt(), notificationCompatBuilder
             .setSmallIcon(R.drawable.logo)
-            .setContentTitle(if (!description.isNullOrBlank()) title else "")
-            .setContentText(if (!description.isNullOrBlank()) description else title)
+            .setContentTitle(reminderText)
+            .setContentText(title)
+            .setContentInfo(description)
             .build())
     }
 

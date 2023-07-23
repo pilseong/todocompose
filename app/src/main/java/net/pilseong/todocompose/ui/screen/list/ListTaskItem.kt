@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Star
@@ -67,6 +68,7 @@ import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.data.model.ui.ReminderTime
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
 import net.pilseong.todocompose.ui.components.ZoomableImage
@@ -80,6 +82,7 @@ import net.pilseong.todocompose.ui.theme.onPrimaryElevation
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -222,15 +225,31 @@ fun TaskItem(
                                 )
                             }
                             Spacer(modifier = modifier.height(4.dp))
-                            Icon(
-                                imageVector = if (selected.value)
-                                    Icons.Default.CheckCircle
-                                else
-                                    Icons.Default.Circle,
-                                contentDescription = if (selected.value) "Checked Circle" else "Circle",
-                                tint = if (selected.value) MaterialTheme.colorScheme.primary
-                                else todoInside.memo.priority.color
-                            )
+                            Surface(color = Color.Transparent) {
+                                Icon(
+                                    imageVector = if (selected.value)
+                                        Icons.Default.CheckCircle
+                                    else
+                                        Icons.Default.Circle,
+                                    contentDescription = if (selected.value) "Checked Circle" else "Circle",
+                                    tint = if (selected.value) MaterialTheme.colorScheme.primary
+                                    else todoInside.memo.priority.color
+                                )
+                                if (todoInside.memo.reminderType != ReminderTime.NOT_USED) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, start = 4.dp)
+                                            .size(16.dp),
+                                        imageVector = Icons.Default.Alarm,
+                                        contentDescription = "alarm icon",
+                                        tint = if (Calendar.getInstance().timeInMillis <
+                                            (todoInside.memo.dueDate!!.toInstant()
+                                                .toEpochMilli() - todoInside.memo.reminderType.timeInMillis)
+                                        ) Color.Red
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    )
+                                }
+                            }
                         }
 
                         //  제목 내용

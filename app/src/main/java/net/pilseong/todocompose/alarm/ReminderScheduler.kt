@@ -27,17 +27,11 @@ class ReminderScheduler @Inject constructor(
     override fun start(taskDetails: TaskDetails) {
         Log.d("PHILIP", "[ReminderScheduler] started $taskDetails")
         val intent = Intent(context, ReminderReceiver::class.java).apply {
+            putExtra("ID", taskDetails.id)
             putExtra("CONTENT", taskDetails.title)
             putExtra("DESCRIPTION", taskDetails.description)
             putExtra("DUE_DATE", taskDetails.dueDate!!.toEpochSecond() * 1000)
         }
-
-//        val calendar: Calendar = Calendar.getInstance().apply {
-//            timeInMillis = System.currentTimeMillis()
-//            set(Calendar.MINUTE, this.get(Calendar.MINUTE) + 1)
-//            set(Calendar.SECOND, 0)
-//            set(Calendar.MILLISECOND, 0)
-//        }
 
         val target = (taskDetails.dueDate!!.toEpochSecond() * 1000) - taskDetails.reminderType.timeInMillis
 
@@ -56,11 +50,11 @@ class ReminderScheduler @Inject constructor(
         )
     }
 
-    override fun cancel(taskDetails: TaskDetails) {
+    override fun cancel(id: Long) {
         alarmManager.cancel(
             PendingIntent.getBroadcast(
                 context,
-                taskDetails.id.toInt(),
+                id.toInt(),
                 Intent(context, ReminderReceiver::class.java),
                 PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )

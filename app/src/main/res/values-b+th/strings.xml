@@ -170,5 +170,6 @@
     <string name="reminder_twelve_hours">12 hours ago</string>
     <string name="reminder_a_day">A day ago</string>
     <string name="reminder_two_days">Two days ago</string>
+    <string name="reminder_text">[Reminder]A task with the due date at %1$s</string>
 
 </resources>
