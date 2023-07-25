@@ -148,7 +148,7 @@ fun LazyItemList(
         }
     )
 
-    Log.d("PHILIP", "result of timeData $memoDateBaseOption,  $timeData")
+//    Log.d("PHILIP", "result of timeData $memoDateBaseOption,  $timeData")
 
     val totalData by remember(tasks.peek(0)?.total) {
         mutableStateOf(tasks.peek(0)?.total ?: 0)

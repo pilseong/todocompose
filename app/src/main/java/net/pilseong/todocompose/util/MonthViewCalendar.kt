@@ -1,0 +1,229 @@
+package net.pilseong.todocompose.util
+
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import net.pilseong.todocompose.ui.theme.SMALL_PADDING
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun MonthViewCalendar(
+    loadedDates: Array<List<LocalDate>>,
+    selectedDate: LocalDate,
+    currentMonth: YearMonth,
+    onSwipeNext: (YearMonth) -> Unit,
+    onSwipePrev: (YearMonth) -> Unit,
+    loadDatesForMonth: (YearMonth) -> Unit,
+    onDayClick: (LocalDate) -> Unit
+) {
+    val itemWidth = LocalConfiguration.current.screenWidthDp / 7
+    CalendarPager(
+        loadedDates = loadedDates,
+        loadNextDates = { onSwipeNext(currentMonth) },
+        loadPrevDates = { onSwipePrev(currentMonth.minusMonths(2)) },
+    ) { currentPage ->
+        Log.d("TTEST", "currentPage is $currentPage")
+        Column {
+            Surface(
+                color = MaterialTheme.colorScheme.primary
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DayOfWeek.values().forEach { date ->
+                        Text(
+                            modifier = Modifier.padding(vertical = SMALL_PADDING),
+                            text = DayOfWeek.values()[(date.ordinal + 6) % 7].getDisplayName(
+                                TextStyle.SHORT,
+                                LocalContext.current.resources.configuration.locales[0]
+                            ),
+                            fontStyle = MaterialTheme.typography.titleMedium.fontStyle,
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                }
+            }
+            BoxWithConstraints(
+            ) {
+                val boxHeight = LocalDensity.current.run { maxHeight }
+                FlowRow(modifier = Modifier.fillMaxSize()) {
+                    loadedDates[currentPage].forEach { date ->
+                        DayView(
+                            modifier = Modifier
+                                .width(itemWidth.dp)
+                                .border(
+                                    width = 0.2.dp,
+                                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                                )
+                                .height(
+                                    (boxHeight / (
+                                            if (loadedDates[currentPage].size % 7 == 0)
+                                                loadedDates[currentPage].size / 7
+                                            else
+                                                (loadedDates[currentPage].size % 7) + 1
+                                            ))
+                                )
+                                .dayViewModifier(
+                                    date,
+                                    currentMonth,
+                                ),
+                            date = date,
+                            isSelected = selectedDate == date,
+                            onDayClick = { onDayClick(date) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+@Preview
+@Composable
+fun PreviewMonthViewCalendar() {
+    MaterialTheme {
+        MonthViewCalendar(
+            loadedDates = calculateExpandedCalendarDays(
+                LocalDate.now().minusMonths(1)
+                    .yearMonth().atDay(1)
+            ),
+            selectedDate = LocalDate.now(),
+            currentMonth = LocalDate.now().yearMonth(),
+            loadDatesForMonth = {},
+            onSwipeNext = {},
+            onSwipePrev = {},
+            onDayClick = {}
+        )
+    }
+
+}
+
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+internal fun CalendarPager(
+    loadedDates: Array<List<LocalDate>>,
+    loadNextDates: () -> Unit,
+    loadPrevDates: () -> Unit,
+    content: @Composable (currentPage: Int) -> Unit
+) {
+//    val pagerState = rememberPagerState(initialPage = 1)
+
+    val pagerState = remember {
+        PagerState(currentPage = 1)
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+//        Log.d(
+//            "TTEST",
+//            "[CalendarPager] page is ${pagerState.currentPage}"
+//        )
+        if (pagerState.currentPage == 0 || pagerState.currentPage == 2) {
+            if (pagerState.currentPage == 0) {
+                loadPrevDates()
+            } else {
+                loadNextDates()
+            }
+        }
+    }
+
+    // 새로운 데이터 로딩이 끝났을 때만 화면 이동을 허용 한다. 깜박임 방지
+    LaunchedEffect(loadedDates) {
+        pagerState.scrollToPage(1)
+    }
+
+    HorizontalPager(
+        count = 3,
+        state = pagerState,
+        verticalAlignment = Alignment.Top
+    ) { currentPage ->
+        content(currentPage)
+    }
+}
+
+
+@Composable
+fun DayView(
+    modifier: Modifier = Modifier,
+    date: LocalDate,
+    onDayClick: (LocalDate) -> Unit,
+    isSelected: Boolean = false,
+) {
+    val isCurrentDay = date == LocalDate.now()
+    val dayValueModifier =
+        if (isCurrentDay) modifier.background(
+            MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+        )
+        else if (isSelected) modifier.background(
+            MaterialTheme.colorScheme.background
+        )
+        else modifier.background(MaterialTheme.colorScheme.background)
+    Column(
+        modifier = dayValueModifier
+            .clickable { onDayClick(date) },
+    ) {
+        Text(
+            text = date.dayOfMonth.toString(),
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center,
+            color = if (isSelected || isCurrentDay) Color.Red//MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+internal fun Modifier.dayViewModifier(
+    date: LocalDate,
+    currentMonth: YearMonth? = null,
+): Modifier = this.then(
+    Modifier.alpha(
+        if ((currentMonth != null && date.isAfter(currentMonth.atEndOfMonth())) ||
+            (currentMonth != null && date.isBefore(currentMonth.atDay(1)))
+        )
+            0.5f else 1f
+    )
+)

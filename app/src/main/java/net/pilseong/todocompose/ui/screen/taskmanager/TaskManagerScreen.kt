@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.fabContainerColor
@@ -62,7 +63,7 @@ import net.pilseong.todocompose.ui.theme.fabContent
 fun TaskManagerScreen(
     selectedNotebook: Notebook,
     searchRangeAll: Boolean = false,
-    toScreen: (String) -> Unit,
+    toScreen: (Screen) -> Unit,
     onFabClicked: () -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
@@ -73,8 +74,6 @@ fun TaskManagerScreen(
             initialHeightOffsetLimit = 0F
         )
     )
-
-    Log.d("PHILIP", "[TaskManagerScreen] entered")
 
     /**
      * view model 을 통제 코드 종료
@@ -106,8 +105,10 @@ fun TaskManagerScreen(
         },
         bottomBar = {
             BottomActionBarNavigation(
-                toScreen = toScreen,
-            ) { onFabClicked() }
+                currentScreen = Screen.MemoTaskManager,
+                onNavigateClick = toScreen,
+                onFabClicked = onFabClicked,
+            )
         }
     ) { paddingValues ->
         Column(
@@ -146,78 +147,15 @@ fun TaskManagerScreen(
     }
 }
 
-
-@Composable
-private fun BottomActionBarNavigation(
-    toScreen: (String) -> Unit,
-    onFabClicked: () -> Unit,
-) {
-    BottomAppBar(
-        modifier = Modifier.height(65.dp),
-        actions = {
-            Row(modifier = Modifier.fillMaxWidth(0.80F)) {
-                Spacer(modifier = Modifier.width(25.dp))
-                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
-                    onClick = {
-                        toScreen(Screen.Notes.route)
-                    }) {
-                    Icon(
-                        Icons.Default.NoteAlt, contentDescription = "Localized description",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
-                    onClick = {
-                        toScreen(Screen.MemoList.route)
-                    }) {
-                    Icon(
-                        Icons.Default.StickyNote2, contentDescription = "Memo list",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(
-                    enabled = true,
-                    onClick = {
-                    }) {
-                    Icon(Icons.Default.Task, contentDescription = "Task Manager")
-                }
-                IconButton(onClick = { /* doSomething() */ }) {
-                    Icon(
-                        Icons.Default.CalendarMonth,
-                        contentDescription = "Scheduling",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(onClick = { /* doSomething() */ }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-            }
-        },
-        floatingActionButton = {
-            AddMemoFab(
-                icon = Icons.Default.Create,
-                size = 50.dp,
-                paddingEnd = 4.dp,
-                onFabClicked = {
-                    onFabClicked()
-                }
-            )
-        },
-        contentPadding = PaddingValues(0.dp)
-    )
-}
-
 @Preview
 @Composable
 fun BottomActionBarNavPreview() {
     MaterialTheme {
         BottomActionBarNavigation(
-            toScreen = {},
-            onFabClicked = {})
+            currentScreen = Screen.MemoTaskManager,
+            onNavigateClick = {},
+            onFabClicked = {},
+        )
     }
 }
 
@@ -262,7 +200,6 @@ private fun ListScreenPreview() {
             selectedNotebook = Notebook.instance(),
             toScreen = {},
             onFabClicked = {}
-
         )
     }
 }

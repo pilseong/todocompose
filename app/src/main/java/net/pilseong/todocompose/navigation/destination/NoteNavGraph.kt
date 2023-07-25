@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navigation
 import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.ui.screen.calendar.memoCalendarViewComposable
 import net.pilseong.todocompose.ui.screen.list.memoDetailComposable
 import net.pilseong.todocompose.ui.screen.list.memoListComposable
 import net.pilseong.todocompose.ui.screen.taskmanager.memoTaskManagerComposable
@@ -11,11 +12,11 @@ import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 fun NavGraphBuilder.noteNavGraph(
     navHostController: NavHostController,
-    toTaskScreen: () -> Unit,
-    toListScreen: () -> Unit,
-    toNoteScreen: () -> Unit,
-    toTaskManagementScreen: () -> Unit,
-    toScreen: (String) -> Unit,
+//    toTaskScreen: () -> Unit,
+//    toListScreen: () -> Unit,
+//    toNoteScreen: () -> Unit,
+//    toTaskManagementScreen: () -> Unit,
+    toScreen: (Screen) -> Unit,
 ) {
     navigation(
         startDestination = Screen.Notes.route,
@@ -26,17 +27,22 @@ fun NavGraphBuilder.noteNavGraph(
 
         memoListComposable(
             navHostController = navHostController,
-            toTaskScreen,
-            toNoteScreen,
-            toTaskManagementScreen,
+            toScreen = toScreen,
+//            toTaskScreen,
+//            toNoteScreen,
+//            toTaskManagementScreen,
         )
+
+        memoDetailComposable(navHostController, toScreen)
 
         memoTaskManagerComposable(
             navHostController = navHostController,
             toScreen = toScreen
         )
 
-
-        memoDetailComposable(navHostController, toListScreen)
+        memoCalendarViewComposable(
+            navHostController = navHostController,
+            toScreen = toScreen
+        )
     }
 }

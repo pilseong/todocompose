@@ -2,28 +2,15 @@ package net.pilseong.todocompose.ui.screen.list
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.NoteAlt
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.StickyNote2
-import androidx.compose.material.icons.filled.Task
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -55,7 +42,8 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
-import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
+import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
@@ -76,10 +64,11 @@ fun ListScreen(
     searchAppBarState: SearchAppBarState = SearchAppBarState.CLOSE,
     searchText: String = "",
     selectedItems: SnapshotStateList<Long>,
+    onNavigateClick: (Screen) -> Unit,
     toTaskScreen: () -> Unit,
-    toTaskManagementScreen: () -> Unit,
+//    toTaskManagementScreen: () ->/**/ Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
-    toNoteScreen: () -> Unit,
+//    toNoteScreen: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,
     onCloseClicked: () -> Unit,
@@ -169,8 +158,8 @@ fun ListScreen(
         },
         bottomBar = {
             BottomActionBarNavigation(
-                toTaskManagementScreen = toTaskManagementScreen,
-                toNoteScreen = toNoteScreen,
+                currentScreen = Screen.MemoList,
+                onNavigateClick = onNavigateClick,
             ) { onFabClicked() }
         }
     ) { paddingValues ->
@@ -208,81 +197,15 @@ fun ListScreen(
 }
 
 
-@Composable
-private fun BottomActionBarNavigation(
-    toNoteScreen: () -> Unit,
-    toTaskManagementScreen: () -> Unit,
-    onFabClicked: () -> Unit,
-) {
-    BottomAppBar(
-        modifier = Modifier.height(65.dp),
-        actions = {
-            Row(modifier = Modifier.fillMaxWidth(0.80F)) {
-                Spacer(modifier = Modifier.width(25.dp))
-                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
-                    onClick = {
-                        toNoteScreen()
-                    }) {
-                    Icon(
-                        Icons.Default.NoteAlt, contentDescription = "Localized description",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(modifier = Modifier.padding(start = XLARGE_PADDING),
-                    onClick = {
-                    }) {
-                    Icon(
-                        Icons.Default.StickyNote2, contentDescription = "Memo list",
-                    )
-                }
-                IconButton(
-                    enabled = true,
-                    onClick = {
-                        toTaskManagementScreen()
-                    }) {
-                    Icon(
-                        Icons.Default.Task, contentDescription = "Task Manager",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(onClick = { /* doSomething() */ }) {
-                    Icon(
-                        Icons.Default.CalendarMonth,
-                        contentDescription = "Scheduling",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-                IconButton(onClick = { /* doSomething() */ }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-            }
-        },
-        floatingActionButton = {
-            AddMemoFab(
-                icon = Icons.Default.Create,
-                size = 50.dp,
-                paddingEnd = 4.dp,
-                onFabClicked = {
-                    onFabClicked()
-                }
-            )
-        },
-        contentPadding = PaddingValues(0.dp)
-    )
-}
-
 @Preview
 @Composable
 fun BottomActionBarNavPreview() {
     MaterialTheme {
         BottomActionBarNavigation(
-            toNoteScreen = {},
-            toTaskManagementScreen = {},
-            onFabClicked = {})
+            currentScreen = Screen.MemoList,
+            onNavigateClick = {},
+            onFabClicked = {}
+        )
     }
 }
 
@@ -341,7 +264,7 @@ private fun ListScreenPreview() {
         uiState = UserData(),
         snackBarHostState = SnackbarHostState(),
         toTaskScreen = {},
-        toNoteScreen = {},
+//        toNoteScreen = {},
         onAppBarTitleClick = {},
         onSearchIconClicked = {},
         onCloseClicked = {},
@@ -360,7 +283,7 @@ private fun ListScreenPreview() {
         onDateRangeCloseClick = {},
         onFavoriteSortClick = {},
         onOrderEnabledClick = {},
-        onDateSortingChangeClick = { _, _, _ ->},
+        onDateSortingChangeClick = { _, _, _ -> },
         onPrioritySelected = { _, _, _ -> },
         onFavoriteClick = {},
         onLongClickApplied = {},
@@ -370,6 +293,7 @@ private fun ListScreenPreview() {
         onSetAllOrNothingClicked = {},
         onSearchNoFilterClicked = {},
         onStatusLineUpdate = {},
-        toTaskManagementScreen = {}
+//        toTaskManagementScreen = {},
+        onNavigateClick = {}
     )
 }

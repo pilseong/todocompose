@@ -19,6 +19,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.components.InfoAlertDialog
@@ -29,13 +30,10 @@ import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.SearchAppBarState
-import net.pilseong.todocompose.data.model.ui.SortOption
 
 fun NavGraphBuilder.memoListComposable(
     navHostController: NavHostController,
-    toTaskScreen: () -> Unit,
-    toNoteScreen: () -> Unit,
-    toTaskManagementScreen: () -> Unit,
+    toScreen: (Screen) -> Unit,
 ) {
     composable(
         route = Screen.MemoList.route,
@@ -99,18 +97,18 @@ fun NavGraphBuilder.memoListComposable(
             toTaskScreen = {
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(Action.NO_ACTION)
-                toTaskScreen()
+                toScreen(Screen.MemoDetail)
             },
-            toTaskManagementScreen = toTaskManagementScreen,
+//            toTaskManagementScreen = toTaskManagementScreen,
             onSwipeToEdit = { index, memo ->
                 memoViewModel.updateIndex(index)
                 memoViewModel.setTaskScreenToEditorMode(memo)
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(Action.NO_ACTION)
 
-                toTaskScreen()
+                toScreen(Screen.MemoDetail)
             },
-            toNoteScreen = toNoteScreen,
+//            toNoteScreen = toNoteScreen,
             onAppBarTitleClick = {
                 memoViewModel.getDefaultNoteCount()
                 dialogMode = 0
@@ -154,7 +152,7 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.setTaskScreenToEditorMode()
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(Action.NO_ACTION)
-                toTaskScreen()
+                toScreen(Screen.MemoDetail)
             },
             onDeleteAllClicked = {
                 Log.d("PHILIP", "onDeleteAllClicked")
@@ -263,7 +261,8 @@ fun NavGraphBuilder.memoListComposable(
                     Action.STATUS_LINE_UPDATE,
                     stateEntity = it
                 )
-            }
+            },
+            onNavigateClick = { toScreen(it) }
         )
 
         // 로딩바 보이기

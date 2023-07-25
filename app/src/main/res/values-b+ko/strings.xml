@@ -171,4 +171,5 @@
     <string name="reminder_a_day">1일전</string>
     <string name="reminder_two_days">2일전</string>
     <string name="reminder_text">[알림]마감일이 %1$s 인 메모가 있습니다.</string>
+    <string name="calendar_title">yyyy년 LLL</string>
 </resources>

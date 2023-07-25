@@ -22,7 +22,7 @@ import net.pilseong.todocompose.util.deleteFileFromUri
 
 fun NavGraphBuilder.memoDetailComposable(
     navHostController: NavHostController,
-    toListScreen: () -> Unit
+    toScreen: (Screen) -> Unit,
 ) {
     composable(
         route = Screen.MemoDetail.route,
@@ -108,7 +108,7 @@ fun NavGraphBuilder.memoDetailComposable(
                             "PHILIP",
                             "[MemoNavGraph] memoViewModel value ${memoViewModel.action}"
                         )
-                        toListScreen()
+                        toScreen(Screen.MemoList)
                     }
                 }
             }
@@ -145,7 +145,7 @@ fun NavGraphBuilder.memoDetailComposable(
                     } else {
                         memoViewModel.handleActions(Action.NO_ACTION)
                     }
-                    toListScreen()
+                    toScreen(Screen.MemoList)
                     // 화면 전환 후에 이전의 index가 lazyloading 범위를 넘어갈 경우 처리를 위해 초기화 필요
                     // 45번 task인데 refresh 이후에 기본 default size 만큼만 로딩 되기 때문이다.
                     // 화면이 list로 전환된 이후에도 몇 번이 호출이 일어난다.

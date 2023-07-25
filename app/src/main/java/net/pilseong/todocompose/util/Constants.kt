@@ -13,6 +13,7 @@ object Constants {
     const val NOTE_LIST = "note_list"
     const val MEMO_LIST = "memo_list"
     const val MEMO_TASK_MANAGER = "memo_task_manager"
+    const val MEMO_CALENDAR = "memo_calendar"
     const val MEMO_DETAIL = "memo_detail"
     const val SETTINGS = "settings"
 

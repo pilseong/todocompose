@@ -695,7 +695,10 @@ class MemoViewModel @Inject constructor(
             ) {
                 if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
                     registerNotification(taskUiState.taskDetails)
-                else if (memoWithNotebook.memo.reminderType != ReminderTime.NOT_USED && taskUiState.taskDetails.reminderType == ReminderTime.NOT_USED)
+                else if (
+                    memoWithNotebook.memo.reminderType != ReminderTime.NOT_USED &&
+                    taskUiState.taskDetails.reminderType == ReminderTime.NOT_USED
+                )
                     cancelNotification(taskUiState.taskDetails.id)
             }
 
@@ -965,10 +968,13 @@ class MemoViewModel @Inject constructor(
                 it.write(memoJson?.toByteArray())
             }
 
-            val todos = File(context.filesDir, filename)
-            val contentUri = getUriForFile(context, "net.pilseong.fileprovider", todos)
-
-            sendEmail(contentUri)
+            sendEmail(
+                getUriForFile(
+                    context,
+                    "net.pilseong.fileprovider",
+                    File(context.filesDir, filename)
+                )
+            )
         }
     }
 

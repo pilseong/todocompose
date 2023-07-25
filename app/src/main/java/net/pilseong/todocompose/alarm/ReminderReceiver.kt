@@ -47,29 +47,31 @@ class ReminderReceiver(): BroadcastReceiver() {
         }
 
 
-        val id = intent!!.getLongExtra("ID", -1)
-        val title = intent.getStringExtra("CONTENT")
-        val description = intent?.getStringExtra("DESCRIPTION")
-        val dueDateMilli = intent.getLongExtra("DUE_DATE", 0)
+        if (intent != null) {
 
-        val format = context.resources.getString(R.string.task_content_dateformat)
-        val target = ZonedDateTime.ofInstant(Instant.ofEpochMilli(dueDateMilli), ZoneId.systemDefault())
-        val reminderText = context.resources.getString(R.string.reminder_text, target.toLocalDateTime().format(DateTimeFormatter.ofPattern(format)))
-//        val alarmInfoString = "[IDEA NOTE] There is a task with the due date at ${target.toLocalDateTime().format(DateTimeFormatter.ofPattern(format))}"
+            val id = intent.getLongExtra("ID", -1)
+            val title = intent.getStringExtra("CONTENT")
+            val description = intent.getStringExtra("DESCRIPTION")
+            val dueDateMilli = intent.getLongExtra("DUE_DATE", 0)
 
+            val format = context.resources.getString(R.string.task_content_dateformat)
+            val target =
+                ZonedDateTime.ofInstant(Instant.ofEpochMilli(dueDateMilli), ZoneId.systemDefault())
+            val reminderText = context.resources.getString(
+                R.string.reminder_text,
+                target.toLocalDateTime().format(DateTimeFormatter.ofPattern(format))
+            )
+            Log.d("PHILIP", "[ReminderReceiver] onReceive is called $id")
 
-        Log.d("PHILIP", "[ReminderReceiver] onReceive is called $id")
-
-//        Calendar.
-        Instant.ofEpochMilli(dueDateMilli)
-
-
-        notificationManager.notify(id.toInt(), notificationCompatBuilder
-            .setSmallIcon(R.drawable.logo)
-            .setContentTitle(reminderText)
-            .setContentText(title)
-            .setContentInfo(description)
-            .build())
+            notificationManager.notify(
+                id.toInt(), notificationCompatBuilder
+                    .setSmallIcon(R.drawable.logo)
+                    .setContentTitle(reminderText)
+                    .setContentText(title)
+                    .setContentInfo(description)
+                    .build()
+            )
+        }
     }
 
 

@@ -81,21 +81,20 @@ fun MainNavGraph(
 
                 noteNavGraph(
                     navHostController = navHostController,
-                    toTaskScreen = {
-                        navHostController.navigate(Screen.MemoDetail.route)
-                    },
-                    toListScreen = {
-                        navHostController.navigate(Screen.MemoList.route)
-                    },
-                    toNoteScreen = {
-//                    navHostController.popBackStack(Screen.Home.route, true)
-                        navHostController.navigate(Screen.Notes.route)
-                    },
-                    toTaskManagementScreen = {
-                        navHostController.navigate(Screen.MemoTaskManager.route)
-                    },
+//                    toTaskScreen = {
+//                        navHostController.navigate(Screen.MemoDetail.route)
+//                    },
+//                    toListScreen = {
+//                        navHostController.navigate(Screen.MemoList.route)
+//                    },
+//                    toNoteScreen = {
+//                        navHostController.navigate(Screen.Notes.route)
+//                    },
+//                    toTaskManagementScreen = {
+//                        navHostController.navigate(Screen.MemoTaskManager.route)
+//                    },
                     toScreen = {
-                        navHostController.navigate(it)
+                        navHostController.navigate(it.route)
                     }
                 )
 

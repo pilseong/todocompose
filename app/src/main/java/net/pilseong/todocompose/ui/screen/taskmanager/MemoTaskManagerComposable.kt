@@ -9,7 +9,7 @@ import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 
 fun NavGraphBuilder.memoTaskManagerComposable(
     navHostController: NavHostController,
-    toScreen: (String) -> Unit,
+    toScreen: (Screen) -> Unit,
 ) {
     composable(
         route = Screen.MemoTaskManager.route,

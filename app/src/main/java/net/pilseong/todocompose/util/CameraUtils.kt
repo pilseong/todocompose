@@ -38,11 +38,11 @@ import java.util.Locale
 //}
 
 
-fun getOutputDirectory(context: Context): File {
+fun getOutputDirectory(context: Context, type: String = "images"): File {
     val mediaDir =
-        File(context.filesDir, context.resources.getString(R.string.app_name)).apply { mkdirs() }
+        File(context.filesDir, context.resources.getString(R.string.app_name) + "/images").apply { mkdirs() }
 
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
+    return if (mediaDir.exists()) mediaDir else context.filesDir
 }
 
 fun savePhotoToInternalStorage(uri: Uri, context: Context): Uri? {
@@ -78,6 +78,8 @@ fun copy(context: Context, srcUri: Uri, dstFile: File?) {
         }
     } catch (e: IOException) {
         e.printStackTrace()
+        Log.d("PHILIP", "Can't save file $srcUri to ${dstFile.toString()} ")
+        throw e
     }
 }
 
