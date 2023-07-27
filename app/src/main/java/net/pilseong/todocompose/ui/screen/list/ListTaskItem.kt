@@ -37,6 +37,7 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -424,18 +425,20 @@ fun TaskItem(
                         }
                         Divider(
                             modifier = Modifier
-                                .padding(top = SMALL_PADDING)
-                                .height(0.5.dp),
+//                                .padding(top = SMALL_PADDING)
+                                .height(0.2.dp),
+                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
                         )
                         Row {
                             ComposeGallery(
                                 modifier = Modifier.padding(
-                                    top = MEDIUM_PADDING,
+                                    top = SMALL_PADDING,
+                                    bottom = SMALL_PADDING,
                                     start = LARGE_PADDING,
                                     end = LARGE_PADDING
                                 ),
                                 photos = todoTask.photos,
-                                imageSize = 30.dp,
+                                imageSize = 34.dp,
                                 onImageClicked = {
                                     selectedGalleryImage = it
                                     photoOpen = true
@@ -491,7 +494,7 @@ fun TaskItemPreview() {
 //                    "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                     Priority.HIGH,
                     notebookId = -1,
-                    progression = State.COMPLETED
+                    progression = State.NONE
                 ),
                 notebook = Notebook.instance(),
                 total = 1,

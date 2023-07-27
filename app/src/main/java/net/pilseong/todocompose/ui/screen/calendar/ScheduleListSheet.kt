@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,7 +55,6 @@ import net.pilseong.todocompose.data.model.ui.ReminderTime
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.TaskHeader
 import net.pilseong.todocompose.ui.components.TaskHeaderType
-import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
@@ -112,7 +110,7 @@ private fun ScheduleItem(
 ) {
     val cornerRadius = 8.dp
     val cutCornerSize = 20.dp
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier.clickable {
@@ -170,8 +168,13 @@ private fun ScheduleItem(
                     }
                 }
             }
-            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                if (!expanded) {
+            // 분기를 사용한 이유는 IntrinsicSize
+            // Sub compose Layout 를 사용 하는 lazy lists, BoxWithConstraints, TabRow,
+            // 가 하위에 포함 되면 안되기 때문 이다.
+            if (!expanded) {
+                Row(
+                    modifier = Modifier.height(IntrinsicSize.Min)
+                ) {
                     // 시간 + 중요성
                     Column(
                         modifier = Modifier
@@ -257,7 +260,11 @@ private fun ScheduleItem(
                             )
                         }
                     }
-                } else {
+                }
+            } else {
+                Row(
+                ) {
+
                     Column {
                         TaskHeader(task = item, type = TaskHeaderType.CALENDAR)
                         Column(
@@ -268,7 +275,9 @@ private fun ScheduleItem(
                                     modifier = Modifier
                                         .padding(SMALL_PADDING),
                                     text = item.memo.description.ifBlank { item.memo.title },
-                                    lineHeight = MaterialTheme.typography.labelSmall.fontSize.times(1.4f),
+                                    lineHeight = MaterialTheme.typography.labelSmall.fontSize.times(
+                                        1.4f
+                                    ),
                                     fontStyle = MaterialTheme.typography.labelSmall.fontStyle,
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                                 )
