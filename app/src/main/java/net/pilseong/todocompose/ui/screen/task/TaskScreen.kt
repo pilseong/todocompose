@@ -22,10 +22,9 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
-import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
-import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.copyToClipboard
 import net.pilseong.todocompose.util.deleteFileFromUri
@@ -40,7 +39,7 @@ fun TaskScreen(
     taskAppBarState: TaskAppBarState,
     taskUiState: TaskUiState,
     onBackClick: () -> Unit,
-    toListScreen: (Action) -> Unit,
+    toListScreen: (MemoAction) -> Unit,
     onEditClicked: () -> Unit,
     onValueChange: (TaskDetails) -> Unit,
     onSwipeRightOnViewer: () -> Unit,

@@ -1,4 +1,4 @@
-package net.pilseong.todocompose.ui.screen.settings
+package net.pilseong.todocompose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

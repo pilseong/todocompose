@@ -10,7 +10,6 @@ import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.StateEntity
 
 @Composable
@@ -20,8 +19,8 @@ fun ListView(
     onDateRangeCloseClick: () -> Unit,
     onFavoriteSortClick: (Boolean) -> Unit,
     onOrderEnabledClick: (Boolean) -> Unit,
-    onDateSortingChangeClick: (Action, MemoDateSortingOption, Boolean) -> Unit,
-    onPrioritySelected: (Action, Priority, Boolean) -> Unit,
+    onDateSortingChangeClick: (MemoAction, MemoDateSortingOption, Boolean) -> Unit,
+    onPrioritySelected: (MemoAction, Priority, Boolean) -> Unit,
     onStateSelected: (State) -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
     onToggleClicked: () -> Unit,

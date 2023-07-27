@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.components
 
-import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +50,7 @@ import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +61,7 @@ fun NotebooksPickerDialog(
     defaultNoteMemoCount: DefaultNoteMemoCount,
     onDismissRequest: () -> Unit,
     onCloseClick: () -> Unit,
-    onNotebookClick: (Long, Action) -> Unit
+    onNotebookClick: (Long, MemoAction) -> Unit
 ) {
     if (visible) {
         CustomAlertDialog(onDismissRequest = { onDismissRequest() }) {
@@ -144,9 +143,9 @@ fun NotebooksPickerDialog(
                                         .clickable {
                                             onNotebookClick(
                                                 item.id,
-                                                if (dialogMode == 0) Action.NOTEBOOK_CHANGE
+                                                if (dialogMode == 0) MemoAction.NOTEBOOK_CHANGE
                                                 else
-                                                    if (switchState) Action.COPY_TO else Action.MOVE_TO
+                                                    if (switchState) MemoAction.COPY_TO else MemoAction.MOVE_TO
                                             )
                                         },
                                     shape = RoundedCornerShape(4.dp),
@@ -212,9 +211,9 @@ fun NotebooksPickerDialog(
                             onClick = {
                                 onNotebookClick(
                                     -1,
-                                    if (dialogMode == 0) Action.NOTEBOOK_CHANGE
+                                    if (dialogMode == 0) MemoAction.NOTEBOOK_CHANGE
                                     else
-                                        if (switchState) Action.COPY_TO else Action.MOVE_TO)
+                                        if (switchState) MemoAction.COPY_TO else MemoAction.MOVE_TO)
                             }) {
                             Text(text = stringResource(id = R.string.note_select_use_default))
 

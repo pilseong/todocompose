@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.data.paging
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import kotlinx.coroutines.CoroutineDispatcher
@@ -47,7 +48,7 @@ class TodoPagingSource(
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MemoWithNotebook> {
-//        Log.d("PHILIP", "[TodoPagingSource]load params ${params.key}")
+        Log.d("PHILIP", "[TodoPagingSource]load params ${params.key}")
         val currentPage = params.key ?: 1
 
 //        Log.d("PHILIP", "[TodoPagingSource]start: $startDate, end: $endDate")
@@ -80,7 +81,7 @@ class TodoPagingSource(
                         priorityNone = priorityNone
                     )
 
-//                Log.d("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
+                Log.d("PHILIP", "[TodoPagingSource]load size of todos ${todoList.size}")
 
                 if (todoList.isNotEmpty()) {
                     LoadResult.Page(

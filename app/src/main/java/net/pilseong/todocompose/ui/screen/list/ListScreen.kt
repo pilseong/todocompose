@@ -47,7 +47,6 @@ import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.StateEntity
 
@@ -87,8 +86,8 @@ fun ListScreen(
     onDateRangeCloseClick: () -> Unit,
     onFavoriteSortClick: (Boolean) -> Unit,
     onOrderEnabledClick: (Boolean) -> Unit,
-    onDateSortingChangeClick: (Action, MemoDateSortingOption, Boolean) -> Unit,
-    onPrioritySelected: (Action, Priority, Boolean) -> Unit,
+    onDateSortingChangeClick: (MemoAction, MemoDateSortingOption, Boolean) -> Unit,
+    onPrioritySelected: (MemoAction, Priority, Boolean) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,

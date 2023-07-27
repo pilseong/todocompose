@@ -43,7 +43,7 @@ import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
-import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 
@@ -53,7 +53,7 @@ fun TaskAppBar(
     taskAppBarState: TaskAppBarState = TaskAppBarState.VIEWER,
     taskUiState: TaskUiState,
     onBackClick: () -> Unit,
-    toListScreen: (Action) -> Unit,
+    toListScreen: (MemoAction) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit,
     clearAddedPhotos: () -> Unit,
@@ -93,7 +93,7 @@ fun TaskAppBar(
 fun EditTaskBar(
     uiState: TaskUiState,
     edit: Boolean = false,
-    toListScreen: (Action) -> Unit,
+    toListScreen: (MemoAction) -> Unit,
     onBackClick: () -> Unit,
     clearAddedPhotos: () -> Unit,
     onValueChange: (TaskDetails) -> Unit,
@@ -137,9 +137,9 @@ fun EditTaskBar(
                 enabled = uiState.isEntryValid,
                 onClicked = {
                     if (edit) {
-                        toListScreen(Action.UPDATE)
+                        toListScreen(MemoAction.UPDATE)
                     } else {
-                        toListScreen(Action.ADD)
+                        toListScreen(MemoAction.ADD)
                     }
                 },
                 icon = Icons.Default.Check,
@@ -181,7 +181,7 @@ fun CommonAction(
 @Composable
 fun DetailTaskBar(
     task: MemoWithNotebook,
-    toListScreen: (Action) -> Unit,
+    toListScreen: (MemoAction) -> Unit,
     onBackClick: () -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
@@ -222,7 +222,7 @@ fun DetailTaskBar(
 @Composable
 fun DetailTaskBarActions(
     task: MemoWithNotebook,
-    toListScreen: (Action) -> Unit,
+    toListScreen: (MemoAction) -> Unit,
     onCopyClicked: () -> Unit,
     onEditClicked: () -> Unit
 ) {
@@ -241,7 +241,7 @@ fun DetailTaskBarActions(
         ),
         openDialog = expanded,
         onCloseDialog = { expanded = false },
-        onYesClicked = { toListScreen(Action.DELETE) }
+        onYesClicked = { toListScreen(MemoAction.DELETE) }
     )
     // copy to clipboard
     CommonAction(

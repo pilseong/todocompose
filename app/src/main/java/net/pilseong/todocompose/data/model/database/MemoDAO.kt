@@ -173,6 +173,38 @@ abstract class MemoDAO(
         priorityNone: Boolean = true
     ): List<MemoWithNotebook>
 
+
+    @Query("SELECT *, " +
+            "(  SELECT COUNT(*) " +
+            "   FROM   memo_table " +
+            "   WHERE deleted = 0 " +
+            "       AND ( " +
+            "           CASE :searchRangeAll " +
+            "               WHEN 0 THEN notebook_id = :notebookId " +
+            "               WHEN 1 THEN 1=1 " +
+            "           END" +
+            "       ) " +
+            "       AND due_date is not null " +
+//            "       AND due_date BETWEEN :startDateTime AND :endDateTime" +
+            ") as total " +
+            "FROM   memo_table " +
+            "WHERE deleted = 0" +
+            "   AND ( " +
+            "       CASE :searchRangeAll " +
+            "           WHEN 0 THEN notebook_id = :notebookId " +
+            "           WHEN 1 THEN 1=1 " +
+            "       END" +
+            "   ) " +
+            "   AND due_date is not null " +
+            "   AND due_date BETWEEN :startDateTime AND :endDateTime "
+    )
+    abstract fun getMonthlyTasksAsFlow(
+        notebookId: Long,
+        searchRangeAll: Boolean = false,
+        startDateTime: Long = Long.MIN_VALUE,
+        endDateTime: Long = Long.MAX_VALUE,
+    ): Flow<List<MemoWithNotebook>>
+
     // 메모 리스트 메뉴로 현재 노트북의 있는 메모 삭제
     @Query("UPDATE memo_table SET deleted = 1 WHERE notebook_id = :notebookId")
     abstract fun deleteMemosInNote(notebookId: Long)
@@ -337,11 +369,13 @@ abstract class MemoDAO(
     }
 
     // 알람이 설정된 메모를 가지고 온다.
-    @Query(" SELECT id " +
-            "FROM memo_table " +
-            "WHERE notebook_id = :notebookId " +
-            "   AND deleted = 0 " +
-            "   AND due_date is not null " +
-            "   AND reminder_type != 'NOT_USED'")
+    @Query(
+        " SELECT id " +
+                "FROM memo_table " +
+                "WHERE notebook_id = :notebookId " +
+                "   AND deleted = 0 " +
+                "   AND due_date is not null " +
+                "   AND reminder_type != 'NOT_USED'"
+    )
     abstract suspend fun getMemosWithAlarmByNotebookId(notebookId: Long): List<Long>
 }

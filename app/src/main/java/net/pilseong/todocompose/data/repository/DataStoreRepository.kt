@@ -169,7 +169,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
+//                Log.d("PHILIP", "[DataStoreRepository]persistRecentNoteIds $noteIds")
                 preferences[PreferenceKeys.recentNoteIdsState] = noteIds.joinToString(",")
             }
         }
@@ -179,7 +179,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d("PHILIP", "[DataStoreRepository]persistStatusLineOrderState $stateOrder")
+//                Log.d("PHILIP", "[DataStoreRepository]persistStatusLineOrderState $stateOrder")
                 preferences[PreferenceKeys.statusLineOrderState] =
                     stateOrder.joinToString(",") { it.ordinal.toString() }
             }
@@ -190,7 +190,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d("PHILIP", "[DataStoreRepository]persistStateState $stateState")
+//                Log.d("PHILIP", "[DataStoreRepository]persistStateState $stateState")
                 preferences[PreferenceKeys.stateState] = stateState
             }
         }
@@ -200,10 +200,10 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d(
-                    "PHILIP",
-                    "[DataStoreRepository]persistPriorityFilterState $priorityFilterState"
-                )
+//                Log.d(
+//                    "PHILIP",
+//                    "[DataStoreRepository]persistPriorityFilterState $priorityFilterState"
+//                )
                 preferences[PreferenceKeys.priorityFilterState] = priorityFilterState
             }
         }
@@ -213,7 +213,7 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d("PHILIP", "[DataStoreRepository]persistDateOrderState $dateOrderState")
+//                Log.d("PHILIP", "[DataStoreRepository]persistDateOrderState $dateOrderState")
                 preferences[PreferenceKeys.dateOrderState] = dateOrderState.name
             }
         }
@@ -224,10 +224,10 @@ class DataStoreRepository @Inject constructor(
         withContext(ioDispatcher) {
             // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
             context.dataStore.edit { preferences ->
-                Log.d(
-                    "PHILIP",
-                    "[DataStoreRepository]persistNoteSortingOrderState $noteSortingOption"
-                )
+//                Log.d(
+//                    "PHILIP",
+//                    "[DataStoreRepository]persistNoteSortingOrderState $noteSortingOption"
+//                )
                 preferences[PreferenceKeys.noteSortingOrderState] = noteSortingOption.ordinal
             }
         }

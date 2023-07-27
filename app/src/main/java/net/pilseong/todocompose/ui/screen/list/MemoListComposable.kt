@@ -27,7 +27,6 @@ import net.pilseong.todocompose.ui.components.NotebooksPickerDialog
 import net.pilseong.todocompose.ui.components.ProgressIndicator
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.SearchAppBarState
 
@@ -63,7 +62,7 @@ fun NavGraphBuilder.memoListComposable(
             // 중복적 으로 NO_ACTION 이 실행 되게 되는데 이것을 막기 위해서 사용 하였다.
             LaunchedEffect(key1 = route) {
                 Log.d("PHILIP", "[MemoNavGraph] NO_ACTION called $route")
-                memoViewModel.updateAction(Action.NO_ACTION)
+                memoViewModel.updateAction(MemoAction.NO_ACTION)
             }
         }
 
@@ -96,7 +95,7 @@ fun NavGraphBuilder.memoListComposable(
             memoViewModel = memoViewModel,
             toTaskScreen = {
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                memoViewModel.updateAction(Action.NO_ACTION)
+                memoViewModel.updateAction(MemoAction.NO_ACTION)
                 toScreen(Screen.MemoDetail)
             },
 //            toTaskManagementScreen = toTaskManagementScreen,
@@ -104,7 +103,7 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.updateIndex(index)
                 memoViewModel.setTaskScreenToEditorMode(memo)
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                memoViewModel.updateAction(Action.NO_ACTION)
+                memoViewModel.updateAction(MemoAction.NO_ACTION)
 
                 toScreen(Screen.MemoDetail)
             },
@@ -122,7 +121,7 @@ fun NavGraphBuilder.memoListComposable(
                 ) {
                     memoViewModel.searchTextString = ""
                     memoViewModel.handleActions(
-                        Action.SEARCH_NO_FILTER_CHANGE,
+                        MemoAction.SEARCH_NO_FILTER_CHANGE,
                         searchRangeAll = false
                     )
                 } else memoViewModel.onCloseSearchBar()
@@ -132,7 +131,7 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.searchTextString = text
                 memoViewModel.refreshAllTasks()
             },
-            onDeleteSelectedClicked = { memoViewModel.handleActions(Action.DELETE_SELECTED_ITEMS) },
+            onDeleteSelectedClicked = { memoViewModel.handleActions(MemoAction.DELETE_SELECTED_ITEMS) },
             onMoveMemoClicked = {
                 Log.d("PHILIP", "onMoveMemoClicked")
                 memoViewModel.getDefaultNoteCount()
@@ -141,7 +140,7 @@ fun NavGraphBuilder.memoListComposable(
             },
             onStateChange = { task, state ->
                 memoViewModel.handleActions(
-                    Action.STATE_CHANGE,
+                    MemoAction.STATE_CHANGE,
                     memo = task.toMemoTask(),
                     state = state
                 )
@@ -151,16 +150,16 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
                 memoViewModel.setTaskScreenToEditorMode()
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
-                memoViewModel.updateAction(Action.NO_ACTION)
+                memoViewModel.updateAction(MemoAction.NO_ACTION)
                 toScreen(Screen.MemoDetail)
             },
             onDeleteAllClicked = {
                 Log.d("PHILIP", "onDeleteAllClicked")
-                memoViewModel.handleActions(Action.DELETE_ALL)
+                memoViewModel.handleActions(MemoAction.DELETE_ALL)
             },
             onDateRangePickerConfirmed = { start, end ->
                 memoViewModel.handleActions(
-                    action = Action.SEARCH_WITH_DATE_RANGE,
+                    memoAction = MemoAction.SEARCH_WITH_DATE_RANGE,
                     startDate = start,
                     endDate = end
                 )
@@ -168,7 +167,7 @@ fun NavGraphBuilder.memoListComposable(
             onExportClick = { memoViewModel.exportData() },
             onSearchRangeAllClicked = { state, orderUpdate ->
                 memoViewModel.handleActions(
-                    Action.SEARCH_RANGE_CHANGE,
+                    MemoAction.SEARCH_RANGE_CHANGE,
                     searchRangeAll = state,
                     statusLineOrderUpdate = orderUpdate
 
@@ -176,21 +175,21 @@ fun NavGraphBuilder.memoListComposable(
             },
             onDateRangeCloseClick = {
                 memoViewModel.handleActions(
-                    Action.SEARCH_WITH_DATE_RANGE,
+                    MemoAction.SEARCH_WITH_DATE_RANGE,
                     startDate = null,
                     endDate = null
                 )
             },
             onFavoriteSortClick = { orderUpdate ->
                 memoViewModel.handleActions(
-                    action = Action.SORT_FAVORITE_CHANGE,
+                    memoAction = MemoAction.SORT_FAVORITE_CHANGE,
                     favorite = !uiState.sortFavorite,
                     statusLineOrderUpdate = orderUpdate
                 )
             },
             onOrderEnabledClick = { orderUpdate ->
                 memoViewModel.handleActions(
-                    action = Action.SORT_ORDER_CHANGE,
+                    memoAction = MemoAction.SORT_ORDER_CHANGE,
                     sortOrderState = if (uiState.dateOrderState == SortOption.DESC) SortOption.ASC else SortOption.DESC,
                     statusLineOrderUpdate = orderUpdate
 
@@ -198,7 +197,7 @@ fun NavGraphBuilder.memoListComposable(
             },
             onDateSortingChangeClick = { action, sortingOption, statusOrderUpdate ->
                 memoViewModel.handleActions(
-                    action = Action.MEMO_SORT_DATE_BASE_CHANGE,
+                    memoAction = MemoAction.MEMO_SORT_DATE_BASE_CHANGE,
                     memoSortOption = sortingOption,
                     statusLineOrderUpdate = statusOrderUpdate
                 )
@@ -213,20 +212,20 @@ fun NavGraphBuilder.memoListComposable(
             },
             onFavoriteClick = { todo ->
                 memoViewModel.handleActions(
-                    action = Action.FAVORITE_UPDATE,
+                    memoAction = MemoAction.FAVORITE_UPDATE,
                     memo = todo.toMemoTask()
                 )
             },
             onLongClickApplied = { memoViewModel.appendMultiSelectedItem(it) },
             onStateSelectedForMultipleItems = { state ->
                 memoViewModel.handleActions(
-                    action = Action.STATE_CHANGE_MULTIPLE,
+                    memoAction = MemoAction.STATE_CHANGE_MULTIPLE,
                     state = state
                 )
             },
             onStateSelected = { state ->
                 memoViewModel.handleActions(
-                    Action.STATE_FILTER_CHANGE,
+                    MemoAction.STATE_FILTER_CHANGE,
                     state = state,
                 )
             },
@@ -240,25 +239,25 @@ fun NavGraphBuilder.memoListComposable(
                     }
                 }
                 memoViewModel.handleActions(
-                    Action.STATE_MULTIPLE_FILTER_CHANGE,
+                    MemoAction.STATE_MULTIPLE_FILTER_CHANGE,
                     stateInt = result,
                 )
             },
             onSetAllOrNothingClicked = { all ->
                 memoViewModel.handleActions(
-                    Action.STATE_MULTIPLE_FILTER_CHANGE,
+                    MemoAction.STATE_MULTIPLE_FILTER_CHANGE,
                     stateInt = if (all) 63 else 0,
                 )
             },
             onSearchNoFilterClicked = {
                 memoViewModel.handleActions(
-                    Action.SEARCH_NO_FILTER_CHANGE,
+                    MemoAction.SEARCH_NO_FILTER_CHANGE,
                     searchRangeAll = it
                 )
             },
             onStatusLineUpdate = {
                 memoViewModel.handleActions(
-                    Action.STATUS_LINE_UPDATE,
+                    MemoAction.STATUS_LINE_UPDATE,
                     stateEntity = it
                 )
             },
@@ -293,7 +292,7 @@ fun NavGraphBuilder.memoListComposable(
         // enabled 는 화면에 표출될 지를 결정 하는 변수 이다.
         DisplaySnackBar(
             snackBarHostState = snackBarHostState,
-            action = memoViewModel.action,
+            memoAction = memoViewModel.memoAction,
             range = uiState.searchRangeAll,
             enabled = memoViewModel.actionPerformed,
             title = memoViewModel.savedLastMemoTask.title,
@@ -301,12 +300,12 @@ fun NavGraphBuilder.memoListComposable(
                 Log.d("PHILIP", "[ListScreen] button clicked ${selectedAction.name}")
 
                 if (result == SnackbarResult.ActionPerformed
-                    && selectedAction == Action.DELETE
+                    && selectedAction == MemoAction.DELETE
                 ) {
                     Log.d("PHILIP", "[ListScreen] undo inside clicked ${selectedAction.name}")
-                    memoViewModel.handleActions(Action.UNDO)
+                    memoViewModel.handleActions(MemoAction.UNDO)
                 } else {
-                    memoViewModel.updateAction(Action.NO_ACTION)
+                    memoViewModel.updateAction(MemoAction.NO_ACTION)
                 }
             },
             orderState = memoViewModel.snackBarOrderState,
@@ -343,7 +342,7 @@ fun NavGraphBuilder.memoListComposable(
             if (memoViewModel.searchTextString.isNotEmpty() || memoViewModel.searchNoFilterState) {
                 memoViewModel.searchTextString = ""
                 memoViewModel.handleActions(
-                    Action.SEARCH_NO_FILTER_CHANGE,
+                    MemoAction.SEARCH_NO_FILTER_CHANGE,
                     searchRangeAll = false
                 )
             } else {

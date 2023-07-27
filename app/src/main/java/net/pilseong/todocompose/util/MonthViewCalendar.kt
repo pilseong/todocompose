@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,12 +33,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -46,13 +51,14 @@ import java.time.format.TextStyle
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MonthViewCalendar(
+    tasks: List<MemoWithNotebook>,
     loadedDates: Array<List<LocalDate>>,
     selectedDate: LocalDate,
     currentMonth: YearMonth,
     onSwipeNext: (YearMonth) -> Unit,
     onSwipePrev: (YearMonth) -> Unit,
     loadDatesForMonth: (YearMonth) -> Unit,
-    onDayClick: (LocalDate) -> Unit
+    onDayClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit
 ) {
     val itemWidth = LocalConfiguration.current.screenWidthDp / 7
     CalendarPager(
@@ -84,11 +90,15 @@ internal fun MonthViewCalendar(
 
                 }
             }
-            BoxWithConstraints(
-            ) {
+            BoxWithConstraints {
                 val boxHeight = LocalDensity.current.run { maxHeight }
                 FlowRow(modifier = Modifier.fillMaxSize()) {
                     loadedDates[currentPage].forEach { date ->
+                        val memos = tasks.filter {
+                            it.memo.dueDate!!.month == date.month &&
+                                    it.memo.dueDate.dayOfMonth == date.dayOfMonth
+                        }
+
                         DayView(
                             modifier = Modifier
                                 .width(itemWidth.dp)
@@ -108,9 +118,10 @@ internal fun MonthViewCalendar(
                                     date,
                                     currentMonth,
                                 ),
+                            memos = memos,
                             date = date,
                             isSelected = selectedDate == date,
-                            onDayClick = { onDayClick(date) },
+                            onDayClick = onDayClick,
                         )
                     }
                 }
@@ -126,6 +137,7 @@ internal fun MonthViewCalendar(
 fun PreviewMonthViewCalendar() {
     MaterialTheme {
         MonthViewCalendar(
+            tasks = listOf(),
             loadedDates = calculateExpandedCalendarDays(
                 LocalDate.now().minusMonths(1)
                     .yearMonth().atDay(1)
@@ -135,7 +147,7 @@ fun PreviewMonthViewCalendar() {
             loadDatesForMonth = {},
             onSwipeNext = {},
             onSwipePrev = {},
-            onDayClick = {}
+            onDayClick = { _, _ -> }
         )
     }
 
@@ -157,10 +169,6 @@ internal fun CalendarPager(
     }
 
     LaunchedEffect(pagerState.currentPage) {
-//        Log.d(
-//            "TTEST",
-//            "[CalendarPager] page is ${pagerState.currentPage}"
-//        )
         if (pagerState.currentPage == 0 || pagerState.currentPage == 2) {
             if (pagerState.currentPage == 0) {
                 loadPrevDates()
@@ -189,7 +197,8 @@ internal fun CalendarPager(
 fun DayView(
     modifier: Modifier = Modifier,
     date: LocalDate,
-    onDayClick: (LocalDate) -> Unit,
+    memos: List<MemoWithNotebook>,
+    onDayClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit,
     isSelected: Boolean = false,
 ) {
     val isCurrentDay = date == LocalDate.now()
@@ -203,7 +212,8 @@ fun DayView(
         else modifier.background(MaterialTheme.colorScheme.background)
     Column(
         modifier = dayValueModifier
-            .clickable { onDayClick(date) },
+            .verticalScroll(rememberScrollState())
+            .clickable { onDayClick(date, memos) },
     ) {
         Text(
             text = date.dayOfMonth.toString(),
@@ -213,6 +223,33 @@ fun DayView(
             color = if (isSelected || isCurrentDay) Color.Red//MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurface
         )
+        memos.forEach {
+            Surface(
+                color = if (it.memo.priority == Priority.NONE)
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+                else it.memo.priority.color.copy(alpha = 0.3f)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+//                Icon(
+//                    modifier = Modifier.size(5.dp),
+//                    imageVector = Icons.Default.Circle,
+//                    contentDescription = "circle image",
+//                    tint = it.memo.priority.color
+//                )
+                    Text(
+                        text = it.memo.title,
+                        fontSize = 10.sp,
+                        fontStyle = MaterialTheme.typography.labelSmall.fontStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color =
+//                        if (it.memo.priority == Priority.NONE)
+                            MaterialTheme.colorScheme.onSurface
+//                        else MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
     }
 }
 

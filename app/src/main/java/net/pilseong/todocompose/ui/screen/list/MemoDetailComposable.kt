@@ -16,7 +16,6 @@ import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.screen.task.TaskScreen
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.Constants
 import net.pilseong.todocompose.util.deleteFileFromUri
 
@@ -102,11 +101,11 @@ fun NavGraphBuilder.memoDetailComposable(
             ) {
                 Log.d("PHILIP", "[MemoNavGraph] previous value $route")
                 // 다른 action 을 처리 하고 있는 경우는 action 이 처리 되고 있는 정상적인 경우이다.
-                if (memoViewModel.action == Action.NO_ACTION) {
+                if (memoViewModel.memoAction == MemoAction.NO_ACTION) {
                     LaunchedEffect(key1 = taskIndex, key2 = tasks.itemCount) {
                         Log.d(
                             "PHILIP",
-                            "[MemoNavGraph] memoViewModel value ${memoViewModel.action}"
+                            "[MemoNavGraph] memoViewModel value ${memoViewModel.memoAction}"
                         )
                         toScreen(Screen.MemoList)
                     }
@@ -122,28 +121,28 @@ fun NavGraphBuilder.memoDetailComposable(
                 taskUiState = memoViewModel.taskUiState,
                 toListScreen = { action ->
                     // 수정 할 내용을 반영 해야 할 경우 title, description 이 비어 있는지 확인
-                    if (action != Action.NO_ACTION) {
+                    if (action != MemoAction.NO_ACTION) {
                         when (action) {
-                            Action.DELETE -> {
+                            MemoAction.DELETE -> {
                                 memoViewModel.handleActions(
-                                    action = action,
+                                    memoAction = action,
                                     memo = tasks[taskIndex]!!.toMemoTask()
                                 )
                             }
-                            Action.UPDATE -> {
+                            MemoAction.UPDATE -> {
                                 memoViewModel.handleActions(
-                                    action = action,
+                                    memoAction = action,
                                     memoWithNotebook = tasks[taskIndex]!!
                                 )
                             }
                             else -> {
                                 memoViewModel.handleActions(
-                                    action = action
+                                    memoAction = action
                                 )
                             }
                         }
                     } else {
-                        memoViewModel.handleActions(Action.NO_ACTION)
+                        memoViewModel.handleActions(MemoAction.NO_ACTION)
                     }
                     toScreen(Screen.MemoList)
                     // 화면 전환 후에 이전의 index가 lazyloading 범위를 넘어갈 경우 처리를 위해 초기화 필요

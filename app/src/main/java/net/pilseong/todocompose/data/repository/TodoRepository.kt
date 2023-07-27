@@ -19,6 +19,14 @@ import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.paging.TodoPagingSource
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.util.Constants.PAGE_SIZE
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.util.Calendar
 import javax.inject.Inject
 
 @ViewModelScoped
@@ -83,6 +91,39 @@ class TodoRepository @Inject constructor(
             }
         ).flow
     }
+
+
+    fun getMonthlyTasks(
+        yearMonth: YearMonth,
+        searchRangeAll: Boolean = false,
+        notebookId: Long,
+    ): Flow<List<MemoWithNotebook>> {
+        Log.d("PHILIP", "[TodoRepository] getMonthlyTasks performed notebook_id = $notebookId")
+
+        val startDateTime = yearMonth.minusMonths(1).atDay(1).atStartOfDay().toInstant(
+            ZonedDateTime.now(ZoneId.systemDefault()).offset
+        ).epochSecond
+
+        Log.d("PHILIP", "[TodoRepository] getMonthlyTasks start time " +
+                "${ZonedDateTime.ofInstant(Instant.ofEpochSecond(startDateTime), ZoneId.systemDefault())}")
+
+
+        val endDateTime = (yearMonth.plusMonths(2)
+            .atDay(1).atStartOfDay().toInstant(
+            ZonedDateTime.now(ZoneId.systemDefault()).offset
+        ).toEpochMilli() - 1) / 1000
+
+        Log.d("PHILIP", "[TodoRepository] getMonthlyTasks end time " +
+                "${ZonedDateTime.ofInstant(Instant.ofEpochSecond(endDateTime), ZoneId.systemDefault())}")
+
+        return memoDAO.getMonthlyTasksAsFlow(
+            notebookId = notebookId,
+            searchRangeAll= searchRangeAll,
+            startDateTime  = startDateTime,
+            endDateTime = endDateTime
+        )
+    }
+
 
     suspend fun addMemo(memo: MemoTask) {
         withContext(Dispatchers.IO) {

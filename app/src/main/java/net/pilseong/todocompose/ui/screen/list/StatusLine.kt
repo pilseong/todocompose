@@ -1,6 +1,5 @@
 package net.pilseong.todocompose.ui.screen.list
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,7 +65,6 @@ import net.pilseong.todocompose.ui.theme.LowPriorityColor
 import net.pilseong.todocompose.ui.theme.MediumPriorityColor
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
-import net.pilseong.todocompose.util.Action
 import net.pilseong.todocompose.util.StateEntity
 import java.time.Instant
 import java.time.ZoneId
@@ -81,8 +79,8 @@ fun StatusLine(
     onCloseClick: () -> Unit,
     onFavoriteClick: (Boolean) -> Unit,
     onOrderEnabledClick: (Boolean) -> Unit,
-    onDateSortingChangeClick: (Action, MemoDateSortingOption, Boolean) -> Unit,
-    onPrioritySelected: (Action, Priority, Boolean) -> Unit,
+    onDateSortingChangeClick: (MemoAction, MemoDateSortingOption, Boolean) -> Unit,
+    onPrioritySelected: (MemoAction, Priority, Boolean) -> Unit,
     onStateSelected: (State) -> Unit,
     onRangeAllEnabledClick: (Boolean, Boolean) -> Unit,
     onToggleClicked: () -> Unit,
@@ -113,7 +111,7 @@ fun StatusLine(
             }
             initialSize = stateSize
 
-            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
+//            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
 
             LazyRow(
                 modifier = Modifier
@@ -129,14 +127,14 @@ fun StatusLine(
                 ) { index, item ->
 
                     val shouldUpdate = remember(initialSize) {
-                        Log.d("PHILIP", "[StatusLine] cal index: $index, initialSize: $initialSize")
+//                        Log.d("PHILIP", "[StatusLine] cal index: $index, initialSize: $initialSize")
                         index >= initialSize
                     }
 
                     when (item) {
                         StateEntity.NOTE_FILTER -> NoteFilterState(
                             onRangeAllEnabledClick = { state ->
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onRangeAllEnabledClick(state, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -150,7 +148,7 @@ fun StatusLine(
                         StateEntity.PRIORITY_FILTER -> PriorityFilter(uiState,
                             onPrioritySelected = { state, priority ->
                                 // 닫을 때 정렬이 실행되도록 하기 위해 체크 박스 선택 시에는 정렬 없음
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onPrioritySelected(state, priority, false)
                             },
                             onDismiss = {
@@ -173,7 +171,7 @@ fun StatusLine(
                                 onSetAllOrNothingClicked(state)
                             },
                             onDismiss = {
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 if (shouldUpdate) {
                                     onStatusLineUpdate(StateEntity.STATE_FILTER)
                                     scope.launch {
@@ -186,7 +184,7 @@ fun StatusLine(
                         StateEntity.FAVORITE_FILTER -> FavoriteFilter(
                             uiState.sortFavorite,
                             onFavoriteClick = {
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onFavoriteClick(shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -199,7 +197,7 @@ fun StatusLine(
                         StateEntity.PRIORITY_ORDER -> PrioritySort(
                             uiState.prioritySortState,
                             onPrioritySelected = { action, priority ->
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onPrioritySelected(action, priority, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -211,7 +209,7 @@ fun StatusLine(
 
                         StateEntity.SORTING_ORDER -> SortingOrder(uiState.dateOrderState,
                             onOrderEnabledClick = {
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onOrderEnabledClick(shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -224,7 +222,7 @@ fun StatusLine(
                         StateEntity.DATE_BASE_ORDER -> DateBaseOrder(
                             uiState.memoDateSortingState,
                             onSortingSelected = { action, selectedOption ->
-                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
+//                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onDateSortingChangeClick(action, selectedOption, shouldUpdate)
                                 if (shouldUpdate) {
                                     scope.launch {
@@ -360,7 +358,7 @@ private fun DateBaseOrder(dateEnabled: Boolean, onDateEnabledClick: () -> Unit) 
 @Composable
 private fun DateBaseOrder(
     memoDateSortingOption: MemoDateSortingOption,
-    onSortingSelected: (Action, MemoDateSortingOption) -> Unit
+    onSortingSelected: (MemoAction, MemoDateSortingOption) -> Unit
 ) {
     var sortMenuExpanded by remember { mutableStateOf(false) }
     Card(
@@ -425,7 +423,7 @@ private fun DateBaseOrder(
                     },
                     onClick = {
                         sortMenuExpanded = false
-                        onSortingSelected(Action.MEMO_SORT_DATE_BASE_CHANGE, menu)
+                        onSortingSelected(MemoAction.MEMO_SORT_DATE_BASE_CHANGE, menu)
                     })
             }
         }
@@ -480,7 +478,7 @@ private fun SortingOrder(sortOption: SortOption, onOrderEnabledClick: () -> Unit
 @Composable
 private fun PrioritySort(
     prioritySortState: Priority,
-    onPrioritySelected: (Action, Priority) -> Unit
+    onPrioritySelected: (MemoAction, Priority) -> Unit
 ) {
     var priortySortMemuExpanded by remember { mutableStateOf(false) }
     Card(
@@ -556,7 +554,7 @@ private fun PrioritySort(
                 },
                 onClick = {
                     priortySortMemuExpanded = false
-                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.HIGH)
+                    onPrioritySelected(MemoAction.PRIORITY_CHANGE, Priority.HIGH)
                 })
             DropdownMenuItem(
                 text = {
@@ -567,13 +565,13 @@ private fun PrioritySort(
                 },
                 onClick = {
                     priortySortMemuExpanded = false
-                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.LOW)
+                    onPrioritySelected(MemoAction.PRIORITY_CHANGE, Priority.LOW)
                 })
             DropdownMenuItem(
                 text = { PriorityItem(priority = Priority.NONE) },
                 onClick = {
                     priortySortMemuExpanded = false
-                    onPrioritySelected(Action.PRIORITY_CHANGE, Priority.NONE)
+                    onPrioritySelected(MemoAction.PRIORITY_CHANGE, Priority.NONE)
                 })
         }
     }
@@ -691,7 +689,7 @@ private fun StatusFilter(
 @Composable
 private fun PriorityFilter(
     uiState: UserData,
-    onPrioritySelected: (Action, Priority) -> Unit,
+    onPrioritySelected: (MemoAction, Priority) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var priorityMenuExpanded by remember { mutableStateOf(false) }
@@ -741,7 +739,7 @@ private fun PriorityFilter(
                 priorityLow = uiState.priorityLow,
                 priorityNone = uiState.priorityNone,
                 onPrioritySelected = { priority ->
-                    onPrioritySelected(Action.PRIORITY_FILTER_CHANGE, priority)
+                    onPrioritySelected(MemoAction.PRIORITY_FILTER_CHANGE, priority)
                 }
             )
         }

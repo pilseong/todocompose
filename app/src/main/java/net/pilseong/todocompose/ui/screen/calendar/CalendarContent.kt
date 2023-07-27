@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,13 +22,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.MemoTask
+import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.util.MonthViewCalendar
@@ -38,29 +42,45 @@ import net.pilseong.todocompose.util.calculateSwipePrev
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarContent(
-//    loadedDates: Array<List<LocalDate>>,
-//    selectedDate: LocalDate,
-//    currentMonth: YearMonth,
-    onCalendarIntent: (CalendarIntent) -> Unit,
+    tasks: List<MemoWithNotebook>,
+    onMonthChange: (YearMonth) -> Unit,
 ) {
 
-    var currentDate by remember { mutableStateOf(LocalDate.now()) }
+//    val currentDate by remember { mutableStateOf(LocalDate.now()) }
 
-    var loadedDates by remember {
-        mutableStateOf(calculateExpandedCalendarDays(LocalDate.now().minusMonths(1).yearMonth().atDay(1)))
+    Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
+
+    var loadedDates by rememberSaveable {
+        mutableStateOf(
+            calculateExpandedCalendarDays(
+                LocalDate
+                    .now()
+                    .minusMonths(1)
+                    .yearMonth().atDay(1)
+            )
+        )
     }
 
-    var currentMonth by remember {
+    var currentMonth by rememberSaveable {
         mutableStateOf(loadedDates[1][loadedDates[1].size / 2].yearMonth())
     }
 
-    val selectedDate by remember {
+    var selectedDate by rememberSaveable {
         mutableStateOf(LocalDate.now())
+    }
+
+    var listExpended by remember {
+        mutableStateOf(false)
+    }
+
+    var memosList by rememberSaveable {
+        mutableStateOf<List<MemoWithNotebook>>(emptyList())
     }
 
     Surface {
@@ -94,37 +114,50 @@ fun CalendarContent(
                 }
             }
             MonthViewCalendar(
+                tasks = tasks,
                 loadedDates,
                 selectedDate,
                 currentMonth = currentMonth,
                 onSwipeNext = { yearMonth ->
                     currentMonth = yearMonth.plusMonths(1)
-                    Log.d("TTEST", "onSwipeNext")
+                    Log.d("PHILIP", "onSwipeNext")
                     loadedDates = calculateSwipeNext(yearMonth.atDay(1), loadedDates)
+
+                    onMonthChange(currentMonth)
                 },
                 onSwipePrev = { yearMonth ->
                     currentMonth = yearMonth.plusMonths(1)
-                    Log.d("TTEST", "onSwipePrev")
+                    Log.d("PHILIP", "onSwipePrev")
                     loadedDates = calculateSwipePrev(yearMonth.atDay(1), loadedDates)
+
+                    onMonthChange(currentMonth)
 
                 },
                 loadDatesForMonth = { yearMonth ->
-                    Log.d("TTEST", "get yearMonth $yearMonth")
+                    Log.d("PHILIP", "get yearMonth $yearMonth")
                     loadedDates = calculateExpandedCalendarDays(yearMonth.atDay(1))
-                    onCalendarIntent(
-                        CalendarIntent.LoadNextDates(
-                            yearMonth.atDay(
-                                1
-                            )
-                        )
-                    )
+//                    onCalendarIntent(
+//                        CalendarIntent.LoadNextDates(
+//                            yearMonth.atDay(
+//                                1
+//                            )
+//                        )
+//                    )
                 },
-                onDayClick = {
+                onDayClick = { date, memos ->
 //                    onCalendarIntent(CalendarIntent.SelectDate(it))
-                    currentDate = it
+                    selectedDate = date
+                    memosList = memos
+                    listExpended = true
                 }
             )
         }
+
+        ScheduleListSheet(
+            memos = memosList,
+            expanded = listExpended,
+            onDismissRequest = { listExpended = false },
+        )
     }
 }
 
@@ -133,10 +166,22 @@ fun CalendarContent(
 fun CalendarContentPreview() {
     TodoComposeTheme {
         CalendarContent(
-//            loadedDates = calculateExpandedCalendarDays(LocalDate.now().minusMonths(1).yearMonth().atDay(1)),
-//            selectedDate = LocalDate.now(),
-//            currentMonth = LocalDate.now().yearMonth(),
-            onCalendarIntent = {}
+            tasks = listOf(
+                MemoWithNotebook(
+                    memo = MemoTask(
+                        1,
+                        "필성 힘내!!!",
+                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                        Priority.HIGH,
+                        notebookId = -1,
+                        dueDate = ZonedDateTime.now()
+                    ),
+                    notebook = Notebook.instance(),
+                    total = 1,
+                    photos = emptyList()
+                )
+            ),
+            onMonthChange = {}
         )
     }
 }

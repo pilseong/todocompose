@@ -1,6 +1,6 @@
-package net.pilseong.todocompose.util
+package net.pilseong.todocompose.ui.screen.list
 
-enum class Action {
+enum class MemoAction {
     ADD,
     UPDATE,
     DELETE,

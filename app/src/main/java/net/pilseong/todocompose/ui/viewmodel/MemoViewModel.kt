@@ -50,7 +50,7 @@ import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
-import net.pilseong.todocompose.util.Action
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.StateEntity
@@ -324,12 +324,12 @@ class MemoViewModel @Inject constructor(
 
     // action 은 실시간 으로 감시 하는 state 가 되면 안 된다. 처리 후 NONE 으로 변경 해야
     // 중복 메시지 수신 에도 이벤트 를 구분 할 수 있다.
-    var action = Action.NO_ACTION
+    var memoAction = MemoAction.NO_ACTION
         private set
 
-    fun updateAction(action: Action) {
-        this.action = action
-        Log.d("PHILIP", "[MemoViewModel] updateAction to ${action.name}")
+    fun updateAction(memoAction: MemoAction) {
+        this.memoAction = memoAction
+        Log.d("PHILIP", "[MemoViewModel] updateAction to ${memoAction.name}")
     }
 
     private fun updateActionPerformed() {
@@ -352,7 +352,7 @@ class MemoViewModel @Inject constructor(
 
 
     fun handleActions(
-        action: Action,
+        memoAction: MemoAction,
         memo: MemoTask = MemoTask.instance(),
         memoWithNotebook: MemoWithNotebook = MemoWithNotebook.instance(),
         priority: Priority = Priority.NONE,
@@ -370,70 +370,70 @@ class MemoViewModel @Inject constructor(
     ) {
         Log.d(
             "PHILIP",
-            "[MemoViewModel] handleActions performed with $action"
+            "[MemoViewModel] handleActions performed with $memoAction"
         )
-        when (action) {
-            Action.ADD -> {
+        when (memoAction) {
+            MemoAction.ADD -> {
                 addTask()
                 updateActionPerformed()
             }
 
             // 업 데이트 를 실행할 때 원래 사진 리스트 와 수정할 사진 리스트 를 비교 해야 한다.
             // photos 는 원래 사진 리스트 를 가지고 있다.
-            Action.UPDATE -> {
+            MemoAction.UPDATE -> {
                 updateTask(memoWithNotebook)
                 updateActionPerformed()
             }
 
-            Action.DELETE -> {
+            MemoAction.DELETE -> {
                 deleteTask(memo)
                 updateActionPerformed()
             }
 
-            Action.DELETE_ALL -> {
+            MemoAction.DELETE_ALL -> {
                 deleteAllTasks()
                 updateActionPerformed()
             }
 
-            Action.DELETE_SELECTED_ITEMS -> {
+            MemoAction.DELETE_SELECTED_ITEMS -> {
                 deleteSelectedTasks()
                 updateActionPerformed()
             }
 
-            Action.UNDO -> {
+            MemoAction.UNDO -> {
                 undoTask()
                 updateActionPerformed()
             }
 
-            Action.MOVE_TO -> {
-                updateAction(action)
+            MemoAction.MOVE_TO -> {
+                updateAction(memoAction)
                 moveToTask(notebookId)
                 updateActionPerformed()
             }
 
-            Action.COPY_TO -> {
-                updateAction(action)
+            MemoAction.COPY_TO -> {
+                updateAction(memoAction)
                 copyToTask(notebookId)
                 updateActionPerformed()
             }
 
-            Action.FAVORITE_UPDATE -> {
+            MemoAction.FAVORITE_UPDATE -> {
                 updateFavorite(memo)
                 // favorite 모드가 활성화 되었을 때만 favorite 삭제시 리프레시
             }
 
-            Action.SEARCH_WITH_DATE_RANGE -> {
+            MemoAction.SEARCH_WITH_DATE_RANGE -> {
                 this.startDate = startDate
                 this.endDate = endDate
-                updateAction(action)
+                updateAction(memoAction)
 
                 refreshAllTasks()
                 updateActionPerformed()
             }
 
             // 우선 순위 변화는 좀 신경을 써야 한다.
-            Action.PRIORITY_CHANGE -> {
-                updateAction(action)
+            MemoAction.PRIORITY_CHANGE -> {
+                updateAction(memoAction)
                 // 변경 될 설정이 NONE 인 경우는 all tasks 가 보여 져야 한다.
                 if (priority != uiState.prioritySortState) {
                     persistPrioritySortState(priority, statusLineOrderUpdate)
@@ -441,24 +441,24 @@ class MemoViewModel @Inject constructor(
                 }
             }
 
-            Action.SORT_ORDER_CHANGE -> {
+            MemoAction.SORT_ORDER_CHANGE -> {
                 Log.d(
                     "PHILIP",
                     "[MemoViewModel] handleActions performed with ${uiState.dateOrderState}, $sortOrderState"
                 )
-                updateAction(action)
+                updateAction(memoAction)
 
                 snackBarOrderState = sortOrderState
                 persistDateOrderState(sortOrderState, statusLineOrderUpdate)
                 updateActionPerformed()
             }
 
-            Action.MEMO_SORT_DATE_BASE_CHANGE -> {
+            MemoAction.MEMO_SORT_DATE_BASE_CHANGE -> {
                 Log.d(
                     "PHILIP",
                     "[MemoViewModel] handleActions performed with ${uiState.memoDateSortingState}"
                 )
-                updateAction(action)
+                updateAction(memoAction)
                 snackBarDateState = memoSortOption
 
                 viewModelScope.launch {
@@ -475,61 +475,61 @@ class MemoViewModel @Inject constructor(
                 updateActionPerformed()
             }
 
-            Action.SORT_FAVORITE_CHANGE -> {
-                updateAction(action)
+            MemoAction.SORT_FAVORITE_CHANGE -> {
+                updateAction(memoAction)
                 persistFavoriteEnabledState(favorite, statusLineOrderUpdate)
                 if (favorite) {
                     updateActionPerformed()
                 }
             }
 
-            Action.NOTEBOOK_CHANGE -> {
-                updateAction(action)
+            MemoAction.NOTEBOOK_CHANGE -> {
+                updateAction(memoAction)
                 persistNotebookIdState(notebookId)
                 updateActionPerformed()
             }
 
-            Action.STATE_FILTER_CHANGE -> {
+            MemoAction.STATE_FILTER_CHANGE -> {
                 val result = stateBinaryCalculation(state)
                 persistStateState(result)
             }
 
-            Action.STATE_MULTIPLE_FILTER_CHANGE -> {
+            MemoAction.STATE_MULTIPLE_FILTER_CHANGE -> {
                 persistStateState(stateInt)
             }
 
-            Action.STATE_CHANGE -> {
+            MemoAction.STATE_CHANGE -> {
                 updateState(memo, state)
             }
 
-            Action.STATE_CHANGE_MULTIPLE -> {
+            MemoAction.STATE_CHANGE_MULTIPLE -> {
                 updateStateForMultiple(state)
             }
 
-            Action.PRIORITY_FILTER_CHANGE -> {
+            MemoAction.PRIORITY_FILTER_CHANGE -> {
                 val result = priorityBinaryCalculation(priority)
                 persistPriorityFilterState(result, statusLineOrderUpdate)
             }
 
-            Action.SEARCH_NO_FILTER_CHANGE -> {
+            MemoAction.SEARCH_NO_FILTER_CHANGE -> {
                 updateSearchNoFilterState(searchRangeAll)
                 updateActionPerformed()
             }
 
-            Action.SEARCH_RANGE_CHANGE -> {
-                updateAction(action)
+            MemoAction.SEARCH_RANGE_CHANGE -> {
+                updateAction(memoAction)
                 persistSearchRange(searchRangeAll, statusLineOrderUpdate)
                 updateActionPerformed()
             }
 
-            Action.STATUS_LINE_UPDATE -> {
+            MemoAction.STATUS_LINE_UPDATE -> {
                 viewModelScope.launch {
                     applyStatusLineOrder(stateEntity)
                 }
             }
 
-            Action.NO_ACTION -> {
-                this.action = Action.NO_ACTION
+            MemoAction.NO_ACTION -> {
+                this.memoAction = MemoAction.NO_ACTION
             }
         }
     }
@@ -651,7 +651,7 @@ class MemoViewModel @Inject constructor(
 
             refreshAllTasks()
         }
-        this.action = Action.ADD
+        this.memoAction = MemoAction.ADD
     }
 
     private fun updateTask(memoWithNotebook: MemoWithNotebook) {
@@ -704,7 +704,7 @@ class MemoViewModel @Inject constructor(
 
             refreshAllTasks()
         }
-        this.action = Action.UPDATE
+        this.memoAction = MemoAction.UPDATE
     }
 
     private fun deleteTask(task: MemoTask) {
@@ -726,7 +726,7 @@ class MemoViewModel @Inject constructor(
 
             refreshAllTasks()
         }
-        this.action = Action.DELETE
+        this.memoAction = MemoAction.DELETE
     }
 
 
@@ -767,7 +767,7 @@ class MemoViewModel @Inject constructor(
             )
             refreshAllTasks()
         }
-        this.action = Action.UNDO
+        this.memoAction = MemoAction.UNDO
     }
 
     private fun updateFavorite(memo: MemoTask) {
@@ -851,7 +851,7 @@ class MemoViewModel @Inject constructor(
 
             refreshAllTasks()
         }
-        this.action = Action.DELETE_ALL
+        this.memoAction = MemoAction.DELETE_ALL
     }
 
     private fun deleteSelectedTasks() {
@@ -865,7 +865,7 @@ class MemoViewModel @Inject constructor(
             selectedItems.clear()
             refreshAllTasks()
         }
-        this.action = Action.DELETE_SELECTED_ITEMS
+        this.memoAction = MemoAction.DELETE_SELECTED_ITEMS
     }
 
     private fun persistSearchRange(

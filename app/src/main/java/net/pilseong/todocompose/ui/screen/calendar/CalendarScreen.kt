@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.screen.calendar
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +14,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -26,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -37,13 +33,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
-import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
@@ -53,13 +49,11 @@ import java.time.YearMonth
 @Composable
 fun CalendarScreen(
     uiState: UserData,
+    tasks: List<MemoWithNotebook>,
     selectedNotebook: Notebook,
-    loadedDates: Array<List<LocalDate>>,
-    selectedDate: LocalDate,
-    currentMonth: YearMonth,
     searchRangeAll: Boolean = false,
-    onCalendarIntent: (CalendarIntent) -> Unit,
     toScreen: (Screen) -> Unit,
+    onMonthChange: (YearMonth) -> Unit,
     onFabClicked: () -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
@@ -119,10 +113,8 @@ fun CalendarScreen(
             val titles = listOf("Imminent Tasks", "State View", "Calendar View")
             Column {
                 CalendarContent(
-//                    loadedDates = loadedDates,
-//                    selectedDate = selectedDate,
-//                    currentMonth = currentMonth,
-                    onCalendarIntent = onCalendarIntent,
+                    tasks = tasks,
+                    onMonthChange = onMonthChange
                 )
             }
         }
@@ -180,13 +172,11 @@ private fun ListScreenPreview() {
     TodoComposeTheme() {
         CalendarScreen(
             uiState = UserData(),
+            tasks = listOf(),
             selectedNotebook = Notebook.instance(),
-            loadedDates = arrayOf(),
-            selectedDate = LocalDate.now(),
-            currentMonth = LocalDate.now().yearMonth(),
             toScreen = {},
+            onMonthChange = {},
             onFabClicked = {},
-            onCalendarIntent = {}
         )
     }
 }

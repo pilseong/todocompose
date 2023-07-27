@@ -10,51 +10,50 @@ import androidx.compose.ui.res.stringResource
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.SortOption
-import net.pilseong.todocompose.util.Action
 
 // enabled 가 true 일 경우만 팝업이 뜬다
 @Composable
 fun DisplaySnackBar(
     snackBarHostState: SnackbarHostState,
-    action: Action,
+    memoAction: MemoAction,
     enabled: ByteArray,
     title: String,
     range: Boolean = false,
     duration: SnackbarDuration = SnackbarDuration.Short,
-    buttonClicked: (Action, SnackbarResult) -> Unit,
-    actionAfterPopup: (Action) -> Unit,
+    buttonClicked: (MemoAction, SnackbarResult) -> Unit,
+    actionAfterPopup: (MemoAction) -> Unit,
     orderState: SortOption,
     memoDateSortingOption: MemoDateSortingOption,
     startDate: Long?,
     endDate: Long?,
 ) {
 
-    val message = when (action) {
-        Action.ADD ->
+    val message = when (memoAction) {
+        MemoAction.ADD ->
             title + " " + stringResource(id = R.string.new_task_added_message)
 
-        Action.UPDATE ->
+        MemoAction.UPDATE ->
             title + " " + stringResource(id = R.string.task_updated_message)
 
-        Action.DELETE ->
+        MemoAction.DELETE ->
             title + " " + stringResource(id = R.string.task_deleted_message)
 
-        Action.DELETE_ALL ->
+        MemoAction.DELETE_ALL ->
             stringResource(id = R.string.all_tasks_deleted_message)
 
-        Action.UNDO ->
+        MemoAction.UNDO ->
             title + " " + stringResource(id = R.string.all_tasks_restored_message)
 
-        Action.PRIORITY_CHANGE ->
+        MemoAction.PRIORITY_CHANGE ->
             stringResource(id = R.string.snackbar_message_priority_change)
 
-        Action.SORT_ORDER_CHANGE ->
+        MemoAction.SORT_ORDER_CHANGE ->
             when (orderState) {
                 SortOption.DESC -> stringResource(id = R.string.snackbar_message_order_desc_change)
                 SortOption.ASC -> stringResource(id = R.string.snackbar_message_order_asc_change)
             }
 
-        Action.MEMO_SORT_DATE_BASE_CHANGE ->
+        MemoAction.MEMO_SORT_DATE_BASE_CHANGE ->
             when (memoDateSortingOption) {
                 MemoDateSortingOption.CREATED_AT -> stringResource(id = R.string.snackbar_message_date_created_at_change)
                 MemoDateSortingOption.UPDATED_AT -> stringResource(id = R.string.snackbar_message_date_updated_at_change)
@@ -62,28 +61,28 @@ fun DisplaySnackBar(
                 MemoDateSortingOption.DUE_DATE -> stringResource(id = R.string.snackbar_message_date_due_date_change)
             }
 
-        Action.SEARCH_WITH_DATE_RANGE ->
+        MemoAction.SEARCH_WITH_DATE_RANGE ->
             if (startDate == null && endDate == null)
                 stringResource(id = R.string.snackbar_message_date_range_cancelled)
             else
                 stringResource(id = R.string.snackbar_message_date_range_applied)
 
-        Action.SORT_FAVORITE_CHANGE ->
+        MemoAction.SORT_FAVORITE_CHANGE ->
             stringResource(id = R.string.snackbar_favorite_change_message)
 
-        Action.DELETE_SELECTED_ITEMS ->
+        MemoAction.DELETE_SELECTED_ITEMS ->
             stringResource(id = R.string.snackbar_selected_items_deleted_message)
 
-        Action.NOTEBOOK_CHANGE ->
+        MemoAction.NOTEBOOK_CHANGE ->
             stringResource(id = R.string.snackbar_changed_notebook_message)
 
-        Action.MOVE_TO ->
+        MemoAction.MOVE_TO ->
             stringResource(id = R.string.snackbar_move_to_message)
 
-        Action.COPY_TO ->
+        MemoAction.COPY_TO ->
             stringResource(id = R.string.snackbar_copy_to_message)
 
-        Action.SEARCH_RANGE_CHANGE ->
+        MemoAction.SEARCH_RANGE_CHANGE ->
             if (range)
                 stringResource(id = R.string.snackbar_all_range_change)
             else
@@ -94,22 +93,22 @@ fun DisplaySnackBar(
         }
     }
 
-    val label = if (action == Action.DELETE)
+    val label = if (memoAction == MemoAction.DELETE)
         stringResource(id = R.string.snack_bar_undo_label)
     else "OK"
 
     // enabled 는 이벤트 가 발생한 경우를 정확 하게 구분 하기 위한 변수
     LaunchedEffect(key1 = enabled) {
-        Log.d("PHILIP", "[DisplaySnackBar]snack bar with $action")
-        if (action != Action.NO_ACTION) {
-            Log.d("PHILIP", "[DisplaySnackBar]snack bar popped up $action")
-            actionAfterPopup(Action.NO_ACTION)
+        Log.d("PHILIP", "[DisplaySnackBar]snack bar with $memoAction")
+        if (memoAction != MemoAction.NO_ACTION) {
+            Log.d("PHILIP", "[DisplaySnackBar]snack bar popped up $memoAction")
+            actionAfterPopup(MemoAction.NO_ACTION)
             val snackBarResult = snackBarHostState.showSnackbar(
                 message = message,
                 actionLabel = label,
                 duration = duration
             )
-            buttonClicked(action, snackBarResult)
+            buttonClicked(memoAction, snackBarResult)
         }
     }
 }
