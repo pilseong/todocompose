@@ -144,8 +144,10 @@ fun CalendarContent(
 //                        )
 //                    )
                 },
-                onDayClick = { date, memos ->
-//                    onCalendarIntent(CalendarIntent.SelectDate(it))
+                onDayClick = { date ->
+                    selectedDate = date
+                },
+                onDayLongClick = { date, memos ->
                     selectedDate = date
                     memosList = memos
                     listExpended = true
@@ -154,6 +156,7 @@ fun CalendarContent(
         }
 
         ScheduleListSheet(
+            selectedDate = selectedDate,
             memos = memosList,
             expanded = listExpended,
             onDismissRequest = { listExpended = false },

@@ -111,6 +111,7 @@
     <string name="bottom_nav_label_settings">ตั้งค่า</string>
     <string name="bottom_nav_label_memo">บันทึก</string>
     <string name="bottom_nav_label_home">หน้าหลัก</string>
+    <string name="bottom_nav_label_note">Notes</string>
     <string name="note_content_dateformat">EEE, LLL dd, yyyy</string>
     <string name="note_inside_dateformat">LLL, dd, yy</string>
     <string name="default_note_title">บันทึกเริ่มต้น</string>
@@ -172,5 +173,10 @@
     <string name="reminder_two_days">Two days ago</string>
     <string name="reminder_text">[Reminder]A task with the due date at %1$s</string>
     <string name="calendar_title">LLL, yyyy</string>
+    <string name="nav_label_notebooks">Notebooks</string>
+    <string name="nav_label_notes">Notes</string>
+    <string name="nav_label_tasks">Tasks</string>
+    <string name="nav_label_schedule">Schedule</string>
+    <string name="nav_label_settings">Settings</string>
 
 </resources>

@@ -61,13 +61,15 @@ fun NavGraphBuilder.memoDetailComposable(
         val notebooks = memoViewModel.notebooks.collectAsState().value
 
 
-        // 뒤로가기 버튼을 눌렀을 대에도 임시 저장된 이미지를 삭제 해야 한다.
-        BackHandler(memoViewModel.taskUiState.taskDetails.photos.isNotEmpty()) {
-            memoViewModel.taskUiState.taskDetails.photos.filter { photo ->  photo.id == 0L}
-                .forEach { photo ->
-                    deleteFileFromUri(photo.uri.toUri())
-                }
+        // 뒤로 가기 버튼을 눌렀을 대에도 임시 저장된 이미지 를 삭제 해야 한다.
+        BackHandler(true) {
             Log.d("PHILIP", "[MemoNavGraph] BackHandler performed")
+            if (memoViewModel.taskUiState.taskDetails.photos.isNotEmpty()) {
+                memoViewModel.taskUiState.taskDetails.photos.filter { photo -> photo.id == 0L }
+                    .forEach { photo ->
+                        deleteFileFromUri(photo.uri.toUri())
+                    }
+            }
             navHostController.popBackStack()
         }
 
@@ -129,12 +131,14 @@ fun NavGraphBuilder.memoDetailComposable(
                                     memo = tasks[taskIndex]!!.toMemoTask()
                                 )
                             }
+
                             MemoAction.UPDATE -> {
                                 memoViewModel.handleActions(
                                     memoAction = action,
                                     memoWithNotebook = tasks[taskIndex]!!
                                 )
                             }
+
                             else -> {
                                 memoViewModel.handleActions(
                                     memoAction = action

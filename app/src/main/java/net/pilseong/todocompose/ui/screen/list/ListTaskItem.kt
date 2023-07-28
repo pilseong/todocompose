@@ -107,7 +107,7 @@ fun TaskItem(
             value = selectedItemsIds.contains(todoInside.memo.id)
         }
 
-    // 현재 리스트 에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot을 변경하고 있다.
+    // 현재 리스트 에서 변경된 내용이 그대로 남아 있게 하기 위하여 snapshot 을 변경 하고 있다.
     var favoriteOn by remember { mutableStateOf(todoInside.memo.favorite) }
         .apply {
             value = todoInside.memo.favorite

@@ -25,11 +25,12 @@ import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
 import net.pilseong.todocompose.navigation.destination.BottomNavBar
+import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 
 @Composable
 fun SettingsScreen(
-    onClickBottomNavBar: (String) -> Unit,
+    onClickBottomNavBar: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -39,10 +40,10 @@ fun SettingsScreen(
             )
         },
         bottomBar = {
-            BottomNavBar(
-                currentDestination = Screen.Settings.route,
-                onClick = onClickBottomNavBar
-            )
+            BottomActionBarNavigation(
+                currentScreen = Screen.Settings,
+                onNavigateClick = onClickBottomNavBar,
+            ) { }
         }
     ) { it ->
         Column(

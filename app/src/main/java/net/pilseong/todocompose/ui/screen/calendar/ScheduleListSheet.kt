@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,12 +22,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.NoteAdd
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,11 +47,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
@@ -55,11 +62,13 @@ import net.pilseong.todocompose.data.model.ui.ReminderTime
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.TaskHeader
 import net.pilseong.todocompose.ui.components.TaskHeaderType
+import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -67,6 +76,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ScheduleListSheet(
+    selectedDate: LocalDate,
     memos: List<MemoWithNotebook>,
     expanded: Boolean = false,
     onDismissRequest: () -> Unit,
@@ -83,19 +93,67 @@ fun ScheduleListSheet(
             },
             sheetState = state,
         ) {
+            CalendarNoteList(
+                selectedDate = selectedDate,
+                memos = memos,
+                onDismissRequest = onDismissRequest,
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CalendarNoteList(
+    selectedDate: LocalDate,
+    memos: List<MemoWithNotebook>,
+    onDismissRequest: () -> Unit,
+) {
+    Column {
+        CenterAlignedTopAppBar(
+            navigationIcon = {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = XLARGE_PADDING)
+                        .clickable {
+                            onDismissRequest()
+                        },
+                    imageVector = Icons.Default.Close, contentDescription = "close button"
+                )
+
+            },
+            title = {
+                Text(text = selectedDate.format(DateTimeFormatter.ofPattern(stringResource(id = R.string.datepicker_date_format))))
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            actions = {
+                Icon(
+                    modifier = Modifier.padding(horizontal = XLARGE_PADDING),
+                    imageVector = Icons.Default.NoteAdd,
+                    contentDescription = "add note"
+                )
+
+            },
+            windowInsets = WindowInsets(top = 0.dp)
+        )
+        Surface {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(700.dp)
-                    .padding(horizontal = XLARGE_PADDING),
+                    .padding(
+                        vertical = LARGE_PADDING,
+                        horizontal = XLARGE_PADDING
+                    ),
             ) {
                 items(
                     items = memos,
                     key = { item -> item.memo.id },
                 ) { item ->
                     ScheduleItem(
-                        modifier = Modifier.padding(bottom = SMALL_PADDING),
-                        item = item
+                        modifier = Modifier.padding(bottom = SMALL_PADDING), item = item
                     )
                 }
             }
@@ -113,9 +171,11 @@ private fun ScheduleItem(
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = modifier.clickable {
-            expanded = !expanded
-        },
+        modifier = modifier
+            .padding(bottom = if (expanded) LARGE_PADDING else 0.dp)
+            .clickable {
+                expanded = !expanded
+            },
         shape = RoundedCornerShape(cornerRadius),
         tonalElevation = if (expanded && item.memo.priority == Priority.NONE) 8.dp else 0.dp,
         shadowElevation = if (expanded && item.memo.priority == Priority.NONE) 2.dp else 0.dp,
@@ -126,14 +186,12 @@ private fun ScheduleItem(
     ) {
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
 //            verticalArrangement = Arrangement.Center
         ) {
             if (!expanded) {
                 Canvas(
-                    modifier = Modifier
-                        .matchParentSize()
+                    modifier = Modifier.matchParentSize()
                 ) {
                     val clipPath = Path().apply {
                         lineTo(size.width - cutCornerSize.toPx(), 0f)
@@ -146,18 +204,14 @@ private fun ScheduleItem(
                     clipPath(clipPath) {
                         drawRoundRect(
                             color = item.memo.priority.color.copy(
-                                alpha =
-                                if (item.memo.priority == Priority.NONE) 0.2F else 0.3F
-                            ),
-                            size = size,
-                            cornerRadius = CornerRadius(cornerRadius.toPx())
+                                alpha = if (item.memo.priority == Priority.NONE) 0.2F else 0.3F
+                            ), size = size, cornerRadius = CornerRadius(cornerRadius.toPx())
                         )
                         drawRoundRect(
                             color = Color(
                                 ColorUtils.blendARGB(
                                     item.memo.priority.color.copy(
-                                        alpha =
-                                        if (item.memo.priority == Priority.NONE) 0.2F else 0.3F
+                                        alpha = if (item.memo.priority == Priority.NONE) 0.2F else 0.3F
                                     ).toArgb(), 0x000000, 0.2f
                                 )
                             ),
@@ -185,12 +239,10 @@ private fun ScheduleItem(
                     ) {
                         item.memo.dueDate?.toLocalTime()?.let {
                             Text(
-                                modifier = Modifier
-                                    .wrapContentHeight(Alignment.CenterVertically),
+                                modifier = Modifier.wrapContentHeight(Alignment.CenterVertically),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                                 textAlign = TextAlign.Center,
-                                text = it
-                                    .format(DateTimeFormatter.ofPattern("HH:mm")),
+                                text = it.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 color = Color(
                                     ColorUtils.blendARGB(
                                         MaterialTheme.colorScheme.onSurface.toArgb(),
@@ -208,9 +260,7 @@ private fun ScheduleItem(
                                     .size(16.dp),
                                 imageVector = Icons.Default.Alarm,
                                 contentDescription = "alarm icon",
-                                tint = if (item.memo.reminderType != ReminderTime.NOT_USED &&
-                                    Calendar.getInstance().timeInMillis <
-                                    (item.memo.dueDate!!.toInstant()
+                                tint = if (item.memo.reminderType != ReminderTime.NOT_USED && Calendar.getInstance().timeInMillis < (item.memo.dueDate!!.toInstant()
                                         .toEpochMilli() - item.memo.reminderType.timeInMillis)
                                 ) Color.Red
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -222,8 +272,7 @@ private fun ScheduleItem(
                                         .size(16.dp),
                                     imageVector = Icons.Default.Alarm,
                                     contentDescription = "alarm icon",
-                                    tint = if (Calendar.getInstance().timeInMillis <
-                                        (item.memo.dueDate!!.toInstant()
+                                    tint = if (Calendar.getInstance().timeInMillis < (item.memo.dueDate!!.toInstant()
                                             .toEpochMilli() - item.memo.reminderType.timeInMillis)
                                     ) Color.Red
                                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -243,8 +292,7 @@ private fun ScheduleItem(
                         Text(
                             text = item.memo.title,
                             color = MaterialTheme.colorScheme.taskItemContentColor,
-                            style = if (item.memo.description.isNotBlank())
-                                MaterialTheme.typography.bodyLarge
+                            style = if (item.memo.description.isNotBlank()) MaterialTheme.typography.bodyLarge
                             else MaterialTheme.typography.bodySmall,
                             maxLines = if (item.memo.description.isNotBlank()) 1 else 4
                         )
@@ -272,8 +320,7 @@ private fun ScheduleItem(
                         ) {
                             SelectionContainer {
                                 Text(
-                                    modifier = Modifier
-                                        .padding(SMALL_PADDING),
+                                    modifier = Modifier.padding(SMALL_PADDING),
                                     text = item.memo.description.ifBlank { item.memo.title },
                                     lineHeight = MaterialTheme.typography.labelSmall.fontSize.times(
                                         1.4f
@@ -295,8 +342,7 @@ private fun ScheduleItem(
 fun PreviewScheduleItem() {
     TodoComposeTheme {
         ScheduleItem(
-            item =
-            MemoWithNotebook(
+            item = MemoWithNotebook(
                 memo = MemoTask(
                     1,
                     "필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!",
@@ -304,10 +350,7 @@ fun PreviewScheduleItem() {
                     Priority.NONE,
                     notebookId = -1,
                     dueDate = ZonedDateTime.now()
-                ),
-                notebook = Notebook.instance(),
-                total = 1,
-                photos = emptyList()
+                ), notebook = Notebook.instance(), total = 1, photos = emptyList()
             )
         )
     }
@@ -316,26 +359,48 @@ fun PreviewScheduleItem() {
 
 @Preview
 @Composable
-fun PreviewScheduleListSheet() {
-    MaterialTheme {
-        ScheduleListSheet(
+fun PreviewCalendarNoteList() {
+    TodoComposeTheme {
+        CalendarNoteList(
+            selectedDate = LocalDate.now(),
             memos = listOf(
                 MemoWithNotebook(
                     memo = MemoTask(
                         1,
-                        "필성 힘내!!!",
+                        "필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!",
                         "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
-                        Priority.HIGH,
+                        Priority.NONE,
                         notebookId = -1,
                         dueDate = ZonedDateTime.now()
-                    ),
-                    notebook = Notebook.instance(),
-                    total = 1,
-                    photos = emptyList()
+                    ), notebook = Notebook.instance(), total = 1, photos = emptyList()
                 )
             ),
-            expanded = true,
-            onDismissRequest = { },
+            onDismissRequest = {}
         )
     }
+
 }
+
+//@Preview
+//@Composable
+//fun PreviewScheduleListSheet() {
+//    TodoComposeTheme() {
+//        ScheduleListSheet(
+//            selectedDate = LocalDate.now(),
+//            memos = listOf(
+//                MemoWithNotebook(
+//                    memo = MemoTask(
+//                        1,
+//                        "필성 힘내!!!",
+//                        "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+//                        Priority.HIGH,
+//                        notebookId = -1,
+//                        dueDate = ZonedDateTime.now()
+//                    ), notebook = Notebook.instance(), total = 1, photos = emptyList()
+//                )
+//            ),
+//            expanded = true,
+//            onDismissRequest = { },
+//        )
+//    }
+//}

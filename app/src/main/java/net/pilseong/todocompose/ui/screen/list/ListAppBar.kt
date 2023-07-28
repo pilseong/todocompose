@@ -13,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlaylistAddCheck
@@ -26,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -88,6 +88,7 @@ fun ListAppBar(
     onExportClick: () -> Unit,
     onSearchNoFilterClicked: (Boolean) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
+    onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
 
     if (selectedItemsCount > 0) {
@@ -162,7 +163,8 @@ fun ListAppBar(
                     onDateRangePickerConfirmed = onDateRangePickerConfirmed,
                     onImportClick = onImportClick,
                     onExportClick = onExportClick,
-                    onAppBarTitleClick = onAppBarTitleClick
+                    onAppBarTitleClick = onAppBarTitleClick,
+                    onSearchRangeAllClicked = onSearchRangeAllClicked
                 )
             }
 
@@ -194,6 +196,7 @@ fun DefaultListAppBar(
     onImportClick: () -> Unit,
     onExportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
+    onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
     TopAppBar(
         scrollBehavior = scrollBehavior,
@@ -213,12 +216,14 @@ fun DefaultListAppBar(
         ),
         actions = {
             ListAppBarActions(
+                searchRangeAll = searchRangeAll,
                 notebookName = appbarTitle,
                 onSearchClicked = onSearchIconClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
                 onDatePickConfirmed = onDateRangePickerConfirmed,
                 onImportClick = onImportClick,
-                onExportClick = onExportClick
+                onExportClick = onExportClick,
+                onSearchRangeAllClicked = onSearchRangeAllClicked,
             )
         }
     )
@@ -235,19 +240,22 @@ fun PreviewDefaultListAppBar() {
         onDeleteAllClicked = { /*TODO*/ },
         onDateRangePickerConfirmed = { _, _ -> },
         onImportClick = { /*TODO*/ },
-        onExportClick = { /*TODO*/ }) {
-
-    }
+        onSearchRangeAllClicked = {_, _ -> },
+        onExportClick = { /*TODO*/ },
+        onAppBarTitleClick = {}
+    )
 }
 
 @Composable
 fun ListAppBarActions(
+    searchRangeAll: Boolean = false,
     notebookName: String = "",
     onSearchClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
     onImportClick: () -> Unit,
-    onExportClick: () -> Unit
+    onExportClick: () -> Unit,
+    onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
     // 다이얼 로그 박스 에 대한 상태
     var deleteAlertExpanded by remember { mutableStateOf(false) }
@@ -297,22 +305,33 @@ fun ListAppBarActions(
     )
 
     SearchAction(onSearchClicked)
-    CommonAction(
-        icon = Icons.Default.DateRange,
-        onClicked = { datePickerExpanded = true },
-        description = "date picker icon",
-    )
-    MenuAction(
-        onDeleteAllClicked = {
-            deleteAlertExpanded = true
+    Switch(
+        checked = searchRangeAll,
+        thumbContent = {
+            if (!searchRangeAll) {
+                Text(text = "All")
+            }
         },
-        onImportClick = {
-            importAlertExpanded = true
-        },
-        onExportClick = {
-            exportAlertExpanded = true
+        onCheckedChange = {
+            onSearchRangeAllClicked(!searchRangeAll, false)
         }
     )
+//    CommonAction(
+//        icon = Icons.Default.DateRange,
+//        onClicked = { datePickerExpanded = true },
+//        description = "date picker icon",
+//    )
+//    MenuAction(
+//        onDeleteAllClicked = {
+//            deleteAlertExpanded = true
+//        },
+//        onImportClick = {
+//            importAlertExpanded = true
+//        },
+//        onExportClick = {
+//            exportAlertExpanded = true
+//        }
+//    )
 }
 
 

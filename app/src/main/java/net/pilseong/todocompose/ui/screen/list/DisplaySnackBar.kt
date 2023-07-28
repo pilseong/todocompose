@@ -84,9 +84,9 @@ fun DisplaySnackBar(
 
         MemoAction.SEARCH_RANGE_CHANGE ->
             if (range)
-                stringResource(id = R.string.snackbar_all_range_change)
-            else
                 stringResource(id = R.string.snackbar_single_range_change)
+            else
+                stringResource(id = R.string.snackbar_all_range_change)
 
         else -> {
             ""

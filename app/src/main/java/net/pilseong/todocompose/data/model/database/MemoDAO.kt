@@ -185,7 +185,7 @@ abstract class MemoDAO(
             "           END" +
             "       ) " +
             "       AND due_date is not null " +
-//            "       AND due_date BETWEEN :startDateTime AND :endDateTime" +
+            "       AND due_date BETWEEN :startDateTime AND :endDateTime" +
             ") as total " +
             "FROM   memo_table " +
             "WHERE deleted = 0" +

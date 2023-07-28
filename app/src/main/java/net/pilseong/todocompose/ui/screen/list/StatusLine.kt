@@ -133,6 +133,7 @@ fun StatusLine(
 
                     when (item) {
                         StateEntity.NOTE_FILTER -> NoteFilterState(
+                            searchRangeAll = uiState.searchRangeAll,
                             onRangeAllEnabledClick = { state ->
 //                                Log.d("PHILIP", "[StatusLine] performed $index $shouldUpdate")
                                 onRangeAllEnabledClick(state, shouldUpdate)
@@ -142,7 +143,6 @@ fun StatusLine(
                                     }
                                 }
                             },
-                            uiState.searchRangeAll
                         )
 
                         StateEntity.PRIORITY_FILTER -> PriorityFilter(uiState,

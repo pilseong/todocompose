@@ -445,7 +445,7 @@ class NoteViewModel @Inject constructor(
 
     init {
         observeUiState()
-
+        Log.d("PHILIP", "[NoteViewModel] observeUiState called")
     }
 
 

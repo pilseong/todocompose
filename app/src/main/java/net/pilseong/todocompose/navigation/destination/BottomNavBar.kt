@@ -8,9 +8,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.navigation.Screen
@@ -21,8 +23,8 @@ fun BottomNavBar(
     onClick: (String) -> Unit
 ) {
     val screens = listOf(
-        BottomBarScreen.Home,
         BottomBarScreen.Note,
+        BottomBarScreen.Memo,
         BottomBarScreen.Settings
     )
 
@@ -40,7 +42,7 @@ fun BottomNavBar(
         shadowElevation = 15.dp
     ) {
         NavigationBar(
-            modifier = Modifier.height(65.dp),
+            modifier = Modifier.height(70.dp),
 //            .graphicsLayer {
 //                clip = true
 //                shape = RoundedCornerShape(topStart = 60.dp, topEnd = 60.dp)
@@ -94,8 +96,8 @@ fun RowScope.addItem(
                 contentDescription = "Navigation Icon"
             )
         },
-//        label = {
-//            Text(text = stringResource(id = screen.title))
-//        }
+        label = {
+            Text(text = stringResource(id = screen.title))
+        }
     )
 }

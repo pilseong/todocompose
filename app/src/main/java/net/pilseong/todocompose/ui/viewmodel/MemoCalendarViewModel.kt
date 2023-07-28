@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +22,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
@@ -29,6 +32,7 @@ import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction
 import net.pilseong.todocompose.ui.viewmodel.UiState
+import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
@@ -48,6 +52,8 @@ class MemoCalendarViewModel @Inject constructor(
     var tasksJob: Job? = null
     var selectedMonth by mutableStateOf(LocalDate.now().yearMonth())
 
+    var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
+
     private val uiStateFlow: StateFlow<UiState> =
         dataStoreRepository.userData.map {
             UiState.Success(it)
@@ -56,6 +62,21 @@ class MemoCalendarViewModel @Inject constructor(
             initialValue = UiState.Loading,
             started = SharingStarted.WhileSubscribed(5_000),
         )
+
+    var notebooks = notebookRepository.getNotebooksAsFlow(NoteSortingOption.ACCESS_AT)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun getDefaultNoteCount() {
+        viewModelScope.launch(Dispatchers.IO) {
+            todoRepository.getMemoCount(-1).collectLatest {
+                defaultNoteMemoCount = it
+            }
+        }
+    }
 
     private suspend fun getNotebook(id: Long) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
@@ -118,9 +139,11 @@ class MemoCalendarViewModel @Inject constructor(
         }
     }
 
-    fun handleAction(
+    fun handleActions(
         calendarAction: CalendarAction,
-        month: YearMonth,
+        month: YearMonth = LocalDate.now().yearMonth(),
+        notebookId: Long = -1L,
+        boolParam: Boolean = false,
     ) {
 
         Log.d("PHILIP", "[MemoCalendarViewModel] handleAction $calendarAction $month")
@@ -128,6 +151,26 @@ class MemoCalendarViewModel @Inject constructor(
             CalendarAction.MONTH_CHANGE -> {
                 selectedMonth = month
                 refreshAllTasks()
+            }
+            CalendarAction.NOTE_SWITCH -> {
+                if (uiState.notebookIdState != notebookId) {
+                    val noteIdsList = mutableListOf<String>()
+                    noteIdsList.add(notebookId.toString())
+                    noteIdsList.add(uiState.notebookIdState.toString())
+
+                    if (uiState.firstRecentNotebookId != null) {
+                        noteIdsList.add(uiState.firstRecentNotebookId.toString())
+                    }
+
+                    viewModelScope.launch {
+                        dataStoreRepository.persistRecentNoteIds(noteIdsList)
+                    }
+                }
+            }
+            CalendarAction.SEARCH_RANGE_CHANGE -> {
+                viewModelScope.launch {
+                    dataStoreRepository.persistSearchRangeAllState(searchRangeAll = boolParam)
+                }
             }
         }
     }

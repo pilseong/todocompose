@@ -131,11 +131,11 @@ fun LazyItemList(
         if (headerIndex >= tasks.itemCount) tasks.itemCount - 1 else headerIndex
     }
 
-    // 추가 할 때 스크롤 을 제일 위로 올리기 위함
-    LaunchedEffect(key1 = tasks) {
-        Log.d("PHILIP", "item count changed to ${tasks.itemCount}")
-        listState.scrollToItem(0, 0)
-    }
+    // 추가 할 때 스크롤 을 제일 위로 올리기 위함 ->? 좀 더 고민
+//    LaunchedEffect(key1 = tasks) {
+//        Log.d("PHILIP", "item count changed to ${tasks.itemCount}")
+//        listState.scrollToItem(0, 0)
+//    }
 
 //    val timeData by remember(memoDateBaseOption, realIndex) {
     val timeData by rememberUpdatedState(

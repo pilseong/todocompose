@@ -14,6 +14,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,6 +38,7 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
+import net.pilseong.todocompose.ui.screen.list.ListAppBarActions
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
@@ -51,10 +53,11 @@ fun CalendarScreen(
     uiState: UserData,
     tasks: List<MemoWithNotebook>,
     selectedNotebook: Notebook,
-    searchRangeAll: Boolean = false,
     toScreen: (Screen) -> Unit,
     onMonthChange: (YearMonth) -> Unit,
     onFabClicked: () -> Unit,
+    onAppBarTitleClick: () -> Unit,
+    onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
@@ -79,9 +82,9 @@ fun CalendarScreen(
                     Text(
                         modifier = Modifier
                             .clickable {
-//                                onAppBarTitleClick()
+                                onAppBarTitleClick()
                             },
-                        text = if (searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else selectedNotebook.title,
+                        text = if (uiState.searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else selectedNotebook.title,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1
                     )
@@ -90,6 +93,17 @@ fun CalendarScreen(
                     containerColor = selectedNotebook.priority.color.copy(alpha = 0.5F)
                 ),
                 actions = {
+                    Switch(
+                        checked = uiState.searchRangeAll,
+                        thumbContent = {
+                            if (!uiState.searchRangeAll) {
+                                Text(text = "All")
+                            }
+                        },
+                        onCheckedChange = {
+                            onSearchRangeAllClicked(!uiState.searchRangeAll, false)
+                        }
+                    )
                 }
             )
         },
@@ -168,7 +182,7 @@ fun PreviewAddMenuFab() {
 
 @Composable
 @Preview
-private fun ListScreenPreview() {
+private fun CalendarcreenPreview() {
     TodoComposeTheme() {
         CalendarScreen(
             uiState = UserData(),
@@ -177,6 +191,8 @@ private fun ListScreenPreview() {
             toScreen = {},
             onMonthChange = {},
             onFabClicked = {},
+            onAppBarTitleClick = {},
+            onSearchRangeAllClicked = {_, _ -> Unit}
         )
     }
 }

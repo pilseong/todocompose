@@ -123,9 +123,9 @@ fun ListScreen(
             SnackbarHost(hostState = snackBarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    actionColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    contentColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.onSurface,
+                    actionColor = MaterialTheme.colorScheme.surface
                 )
             }
         },
@@ -153,6 +153,7 @@ fun ListScreen(
                 onExportClick = onExportClick,
                 onSearchNoFilterClicked = onSearchNoFilterClicked,
                 onStateSelectedForMultipleItems = onStateSelectedForMultipleItems,
+                onSearchRangeAllClicked = onSearchRangeAllClicked,
             )
         },
         bottomBar = {
@@ -196,17 +197,6 @@ fun ListScreen(
 }
 
 
-@Preview
-@Composable
-fun BottomActionBarNavPreview() {
-    MaterialTheme {
-        BottomActionBarNavigation(
-            currentScreen = Screen.MemoList,
-            onNavigateClick = {},
-            onFabClicked = {}
-        )
-    }
-}
 
 
 // Floating Action Button

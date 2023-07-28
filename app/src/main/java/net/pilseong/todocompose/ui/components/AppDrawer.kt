@@ -12,9 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CallMade
+import androidx.compose.material.icons.filled.CallReceived
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ImportContacts
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.material3.Divider
@@ -29,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
@@ -47,16 +53,8 @@ fun AppDrawer(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = .2f)
         )
         ScreenNavigationButton(
-            icon = Icons.Filled.Home,
-            label = "Home",
-            isSelected = false,
-            onClick = {
-                onScreenSelected(Screen.Home.route)
-            }
-        )
-        ScreenNavigationButton(
             icon = Icons.Filled.NoteAlt,
-            label = "Notes",
+            label = stringResource(id = R.string.nav_label_notebooks),
             isSelected = false,
             onClick = {
                 onScreenSelected(Screen.Notes.route)
@@ -64,12 +62,21 @@ fun AppDrawer(
         )
         ScreenNavigationButton(
             icon = Icons.Default.StickyNote2,
-            label = "Memo List",
+            label = stringResource(id = R.string.nav_label_notes),
             isSelected = false,
             onClick = {
                 onScreenSelected(Screen.MemoList.route)
             }
         )
+        ScreenNavigationButton(
+            icon = Icons.Filled.CalendarMonth,
+            label = stringResource(id = R.string.nav_label_schedule),
+            isSelected = false,
+            onClick = {
+                onScreenSelected(Screen.MemoCalendar.route)
+            }
+        )
+
         ScreenNavigationButton(
             icon = Icons.Default.Create,
             label = "Add Memo",
@@ -78,6 +85,26 @@ fun AppDrawer(
                 onScreenSelected(Screen.MemoDetail.passId(memoId = -1))
             }
         )
+
+        Divider()
+        
+        ScreenNavigationButton(
+            icon = Icons.Default.CallReceived,
+            label = "Import",
+            isSelected = false,
+            onClick = {
+                onScreenSelected(Screen.MemoDetail.passId(memoId = -1))
+            }
+        )
+        ScreenNavigationButton(
+            icon = Icons.Default.CallMade,
+            label = "Export",
+            isSelected = false,
+            onClick = {
+                onScreenSelected(Screen.MemoDetail.passId(memoId = -1))
+            }
+        )
+        Divider()
         ScreenNavigationButton(
             icon = Icons.Filled.Delete,
             label = "Trash",

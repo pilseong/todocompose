@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -16,17 +18,20 @@ import net.pilseong.todocompose.ui.screen.note.CreateEditNotebookDialog
 import net.pilseong.todocompose.ui.screen.note.InfoDialog
 import net.pilseong.todocompose.ui.screen.note.NoteAction
 import net.pilseong.todocompose.ui.screen.note.NoteScreen
+import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.NoteViewModel
 import net.pilseong.todocompose.ui.viewmodel.UiState
 import net.pilseong.todocompose.util.Constants.MEMO_LIST
 
 fun NavGraphBuilder.noteComposable(
+    viewModelStoreOwner: ViewModelStoreOwner,
     navHostController: NavHostController,
 ) {
     composable(
         route = Screen.Notes.route
     ) { navBackStackEntry ->
-        val noteViewModel = navBackStackEntry.sharedViewModel<NoteViewModel>(navHostController)
+        navBackStackEntry.sharedViewModel<MemoViewModel>(navHostController)
+        val noteViewModel = hiltViewModel<NoteViewModel>(viewModelStoreOwner)
 
         val openDialog = remember { mutableStateOf(false) }
         val infoDialog = remember { mutableStateOf(false) }
@@ -51,9 +56,9 @@ fun NavGraphBuilder.noteComposable(
                     firstRecentNotebook = noteViewModel.firstRecentNotebook.value,
                     secondRecentNotebook = noteViewModel.secondRecentNotebook.value,
                     defaultNotebook = defaultNotebook,
-                    onClickBottomNavBar = { route ->
-                        navHostController.popBackStack(route, true)
-                        navHostController.navigate(route)
+                    onClickBottomNavBar = { screen ->
+                        navHostController.popBackStack(screen.route, true)
+                        navHostController.navigate(screen.route)
                     },
                     onFabClick = {
                         action = NoteAction.ADD

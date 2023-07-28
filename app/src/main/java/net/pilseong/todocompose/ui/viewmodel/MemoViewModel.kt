@@ -1030,7 +1030,7 @@ class MemoViewModel @Inject constructor(
 
 
     private fun observeUiState() {
-        Log.d("PHILIP", "[MemoViewModel] observeUiState() called")
+//        Log.d("PHILIP", "[MemoViewModel] observeUiState() called")
         viewModelScope.launch {
             uiStateFlow
                 .onEach {
@@ -1052,7 +1052,7 @@ class MemoViewModel @Inject constructor(
 
     init {
         observeUiState()
-        Log.d("PHILIP", "[MemoViewModel] init -> version: ${Build.VERSION.RELEASE}")
+        Log.d("PHILIP", "[MemoViewModel] observeUiState called")
     }
 }
 

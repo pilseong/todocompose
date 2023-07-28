@@ -28,11 +28,13 @@ import net.pilseong.todocompose.ui.screen.list.AddMemoFab
 import net.pilseong.todocompose.ui.screen.task.CommonAction
 import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 import net.pilseong.todocompose.data.model.ui.NoteSortingOption
+import net.pilseong.todocompose.navigation.Screen
+import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(
-    onClickBottomNavBar: (String) -> Unit,
+    onClickBottomNavBar: (Screen) -> Unit,
     onFabClick: () -> Unit,
     onSelectNotebook: (Long) -> Unit,
     onSelectNotebookWithLongClick: (Long) -> Unit,
@@ -63,20 +65,24 @@ fun NoteScreen(
             )
         },
         bottomBar = {
-            if (LocalConfiguration.current.screenHeightDp > 500)
-                BottomNavBar(
-                    onClick = onClickBottomNavBar,
-                    currentDestination = MEMO_ROOT
-                )
+//            if (LocalConfiguration.current.screenHeightDp > 500)
+//                BottomNavBar(
+//                    onClick = onClickBottomNavBar,
+//                    currentDestination = MEMO_ROOT
+//                )
+            BottomActionBarNavigation(
+                currentScreen = Screen.Notes,
+                onNavigateClick = onClickBottomNavBar,
+            ) { onFabClick() }
         },
-        floatingActionButton = {
-            AddMemoFab(
-                icon = Icons.Default.FiberNew,
-                onFabClicked = {
-                    onFabClick()
-                }
-            )
-        },
+//        floatingActionButton = {
+//            AddMemoFab(
+//                icon = Icons.Default.FiberNew,
+//                onFabClicked = {
+//                    onFabClick()
+//                }
+//            )
+//        },
 
     ) { paddingValues ->
         Column(

@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.navigation.destination
 
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navigation
@@ -12,6 +13,7 @@ import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
 fun NavGraphBuilder.noteNavGraph(
     navHostController: NavHostController,
+    viewModelStoreOwner: ViewModelStoreOwner,
 //    toTaskScreen: () -> Unit,
 //    toListScreen: () -> Unit,
 //    toNoteScreen: () -> Unit,
@@ -23,7 +25,10 @@ fun NavGraphBuilder.noteNavGraph(
         route = MEMO_ROOT,
     ) {
 
-        noteComposable(navHostController)
+        noteComposable(
+            viewModelStoreOwner = viewModelStoreOwner,
+            navHostController = navHostController
+        )
 
         memoListComposable(
             navHostController = navHostController,

@@ -73,14 +73,15 @@ fun MainNavGraph(
                 startDestination = MEMO_ROOT,
                 route = MAIN_ROOT,
             ) {
-                homeComposable(
-                    navHostController = navHostController,
-                    viewModelStoreOwner = viewModelStoreOwner,
-                    route = HOME_ROOT
-                )
+//                homeComposable(
+//                    navHostController = navHostController,
+//                    viewModelStoreOwner = viewModelStoreOwner,
+//                    route = HOME_ROOT
+//                )
 
                 noteNavGraph(
                     navHostController = navHostController,
+                    viewModelStoreOwner = viewModelStoreOwner,
 //                    toTaskScreen = {
 //                        navHostController.navigate(Screen.MemoDetail.route)
 //                    },
@@ -101,8 +102,8 @@ fun MainNavGraph(
                 composable(
                     route = BottomBarScreen.Settings.route
                 ) {
-                    SettingsScreen(onClickBottomNavBar = { route ->
-                        navHostController.navigate(route)
+                    SettingsScreen(onClickBottomNavBar = { screen ->
+                        navHostController.navigate(screen.route)
                     })
                 }
             }

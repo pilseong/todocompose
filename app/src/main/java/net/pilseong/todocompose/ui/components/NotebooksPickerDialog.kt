@@ -52,10 +52,16 @@ import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.screen.list.MemoAction
 
+
+enum class NotebooksPickerMode {
+    SWITCH_NOTE_MODE,
+    COPY_MOVE_MODE
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotebooksPickerDialog(
-    dialogMode: Int = 0,
+    dialogMode: NotebooksPickerMode = NotebooksPickerMode.SWITCH_NOTE_MODE,
     visible: Boolean,
     notebooks: List<NotebookWithCount>,
     defaultNoteMemoCount: DefaultNoteMemoCount,
@@ -84,7 +90,7 @@ fun NotebooksPickerDialog(
                 ) {
                     Icon(
                         imageVector =
-                        if (dialogMode == 0) Icons.Default.ListAlt
+                        if (dialogMode == NotebooksPickerMode.SWITCH_NOTE_MODE) Icons.Default.ListAlt
                         else {
                             if (switchState) Icons.Default.ContentCopy else Icons.Default.Output
                         },
@@ -94,7 +100,7 @@ fun NotebooksPickerDialog(
                     Text(
                         modifier = Modifier
                             .weight(1F),
-                        text = if (dialogMode == 0) stringResource(id = R.string.note_screen_switch_notebook_dialog_title)
+                        text = if (dialogMode == NotebooksPickerMode.SWITCH_NOTE_MODE) stringResource(id = R.string.note_screen_switch_notebook_dialog_title)
                         else {
                             if (switchState)
                                 stringResource(id = R.string.note_screen_copy_to_notebook_dialog_title)
@@ -105,7 +111,7 @@ fun NotebooksPickerDialog(
 
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    if (dialogMode != 0)
+                    if (dialogMode == NotebooksPickerMode.COPY_MOVE_MODE)
                         Switch(
                             checked = switchState,
                             onCheckedChange = {
@@ -143,9 +149,11 @@ fun NotebooksPickerDialog(
                                         .clickable {
                                             onNotebookClick(
                                                 item.id,
-                                                if (dialogMode == 0) MemoAction.NOTEBOOK_CHANGE
+                                                if (dialogMode == NotebooksPickerMode.SWITCH_NOTE_MODE)
+                                                    MemoAction.NOTEBOOK_CHANGE
                                                 else
-                                                    if (switchState) MemoAction.COPY_TO else MemoAction.MOVE_TO
+                                                    if (switchState) MemoAction.COPY_TO
+                                                    else MemoAction.MOVE_TO
                                             )
                                         },
                                     shape = RoundedCornerShape(4.dp),
@@ -211,7 +219,7 @@ fun NotebooksPickerDialog(
                             onClick = {
                                 onNotebookClick(
                                     -1,
-                                    if (dialogMode == 0) MemoAction.NOTEBOOK_CHANGE
+                                    if (dialogMode == NotebooksPickerMode.SWITCH_NOTE_MODE) MemoAction.NOTEBOOK_CHANGE
                                     else
                                         if (switchState) MemoAction.COPY_TO else MemoAction.MOVE_TO)
                             }) {

@@ -24,6 +24,7 @@ import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.components.InfoAlertDialog
 import net.pilseong.todocompose.ui.components.NotebooksPickerDialog
+import net.pilseong.todocompose.ui.components.NotebooksPickerMode
 import net.pilseong.todocompose.ui.components.ProgressIndicator
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
 import net.pilseong.todocompose.ui.viewmodel.toMemoTask
@@ -74,7 +75,7 @@ fun NavGraphBuilder.memoListComposable(
             }
 
         var openDialog by remember { mutableStateOf(false) }
-        var dialogMode by remember { mutableStateOf(0) }
+        var dialogMode by remember { mutableStateOf(NotebooksPickerMode.SWITCH_NOTE_MODE) }
         val snackBarHostState = remember { SnackbarHostState() }
 
 //        Log.d(
@@ -110,7 +111,7 @@ fun NavGraphBuilder.memoListComposable(
 //            toNoteScreen = toNoteScreen,
             onAppBarTitleClick = {
                 memoViewModel.getDefaultNoteCount()
-                dialogMode = 0
+                dialogMode = NotebooksPickerMode.SWITCH_NOTE_MODE
                 openDialog = true
             },
             // 초기 로딩 을 위한 데이터 검색
@@ -135,7 +136,7 @@ fun NavGraphBuilder.memoListComposable(
             onMoveMemoClicked = {
                 Log.d("PHILIP", "onMoveMemoClicked")
                 memoViewModel.getDefaultNoteCount()
-                dialogMode = 1
+                dialogMode = NotebooksPickerMode.COPY_MOVE_MODE
                 openDialog = true
             },
             onStateChange = { task, state ->
