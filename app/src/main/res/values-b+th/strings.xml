@@ -133,6 +133,7 @@
     <string name="info_updated_at">อัพเดทเมื่อ</string>
     <string name="info_finished_at">เสร็จสิ้นเมื่อ</string>
     <string name="info_due_date">Due Date</string>
+    <string name="info_due_time">Due Time</string>
     <string name="info_reminder">Reminder</string>
     <string name="info_accessed_at">เปิดอ่านเมื่อ</string>
     <string name="info_priority">ลำดับความสำคัญ</string>

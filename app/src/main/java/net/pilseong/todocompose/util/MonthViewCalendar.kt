@@ -1,10 +1,8 @@
 package net.pilseong.todocompose.util
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -60,7 +58,7 @@ internal fun MonthViewCalendar(
     onSwipeNext: (YearMonth) -> Unit,
     onSwipePrev: (YearMonth) -> Unit,
     loadDatesForMonth: (YearMonth) -> Unit,
-    onDayClick: (LocalDate) -> Unit,
+    onDayClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit,
     onDayLongClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit,
 ) {
     val itemWidth = LocalConfiguration.current.screenWidthDp / 7
@@ -69,7 +67,7 @@ internal fun MonthViewCalendar(
         loadNextDates = { onSwipeNext(currentMonth) },
         loadPrevDates = { onSwipePrev(currentMonth.minusMonths(2)) },
     ) { currentPage ->
-        Log.d("TTEST", "currentPage is $currentPage")
+//        Log.d("TTEST", "currentPage is $currentPage")
         Column {
             Surface(
                 color = MaterialTheme.colorScheme.primary
@@ -121,7 +119,7 @@ internal fun MonthViewCalendar(
                                     date,
                                     currentMonth,
                                 ),
-                            memos = memos,
+                            notes = memos,
                             date = date,
                             isSelected = selectedDate == date,
                             onDayClick = onDayClick,
@@ -151,8 +149,8 @@ fun PreviewMonthViewCalendar() {
             loadDatesForMonth = {},
             onSwipeNext = {},
             onSwipePrev = {},
-            onDayClick = {},
-            onDayLongClick = { _, _ ->}
+            onDayClick = { _, _ -> },
+            onDayLongClick = { _, _ -> }
         )
     }
 
@@ -203,74 +201,75 @@ internal fun CalendarPager(
 fun DayView(
     modifier: Modifier = Modifier,
     date: LocalDate,
-    memos: List<MemoWithNotebook>,
+    notes: List<MemoWithNotebook>,
     isSelected: Boolean = false,
-    onDayClick: (LocalDate) -> Unit,
+    onDayClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit,
     onDayLongClick: (LocalDate, memos: List<MemoWithNotebook>) -> Unit
 ) {
     val isCurrentDay = date == LocalDate.now()
-        Column(
-            modifier = modifier
-                .border(
-                    width = if (isCurrentDay) 0.4.dp else 0.dp,
-                    color = MaterialTheme.colorScheme.primary)
-                .background(
-                    color =
+    Column(
+        modifier = modifier
+            .border(
+                width = if (isCurrentDay) 0.4.dp else 0.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+            .background(
+                color =
 //                    if (isCurrentDay)
 //                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    if (isSelected)
-                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    else MaterialTheme.colorScheme.background
-                )
-                .verticalScroll(rememberScrollState())
-                .combinedClickable(
-                    onClick = { onDayClick(date) },
-                    onLongClick = { onDayLongClick(date, memos) }),
-        ) {
-            Text(
-                text = date.dayOfMonth.toString(),
-                fontWeight = FontWeight.Bold,
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                color = if (isCurrentDay) MaterialTheme.colorScheme.primary
-                else if (isSelected)
-                    MaterialTheme.colorScheme.tertiary
-                else {
-                    if (date.dayOfWeek == DayOfWeek.SUNDAY || date.dayOfWeek == DayOfWeek.SATURDAY)
-                        Color.Red.copy(alpha = 0.5f)
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                }
-
+                if (isSelected)
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                else MaterialTheme.colorScheme.background
             )
-            memos.forEach {
-                Surface(
-                    color = if (it.memo.priority == Priority.NONE)
-                        MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
-                    else it.memo.priority.color.copy(alpha = 0.3f)
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
+            .verticalScroll(rememberScrollState())
+            .combinedClickable(
+                onClick = { onDayClick(date, notes) },
+                onLongClick = { onDayLongClick(date, notes) }),
+    ) {
+        Text(
+            text = date.dayOfMonth.toString(),
+            fontWeight = FontWeight.Bold,
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center,
+            color = if (isCurrentDay) MaterialTheme.colorScheme.primary
+            else if (isSelected)
+                MaterialTheme.colorScheme.tertiary
+            else {
+                if (date.dayOfWeek == DayOfWeek.SUNDAY || date.dayOfWeek == DayOfWeek.SATURDAY)
+                    Color.Red.copy(alpha = 0.5f)
+                else
+                    MaterialTheme.colorScheme.onSurface
+            }
+
+        )
+        notes.forEach {
+            Surface(
+                color = if (it.memo.priority == Priority.NONE)
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+                else it.memo.priority.color.copy(alpha = 0.3f)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
 //                Icon(
 //                    modifier = Modifier.size(5.dp),
 //                    imageVector = Icons.Default.Circle,
 //                    contentDescription = "circle image",
 //                    tint = it.memo.priority.color
 //                )
-                        Text(
-                            text = it.memo.title,
-                            fontSize = 10.sp,
-                            fontStyle = MaterialTheme.typography.labelSmall.fontStyle,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color =
+                    Text(
+                        text = it.memo.title,
+                        fontSize = 10.sp,
+                        fontStyle = MaterialTheme.typography.labelSmall.fontStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color =
 //                        if (it.memo.priority == Priority.NONE)
-                            MaterialTheme.colorScheme.onSurface
+                        MaterialTheme.colorScheme.onSurface
 //                        else MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
+                    )
                 }
             }
         }
+    }
 }
 
 internal fun Modifier.dayViewModifier(

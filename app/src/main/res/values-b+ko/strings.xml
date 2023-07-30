@@ -133,6 +133,7 @@
     <string name="info_updated_at">수정일</string>
     <string name="info_finished_at">종결일</string>
     <string name="info_due_date">목표일</string>
+    <string name="info_due_time">목표시간</string>
     <string name="info_reminder">알림설정</string>
     <string name="info_accessed_at">사용일</string>
     <string name="info_priority">메모장 중요도</string>

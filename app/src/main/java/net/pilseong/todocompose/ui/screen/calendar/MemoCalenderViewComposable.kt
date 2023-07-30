@@ -29,17 +29,22 @@ fun NavGraphBuilder.memoCalendarViewComposable(
         val memoCalendarViewModel =
             navBackStackEntry.sharedViewModel<MemoCalendarViewModel>(navHostController)
 
-        val uiState = memoCalendarViewModel.uiState
+        val userData = memoCalendarViewModel.userData
         val selectedNotebook = memoCalendarViewModel.selectedNotebook
         val tasks by memoCalendarViewModel.tasks.collectAsState()
 
 
         var openDialog by remember { mutableStateOf(false) }
         var dialogMode by remember { mutableStateOf(NotebooksPickerMode.SWITCH_NOTE_MODE) }
+        var taskUiState = memoCalendarViewModel.taskUiState
+
+        var selectedMonth = memoCalendarViewModel.selectedMonth
 
         CalendarScreen(
-            uiState = uiState,
+            userData = userData,
+            taskUiState = taskUiState,
             tasks = tasks,
+            selectedMonth = selectedMonth,
             selectedNotebook = selectedNotebook,
             toScreen = toScreen,
             onMonthChange = {
@@ -59,6 +64,12 @@ fun NavGraphBuilder.memoCalendarViewComposable(
                     calendarAction = SEARCH_RANGE_CHANGE,
                     boolParam = state
                 )
+            },
+            onValueChange = {
+                memoCalendarViewModel.updateUiState(it)
+            },
+            onNewConfirm = {
+                memoCalendarViewModel.handleActions(it)
             }
         )
 

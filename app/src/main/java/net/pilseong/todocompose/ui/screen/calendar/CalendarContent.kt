@@ -33,8 +33,12 @@ import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
+import net.pilseong.todocompose.ui.components.NoteEditor
+import net.pilseong.todocompose.ui.components.NoteEditorMode
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
+import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.MonthViewCalendar
 import net.pilseong.todocompose.util.calculateExpandedCalendarDays
 import net.pilseong.todocompose.util.calculateSwipeNext
@@ -42,6 +46,7 @@ import net.pilseong.todocompose.util.calculateSwipePrev
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -49,10 +54,25 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun CalendarContent(
     tasks: List<MemoWithNotebook>,
+    taskUiState: TaskUiState,
+    selectedMonth: YearMonth,
+    selectedNotebook: Notebook,
+    editorExpanded: Boolean = false,
     onMonthChange: (YearMonth) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
+    onEditorExpanded: (Boolean) -> Unit
 ) {
 
 //    val currentDate by remember { mutableStateOf(LocalDate.now()) }
+    var noteListSheetExpended by remember {
+        mutableStateOf(false)
+    }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    var dateNotesList by rememberSaveable {
+        mutableStateOf<List<MemoWithNotebook>>(emptyList())
+    }
+
 
     Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
 
@@ -67,75 +87,73 @@ fun CalendarContent(
         )
     }
 
-    var currentMonth by rememberSaveable {
-        mutableStateOf(loadedDates[1][loadedDates[1].size / 2].yearMonth())
-    }
+//    var currentMonth by rememberSaveable {
+//        mutableStateOf(loadedDates[1][loadedDates[1].size / 2].yearMonth())
+//    }
 
-    var selectedDate by rememberSaveable {
-        mutableStateOf(LocalDate.now())
-    }
+//    var selectedDate by rememberSaveable {
+//        mutableStateOf(LocalDate.now())
+//    }
 
-    var listExpended by remember {
-        mutableStateOf(false)
-    }
-
-    var memosList by rememberSaveable {
-        mutableStateOf<List<MemoWithNotebook>>(emptyList())
-    }
 
     Surface {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Surface(color = MaterialTheme.colorScheme.primary) {
-                Box(
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .fillMaxWidth(),
-                ) {
-                    Text(
+        if (!editorExpanded) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Surface(color = MaterialTheme.colorScheme.primary) {
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(vertical = LARGE_PADDING),
-                        text = currentMonth.format(DateTimeFormatter.ofPattern(stringResource(id = R.string.calendar_title))),
-                        fontStyle = MaterialTheme.typography.titleLarge.fontStyle,
-                        fontSize = MaterialTheme.typography.titleLarge.fontSize
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxHeight()
+                            .height(IntrinsicSize.Min)
                             .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            modifier = Modifier.padding(end = LARGE_PADDING),
-                            imageVector = Icons.Default.Menu, contentDescription = "Add icon"
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(vertical = LARGE_PADDING),
+                            text = selectedMonth.format(
+                                DateTimeFormatter.ofPattern(
+                                    stringResource(
+                                        id = R.string.calendar_title
+                                    )
+                                )
+                            ),
+                            fontStyle = MaterialTheme.typography.titleLarge.fontStyle,
+                            fontSize = MaterialTheme.typography.titleLarge.fontSize
                         )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier.padding(end = LARGE_PADDING),
+                                imageVector = Icons.Default.Menu, contentDescription = "Add icon"
+                            )
+                        }
                     }
                 }
-            }
-            MonthViewCalendar(
-                tasks = tasks,
-                loadedDates,
-                selectedDate,
-                currentMonth = currentMonth,
-                onSwipeNext = { yearMonth ->
-                    currentMonth = yearMonth.plusMonths(1)
-                    Log.d("PHILIP", "onSwipeNext")
-                    loadedDates = calculateSwipeNext(yearMonth.atDay(1), loadedDates)
+                MonthViewCalendar(
+                    tasks = tasks,
+                    loadedDates,
+                    selectedDate,
+                    currentMonth = selectedMonth,
+                    onSwipeNext = { yearMonth ->
+                        Log.d("PHILIP", "onSwipeNext")
+                        loadedDates = calculateSwipeNext(yearMonth.atDay(1), loadedDates)
 
-                    onMonthChange(currentMonth)
-                },
-                onSwipePrev = { yearMonth ->
-                    currentMonth = yearMonth.plusMonths(1)
-                    Log.d("PHILIP", "onSwipePrev")
-                    loadedDates = calculateSwipePrev(yearMonth.atDay(1), loadedDates)
+                        onMonthChange(yearMonth.plusMonths(1))
+                    },
+                    onSwipePrev = { yearMonth ->
+                        Log.d("PHILIP", "onSwipePrev")
+                        loadedDates = calculateSwipePrev(yearMonth.atDay(1), loadedDates)
 
-                    onMonthChange(currentMonth)
+                        onMonthChange(yearMonth.plusMonths(1))
 
-                },
-                loadDatesForMonth = { yearMonth ->
-                    Log.d("PHILIP", "get yearMonth $yearMonth")
-                    loadedDates = calculateExpandedCalendarDays(yearMonth.atDay(1))
+                    },
+                    loadDatesForMonth = { yearMonth ->
+                        Log.d("PHILIP", "get yearMonth $yearMonth")
+                        loadedDates = calculateExpandedCalendarDays(yearMonth.atDay(1))
 //                    onCalendarIntent(
 //                        CalendarIntent.LoadNextDates(
 //                            yearMonth.atDay(
@@ -143,25 +161,50 @@ fun CalendarContent(
 //                            )
 //                        )
 //                    )
-                },
-                onDayClick = { date ->
-                    selectedDate = date
-                },
-                onDayLongClick = { date, memos ->
-                    selectedDate = date
-                    memosList = memos
-                    listExpended = true
-                }
+                    },
+                    onDayClick = { it, notes ->
+                        Log.d("PHILIP", "onDayClick $it")
+                        onValueChange(
+                            TaskDetails().copy(
+                                notebookId = selectedNotebook.id,
+                                dueDate = it.atStartOfDay(ZoneId.systemDefault())
+                            )
+                        )
+                        dateNotesList = notes
+                        selectedDate = it
+                    },
+                    onDayLongClick = { date, notes ->
+                        onValueChange(
+                            TaskDetails().copy(
+                                notebookId = selectedNotebook.id,
+                                dueDate = date.atStartOfDay(ZoneId.systemDefault())
+                            )
+                        )
+                        selectedDate = date
+                        dateNotesList = notes
+                        noteListSheetExpended = true
+                    }
+                )
+            }
+        } else {
+            NoteEditor(
+                mode = NoteEditorMode.CALENDAR_ADD,
+                taskUiState = taskUiState,
+                notebook = selectedNotebook,
+                onValueChange = onValueChange,
             )
         }
-
-        ScheduleListSheet(
-            selectedDate = selectedDate,
-            memos = memosList,
-            expanded = listExpended,
-            onDismissRequest = { listExpended = false },
-        )
     }
+    ScheduleListSheet(
+        selectedDate = selectedDate,
+        notes = dateNotesList,
+        expanded = noteListSheetExpended,
+        onDismissRequest = { noteListSheetExpended = false },
+        onAddClicked = {
+            noteListSheetExpended = false
+            onEditorExpanded(true)
+        },
+    )
 }
 
 @Preview
@@ -184,7 +227,12 @@ fun CalendarContentPreview() {
                     photos = emptyList()
                 )
             ),
-            onMonthChange = {}
+            taskUiState = TaskUiState(),
+            selectedNotebook = Notebook.instance(),
+            selectedMonth = LocalDate.now().yearMonth(),
+            onMonthChange = {},
+            onValueChange = {},
+            onEditorExpanded = {},
         )
     }
 }

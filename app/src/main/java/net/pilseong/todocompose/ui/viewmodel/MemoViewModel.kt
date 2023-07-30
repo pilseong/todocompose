@@ -632,7 +632,8 @@ class MemoViewModel @Inject constructor(
             "[MemoViewModel] addTask performed with $taskUiState"
         )
 
-        if (taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED) {
+        if (taskUiState.taskDetails.progression == State.COMPLETED ||
+            taskUiState.taskDetails.progression == State.CANCELLED) {
             updateUiState(
                 taskUiState.taskDetails.copy(
                     finishedAt = ZonedDateTime.now()
@@ -646,8 +647,16 @@ class MemoViewModel @Inject constructor(
 
             // 알림 설정
             val id = todoRepository.addMemo(taskUiState.taskDetails)
-            if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
-                registerNotification(taskUiState.taskDetails.copy(id = id))
+
+            // 알람 설정 부분
+            // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
+            if (taskUiState.taskDetails.dueDate != null &&
+                Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
+                    .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
+            ) {
+                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                    registerNotification(taskUiState.taskDetails.copy(id = id))
+            }
 
             refreshAllTasks()
         }
@@ -661,7 +670,8 @@ class MemoViewModel @Inject constructor(
         )
         // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
         if ((memoWithNotebook.memo.progression != State.COMPLETED && memoWithNotebook.memo.progression != State.CANCELLED) &&
-            taskUiState.taskDetails.progression == State.COMPLETED || taskUiState.taskDetails.progression == State.CANCELLED
+            (taskUiState.taskDetails.progression == State.COMPLETED ||
+            taskUiState.taskDetails.progression == State.CANCELLED)
         ) {
             updateUiState(
                 taskUiState.taskDetails.copy(
@@ -685,7 +695,6 @@ class MemoViewModel @Inject constructor(
                     deleteFileFromUri(photo.uri.toUri())
                 }
             }
-
 
             // 알람 설정 부분
             // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
@@ -1005,7 +1014,7 @@ class MemoViewModel @Inject constructor(
         private set
 
     fun updateUiState(taskDetails: TaskDetails) {
-        Log.d("PHILIP", "updateUIState ${taskDetails}")
+        Log.d("PHILIP", "updateUIState $taskDetails")
         taskUiState =
             TaskUiState(taskDetails = taskDetails, isEntryValid = validateInput(taskDetails))
     }

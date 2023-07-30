@@ -77,9 +77,10 @@ import java.util.Calendar
 @Composable
 fun ScheduleListSheet(
     selectedDate: LocalDate,
-    memos: List<MemoWithNotebook>,
+    notes: List<MemoWithNotebook>,
     expanded: Boolean = false,
     onDismissRequest: () -> Unit,
+    onAddClicked: () -> Unit,
 ) {
     if (expanded) {
         val state = rememberModalBottomSheetState(
@@ -95,8 +96,9 @@ fun ScheduleListSheet(
         ) {
             CalendarNoteList(
                 selectedDate = selectedDate,
-                memos = memos,
+                notes = notes,
                 onDismissRequest = onDismissRequest,
+                onAddClicked = onAddClicked,
             )
         }
     }
@@ -106,8 +108,9 @@ fun ScheduleListSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun CalendarNoteList(
     selectedDate: LocalDate,
-    memos: List<MemoWithNotebook>,
+    notes: List<MemoWithNotebook>,
     onDismissRequest: () -> Unit,
+    onAddClicked: () -> Unit,
 ) {
     Column {
         CenterAlignedTopAppBar(
@@ -130,7 +133,11 @@ private fun CalendarNoteList(
             ),
             actions = {
                 Icon(
-                    modifier = Modifier.padding(horizontal = XLARGE_PADDING),
+                    modifier = Modifier
+                        .padding(horizontal = XLARGE_PADDING)
+                        .clickable {
+                            onAddClicked()
+                        },
                     imageVector = Icons.Default.NoteAdd,
                     contentDescription = "add note"
                 )
@@ -149,7 +156,7 @@ private fun CalendarNoteList(
                     ),
             ) {
                 items(
-                    items = memos,
+                    items = notes,
                     key = { item -> item.memo.id },
                 ) { item ->
                     ScheduleItem(
@@ -310,9 +317,7 @@ private fun ScheduleItem(
                     }
                 }
             } else {
-                Row(
-                ) {
-
+                Row {
                     Column {
                         TaskHeader(task = item, type = TaskHeaderType.CALENDAR)
                         Column(
@@ -363,7 +368,7 @@ fun PreviewCalendarNoteList() {
     TodoComposeTheme {
         CalendarNoteList(
             selectedDate = LocalDate.now(),
-            memos = listOf(
+            notes = listOf(
                 MemoWithNotebook(
                     memo = MemoTask(
                         1,
@@ -375,7 +380,8 @@ fun PreviewCalendarNoteList() {
                     ), notebook = Notebook.instance(), total = 1, photos = emptyList()
                 )
             ),
-            onDismissRequest = {}
+            onDismissRequest = {},
+            onAddClicked = {}
         )
     }
 

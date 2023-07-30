@@ -4,4 +4,5 @@ enum class CalendarAction {
     MONTH_CHANGE,
     NOTE_SWITCH,
     SEARCH_RANGE_CHANGE,
+    ADD,
 }

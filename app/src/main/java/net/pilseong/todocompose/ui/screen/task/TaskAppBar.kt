@@ -39,11 +39,11 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.DisplayAlertDialog
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
-import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.TaskAppBarState
 
@@ -74,8 +74,17 @@ fun TaskAppBar(
         TaskAppBarState.EDITOR -> {
             EditTaskBar(
                 uiState = taskUiState,
-                edit = taskUiState.taskDetails.id != NEW_ITEM_ID,
-                toListScreen = toListScreen,
+                mode =
+                if (taskUiState.taskDetails.id == NEW_ITEM_ID) EditTaskBarMode.ADD
+                else EditTaskBarMode.EDIT,
+                onConfirm = {
+                    toListScreen(
+                        if (taskUiState.taskDetails.id == NEW_ITEM_ID)
+                            MemoAction.ADD
+                        else
+                            MemoAction.UPDATE
+                    )
+                },
                 onBackClick = onBackClick,
                 clearAddedPhotos = clearAddedPhotos,
                 onValueChange = onValueChange,
@@ -86,14 +95,20 @@ fun TaskAppBar(
 }
 
 
+enum class EditTaskBarMode {
+    ADD,
+    EDIT,
+    CALENDAR_ADD
+}
+
 // 새로운 메모 작성 이나 기존 메모 수정을 위한 화면의 app bar
 // edit 이 true 일 경우는 기존 메모 수정 false 일 경우는 신규 메모
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskBar(
     uiState: TaskUiState,
-    edit: Boolean = false,
-    toListScreen: (MemoAction) -> Unit,
+    mode: EditTaskBarMode = EditTaskBarMode.EDIT,
+    onConfirm: () -> Unit,
     onBackClick: () -> Unit,
     clearAddedPhotos: () -> Unit,
     onValueChange: (TaskDetails) -> Unit,
@@ -111,36 +126,34 @@ fun EditTaskBar(
         },
         title = {
             Text(
-                text = if (edit) stringResource(id = R.string.edit_task_appbar_title)
+                text = if (mode == EditTaskBarMode.EDIT) stringResource(id = R.string.edit_task_appbar_title)
                 else stringResource(id = R.string.new_task_appbar_title),
             )
         },
         actions = {
-            Switch(
-                modifier = Modifier.padding(end = LARGE_PADDING),
-                thumbContent = {
-                    if (!uiState.taskDetails.isTask) {
-                        Icon(
-                            modifier = Modifier.size(16.dp),
-                            imageVector = Icons.Default.EditCalendar,
-                            contentDescription = "clock icon"
-                        )
-                    }
-                },
-                checked = uiState.taskDetails.isTask,
-                onCheckedChange = {
-                    onValueChange(uiState.taskDetails.copy(isTask = !uiState.taskDetails.isTask))
+            if (mode != EditTaskBarMode.CALENDAR_ADD) {
+                Switch(
+                    modifier = Modifier.padding(end = LARGE_PADDING),
+                    thumbContent = {
+                        if (!uiState.taskDetails.isTask) {
+                            Icon(
+                                modifier = Modifier.size(16.dp),
+                                imageVector = Icons.Default.EditCalendar,
+                                contentDescription = "clock icon"
+                            )
+                        }
+                    },
+                    checked = uiState.taskDetails.isTask,
+                    onCheckedChange = {
+                        onValueChange(uiState.taskDetails.copy(isTask = !uiState.taskDetails.isTask))
 
-                })
+                    })
+            }
             // done action
             CommonAction(
                 enabled = uiState.isEntryValid,
                 onClicked = {
-                    if (edit) {
-                        toListScreen(MemoAction.UPDATE)
-                    } else {
-                        toListScreen(MemoAction.ADD)
-                    }
+                    onConfirm()
                 },
                 icon = Icons.Default.Check,
                 description = "Check Icon for new task"
@@ -274,7 +287,7 @@ fun EditTaskBarPreview() {
         EditTaskBar(
             uiState = TaskUiState(),
             onBackClick = {},
-            toListScreen = {},
+            onConfirm = {},
             clearAddedPhotos = {},
             onValueChange = {}
         )
