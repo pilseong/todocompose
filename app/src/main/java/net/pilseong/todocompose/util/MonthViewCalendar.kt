@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -196,7 +199,7 @@ internal fun CalendarPager(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DayView(
     modifier: Modifier = Modifier,
@@ -226,22 +229,31 @@ fun DayView(
                 onClick = { onDayClick(date, notes) },
                 onLongClick = { onDayLongClick(date, notes) }),
     ) {
-        Text(
-            text = date.dayOfMonth.toString(),
-            fontWeight = FontWeight.Bold,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center,
-            color = if (isCurrentDay) MaterialTheme.colorScheme.primary
-            else if (isSelected)
-                MaterialTheme.colorScheme.tertiary
-            else {
-                if (date.dayOfWeek == DayOfWeek.SUNDAY || date.dayOfWeek == DayOfWeek.SATURDAY)
-                    Color.Red.copy(alpha = 0.5f)
-                else
-                    MaterialTheme.colorScheme.onSurface
-            }
 
-        )
+        Badge(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.tertiaryContainer
+            else if (isCurrentDay) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surface
+        ) {
+            Text(
+                text = date.dayOfMonth.toString(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                color = if (isCurrentDay) MaterialTheme.colorScheme.primary
+                else if (isSelected)
+                    MaterialTheme.colorScheme.tertiary
+                else {
+                    if (date.dayOfWeek == DayOfWeek.SUNDAY || date.dayOfWeek == DayOfWeek.SATURDAY)
+                        Color.Red.copy(alpha = 0.5f)
+                    else
+                        MaterialTheme.colorScheme.onSurface
+                }
+
+            )
+        }
+
+
         notes.forEach {
             Surface(
                 color = if (it.memo.priority == Priority.NONE)

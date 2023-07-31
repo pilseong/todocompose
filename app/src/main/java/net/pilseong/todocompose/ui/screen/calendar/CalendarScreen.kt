@@ -68,6 +68,8 @@ fun CalendarScreen(
 
     var editorExpanded by remember { mutableStateOf(false) }
 
+    Log.d("PHILIP", "[CalendarScreen] selectedMonth $selectedMonth")
+
 
     /**
      * view model 을 통제 코드 종료

@@ -79,10 +79,9 @@ fun CalendarContent(
     var loadedDates by rememberSaveable {
         mutableStateOf(
             calculateExpandedCalendarDays(
-                LocalDate
-                    .now()
+                selectedMonth
                     .minusMonths(1)
-                    .yearMonth().atDay(1)
+                    .atDay(1)
             )
         )
     }

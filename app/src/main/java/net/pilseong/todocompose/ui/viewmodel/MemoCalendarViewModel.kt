@@ -52,7 +52,7 @@ class MemoCalendarViewModel @Inject constructor(
     var selectedNotebook by mutableStateOf(Notebook.instance())
     var userData: UserData by mutableStateOf(UserData())
     var tasks = MutableStateFlow<List<MemoWithNotebook>>(emptyList())
-    var tasksJob: Job? = null
+    private var tasksJob: Job? = null
     var selectedMonth by mutableStateOf(LocalDate.now().yearMonth())
 
     // 메모장 선택 시에 기본 메모장 의 데이터 정보를 받기 위한 변수

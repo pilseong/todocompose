@@ -72,6 +72,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -126,7 +127,9 @@ private fun CalendarNoteList(
 
             },
             title = {
-                Text(text = selectedDate.format(DateTimeFormatter.ofPattern(stringResource(id = R.string.datepicker_date_format))))
+                Text(text = selectedDate.format(DateTimeFormatter.ofPattern(
+                    stringResource(id = R.string.note_content_dateformat), Locale.getDefault())
+                ))
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
