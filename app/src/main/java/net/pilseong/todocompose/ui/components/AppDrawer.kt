@@ -45,6 +45,8 @@ import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 @Composable
 fun AppDrawer(
 //    currentScreen: Screen,
+    onImportClicked: () -> Unit,
+    onExportClicked: () -> Unit,
     onScreenSelected: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -93,7 +95,7 @@ fun AppDrawer(
             label = "Import",
             isSelected = false,
             onClick = {
-                onScreenSelected(Screen.MemoDetail.passId(memoId = -1))
+                onImportClicked()
             }
         )
         ScreenNavigationButton(
@@ -101,7 +103,7 @@ fun AppDrawer(
             label = "Export",
             isSelected = false,
             onClick = {
-                onScreenSelected(Screen.MemoDetail.passId(memoId = -1))
+                onExportClicked()
             }
         )
         Divider()
@@ -121,9 +123,11 @@ fun AppDrawer(
 @Composable
 fun AppDrawerPreview() {
     TodoComposeTheme {
-        AppDrawer {
-
-        }
+        AppDrawer(
+            onImportClicked = {},
+            onExportClicked = {},
+            onScreenSelected = {}
+        )
     }
 }
 

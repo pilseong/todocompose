@@ -1,13 +1,20 @@
 package net.pilseong.todocompose.ui.viewmodel
 
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.alarm.ReminderScheduler
+import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
@@ -31,6 +39,8 @@ import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.ui.screen.note.NoteAction
 import net.pilseong.todocompose.data.model.ui.NoteSortingOption
+import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
+import java.io.File
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
@@ -319,7 +329,6 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-
     fun handleActions(
         action: NoteAction,
         noteSortingOption: NoteSortingOption = NoteSortingOption.ACCESS_AT,
@@ -443,9 +452,129 @@ class NoteViewModel @Inject constructor(
         }
     }
 
+    var progressVisible by mutableStateOf(false)
+    var openDialog by mutableStateOf(false)
+    var infoDialogTitle by mutableStateOf(R.string.info_import_fail_title)
+    var infoDialogContent by mutableStateOf(R.string.info_import_fail_content)
+
+    private var gson = GsonBuilder()
+        .registerTypeAdapter(
+            ZonedDateTime::class.java,
+            ZonedDateTypeAdapter()
+        )
+        .serializeNulls().setPrettyPrinting().create()
+
+    fun handleImport(uri: Uri?) {
+        val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
+        val bytes = item?.readBytes()
+
+        if (bytes != null) {
+            progressVisible = true
+            val memoString = String(bytes, Charsets.UTF_8)
+            val dbTables = memoString.split("pilseong")
+
+            if (dbTables.size != 2) {
+                progressVisible = false
+
+                // 실패 대화박스 표출
+                infoDialogTitle = R.string.info_import_fail_title
+                infoDialogContent = R.string.info_import_fail_content
+                openDialog = true
+                Log.d("PHILIP", "error while parsing tables")
+                item.close()
+                return
+            }
+
+            try {
+                val memoListType = object : TypeToken<List<MemoTask>>() {}.type
+                val noteListType = object : TypeToken<List<Notebook>>() {}.type
+
+                val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
+                val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
+
+                Log.d(
+                    "PHILIP",
+                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size} ${memos[0]}"
+
+                )
+
+                viewModelScope.launch {
+                    try {
+                        memoRepository.insertMultipleMemos(memos)
+                        notebookRepository.insertMultipleNotebooks(notes)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+//                    delay(1000)
+//                    refreshAllTasks()
+
+                }
+            } catch (e: JsonParseException) {
+                progressVisible = false
+
+                infoDialogTitle = R.string.info_import_fail_title
+                infoDialogContent = R.string.info_import_fail_content
+                openDialog = true
+
+                Log.d("PHILIP", "error while importing ${e.message}")
+                item.close()
+                return
+            }
+        }
+        item?.close()
+    }
+
+    fun exportData() {
+        viewModelScope.launch {
+            val allMemoData = memoRepository.getAllTasks()
+            var memoJson = gson?.toJson(allMemoData)
+            val filename = "idea_note.txt"
+
+            val allNotes = notebookRepository.getAllNotebooks()
+            val noteJson = gson?.toJson(allNotes)
+
+            memoJson += "pilseong$noteJson"
+
+            context.openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(memoJson?.toByteArray())
+            }
+
+            sendEmail(
+                FileProvider.getUriForFile(
+                    context,
+                    "net.pilseong.fileprovider",
+                    File(context.filesDir, filename)
+                )
+            )
+        }
+    }
+
+    private fun sendEmail(file: Uri) {
+        Log.d("PHILIP", "Sending Log ...###### ")
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "message/rfc822"
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Export Memos")
+        intent.putExtra(Intent.EXTRA_STREAM, file)
+        intent.putExtra(
+            Intent.EXTRA_TEXT,
+            "This is an autogenerated message \n The attachment file includes all the memos in JSON format"
+        )
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  //  외부 에서 열려고 할 때
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // provider 를 통한 파일 제공
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+        intent.resolveActivity(context.packageManager)?.let {
+            try {
+                context.startActivity(intent)
+            } catch (ex: ActivityNotFoundException) {
+                Log.d("PHILIP", "No Intent matcher found")
+            }
+        }
+    }
+
     init {
         observeUiState()
-        Log.d("PHILIP", "[NoteViewModel] observeUiState called")
+        Log.d("PHILIP", "[NoteViewModel] observeUiState called $this")
     }
 
 

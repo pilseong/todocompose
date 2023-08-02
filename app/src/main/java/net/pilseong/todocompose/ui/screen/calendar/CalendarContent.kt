@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -50,7 +49,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarContent(
     tasks: List<MemoWithNotebook>,
@@ -60,19 +58,21 @@ fun CalendarContent(
     editorExpanded: Boolean = false,
     onMonthChange: (YearMonth) -> Unit,
     onValueChange: (TaskDetails) -> Unit,
-    onEditorExpanded: (Boolean) -> Unit
+    onEditorExpanded: (Boolean) -> Unit,
+    onTimerChange: (MemoWithNotebook) -> Unit,
 ) {
 
-//    val currentDate by remember { mutableStateOf(LocalDate.now()) }
     var noteListSheetExpended by remember {
         mutableStateOf(false)
     }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    var dateNotesList by rememberSaveable {
-        mutableStateOf<List<MemoWithNotebook>>(emptyList())
+    var dateNotesList by remember(tasks) {
+        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
+            it.memo.dueDate!!.month == selectedDate.month &&
+                    it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
+        })
     }
-
 
     Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
 
@@ -85,15 +85,6 @@ fun CalendarContent(
             )
         )
     }
-
-//    var currentMonth by rememberSaveable {
-//        mutableStateOf(loadedDates[1][loadedDates[1].size / 2].yearMonth())
-//    }
-
-//    var selectedDate by rememberSaveable {
-//        mutableStateOf(LocalDate.now())
-//    }
-
 
     Surface {
         if (!editorExpanded) {
@@ -203,6 +194,8 @@ fun CalendarContent(
             noteListSheetExpended = false
             onEditorExpanded(true)
         },
+        onTimerChange = onTimerChange,
+        onValueChange = onValueChange
     )
 }
 
@@ -232,6 +225,7 @@ fun CalendarContentPreview() {
             onMonthChange = {},
             onValueChange = {},
             onEditorExpanded = {},
+            onTimerChange = {}
         )
     }
 }

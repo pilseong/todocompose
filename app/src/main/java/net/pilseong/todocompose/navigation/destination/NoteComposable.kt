@@ -30,7 +30,7 @@ fun NavGraphBuilder.noteComposable(
     composable(
         route = Screen.Notes.route
     ) { navBackStackEntry ->
-        navBackStackEntry.sharedViewModel<MemoViewModel>(navHostController)
+//        val noteViewModel = navBackStackEntry.sharedViewModel<NoteViewModel>(navHostController)
         val noteViewModel = hiltViewModel<NoteViewModel>(viewModelStoreOwner)
 
         val openDialog = remember { mutableStateOf(false) }

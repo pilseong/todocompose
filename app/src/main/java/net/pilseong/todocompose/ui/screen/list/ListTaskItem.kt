@@ -69,7 +69,7 @@ import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
 import net.pilseong.todocompose.ui.components.ZoomableImage
@@ -236,7 +236,7 @@ fun TaskItem(
                                     tint = if (selected.value) MaterialTheme.colorScheme.primary
                                     else todoInside.memo.priority.color
                                 )
-                                if (todoInside.memo.reminderType != ReminderTime.NOT_USED) {
+                                if (todoInside.memo.reminderType != ReminderType.NOT_USED) {
                                     Icon(
                                         modifier = Modifier
                                             .padding(top = 4.dp, start = 4.dp)

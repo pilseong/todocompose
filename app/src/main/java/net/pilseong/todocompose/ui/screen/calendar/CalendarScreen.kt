@@ -35,6 +35,7 @@ import net.pilseong.todocompose.ui.screen.task.EditTaskBarMode
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
@@ -51,11 +52,11 @@ fun CalendarScreen(
     selectedNotebook: Notebook,
     toScreen: (Screen) -> Unit,
     onMonthChange: (YearMonth) -> Unit,
-    onFabClicked: () -> Unit,
-    onValueChange:(TaskDetails) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
     onNewConfirm: (CalendarAction) -> Unit,
+    onTimerChange: (MemoWithNotebook) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
@@ -86,7 +87,8 @@ fun CalendarScreen(
                         Text(
                             modifier = Modifier
                                 .clickable {
-                                    onAppBarTitleClick()
+                                    if (!userData.searchRangeAll)
+                                        onAppBarTitleClick()
                                 },
                             text = if (userData.searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else selectedNotebook.title,
                             overflow = TextOverflow.Ellipsis,
@@ -119,6 +121,18 @@ fun CalendarScreen(
                         editorExpanded = false
                     },
                     onBackClick = {
+                        val selectedDate =
+                            taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
+                                ZoneId.systemDefault()
+                            )
+
+                        onValueChange(
+                            TaskDetails(
+                                id = NEW_ITEM_ID,
+                                notebookId = selectedNotebook.id,
+                                dueDate = selectedDate
+                            )
+                        )
                         editorExpanded = false
                     },
                     clearAddedPhotos = {},
@@ -132,6 +146,20 @@ fun CalendarScreen(
                     currentScreen = Screen.MemoCalendar,
                     onNavigateClick = toScreen,
                     onFabClicked = {
+                        if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
+                            val selectedDate =
+                                taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
+                                    ZoneId.systemDefault()
+                                )
+
+                            onValueChange(
+                                TaskDetails(
+                                    id = NEW_ITEM_ID,
+                                    notebookId = selectedNotebook.id,
+                                    dueDate = selectedDate
+                                )
+                            )
+                        }
                         editorExpanded = true
                     },
                 )
@@ -157,7 +185,8 @@ fun CalendarScreen(
                     onValueChange = onValueChange,
                     onEditorExpanded = {
                         editorExpanded = it
-                    }
+                    },
+                    onTimerChange = onTimerChange,
                 )
             }
 
@@ -223,11 +252,11 @@ private fun CalendarScreenPreview() {
             selectedNotebook = Notebook.instance(),
             toScreen = {},
             onMonthChange = {},
-            onFabClicked = {},
             onAppBarTitleClick = {},
             onSearchRangeAllClicked = { _, _ -> Unit },
             onValueChange = {},
             onNewConfirm = {},
+            onTimerChange = {}
         )
     }
 }

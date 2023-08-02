@@ -41,7 +41,7 @@ import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
@@ -92,7 +92,7 @@ fun TaskHeader(
                         contentDescription = "Localized description",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8F)
                     )
-                    if (task.memo.reminderType != ReminderTime.NOT_USED) {
+                    if (task.memo.reminderType != ReminderType.NOT_USED) {
                         Icon(
                             Icons.Filled.Alarm,
                             contentDescription = "Localized description",

@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.PRIORITY_INDICATOR_SIZE
@@ -87,7 +87,7 @@ fun NoteSortItem(
 
 @Composable
 fun DropDownItem(
-    option: ReminderTime
+    option: ReminderType
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically

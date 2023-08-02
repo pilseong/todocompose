@@ -14,6 +14,7 @@ import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
 import net.pilseong.todocompose.ui.components.NotebooksPickerDialog
 import net.pilseong.todocompose.ui.components.NotebooksPickerMode
+import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.Edit
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.MONTH_CHANGE
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.SEARCH_RANGE_CHANGE
 import net.pilseong.todocompose.ui.viewmodel.MemoCalendarViewModel
@@ -53,7 +54,6 @@ fun NavGraphBuilder.memoCalendarViewComposable(
                     month = it
                 )
             },
-            onFabClicked = {},
             onAppBarTitleClick = {
                 memoCalendarViewModel.getDefaultNoteCount()
                 dialogMode = NotebooksPickerMode.SWITCH_NOTE_MODE
@@ -70,6 +70,11 @@ fun NavGraphBuilder.memoCalendarViewComposable(
             },
             onNewConfirm = {
                 memoCalendarViewModel.handleActions(it)
+            },
+            onTimerChange = {
+                memoCalendarViewModel.handleActions(
+                    calendarAction = Edit,
+                    currentMemoTask = it)
             }
         )
 

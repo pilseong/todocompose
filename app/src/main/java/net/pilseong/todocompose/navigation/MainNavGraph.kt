@@ -1,19 +1,18 @@
 package net.pilseong.todocompose.navigation
 
-import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Divider
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -23,15 +22,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import kotlinx.coroutines.launch
+import net.pilseong.todocompose.R
 import net.pilseong.todocompose.navigation.destination.BottomBarScreen
-import net.pilseong.todocompose.navigation.destination.homeComposable
 import net.pilseong.todocompose.navigation.destination.noteNavGraph
 import net.pilseong.todocompose.ui.components.AppDrawer
-import net.pilseong.todocompose.ui.components.AppDrawerHeader
-import net.pilseong.todocompose.ui.components.LightDarkThemeItem
-import net.pilseong.todocompose.ui.components.ScreenNavigationButton
+import net.pilseong.todocompose.ui.components.DisplayAlertDialog
 import net.pilseong.todocompose.ui.screen.settings.SettingsScreen
-import net.pilseong.todocompose.util.Constants.HOME_ROOT
+import net.pilseong.todocompose.ui.viewmodel.NoteViewModel
 import net.pilseong.todocompose.util.Constants.MAIN_ROOT
 import net.pilseong.todocompose.util.Constants.MEMO_ROOT
 
@@ -46,22 +43,64 @@ fun MainNavGraph(
     val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
         "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
     }
-    
+
+    val noteViewModel = hiltViewModel<NoteViewModel>(viewModelStoreOwner)
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val intentResultLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) noteViewModel.handleImport(uri)
+        }
+
+    // 내 보내기 팝업
+    var importAlertExpanded by remember { mutableStateOf(false) }
+    DisplayAlertDialog(
+        title = stringResource(id = R.string.import_dialog_title),
+        message = stringResource(id = R.string.import_dialog_confirmation),
+        openDialog = importAlertExpanded,
+        onYesClicked = {
+            intentResultLauncher.launch("text/plain")
+        },
+        onCloseDialog = { importAlertExpanded = false }
+    )
+
+    // 가 져오기 팝업
+    // Export 다이얼 로그 박스 에 대한 상태
+    var exportAlertExpanded by remember { mutableStateOf(false) }
+
+    // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
+    DisplayAlertDialog(
+        title = stringResource(id = R.string.export_memos_dialog_title),
+        message = stringResource(id = R.string.export_all_memos_dialog_confirmation),
+        openDialog = exportAlertExpanded,
+        onYesClicked = {
+            noteViewModel.exportData()
+        },
+        onCloseDialog = { exportAlertExpanded = false }
+    )
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                AppDrawer(onScreenSelected = { to ->
-                    navHostController.popBackStack(to, true)
-                    navHostController.navigate(to)
+                AppDrawer(
+                    onImportClicked = {
+                        importAlertExpanded = true
+                    },
+                    onExportClicked = {
+                        exportAlertExpanded = true
+                    },
+                    onScreenSelected = { to ->
+                        navHostController.popBackStack(to, true)
+                        navHostController.navigate(to)
 
-                    scope.launch {
-                        drawerState.close()
-                    }
-                })
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    })
             }
         }
     ) {

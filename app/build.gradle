@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     // hilt
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
     id 'com.google.dagger.hilt.android'
     id 'com.google.android.gms.oss-licenses-plugin'
     id 'com.google.gms.google-services'
@@ -32,6 +33,10 @@ android {
         }
     }
 
+    androidResources {
+        generateLocaleConfig true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -49,14 +54,13 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.8'
+        kotlinCompilerExtensionVersion '1.5.1'
     }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    buildToolsVersion '34.0.0'
     dependenciesInfo {
         includeInApk false
         includeInBundle false
@@ -98,7 +102,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
 
     // paging3
-    implementation "androidx.paging:paging-compose:3.2.0-rc01"
+    implementation "androidx.paging:paging-compose:3.2.0"
 
     // desugar
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
@@ -113,13 +117,13 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.47"
     implementation 'androidx.datastore:datastore-core:1.0.0'
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
-    kapt "com.google.dagger:hilt-compiler:2.47"
+    ksp "com.google.dagger:hilt-compiler:2.47"
 
     // room
     def room_version = "2.5.2"
     implementation "androidx.room:room-ktx:$room_version"
     implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
 
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"

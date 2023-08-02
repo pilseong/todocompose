@@ -198,6 +198,7 @@ abstract class MemoDAO(
             "   AND due_date is not null " +
             "   AND due_date BETWEEN :startDateTime AND :endDateTime "
     )
+    @Transaction
     abstract fun getMonthlyTasksAsFlow(
         notebookId: Long,
         searchRangeAll: Boolean = false,

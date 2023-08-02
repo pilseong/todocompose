@@ -2,8 +2,6 @@ package net.pilseong.todocompose.ui.screen.list
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
@@ -69,10 +67,10 @@ fun NavGraphBuilder.memoListComposable(
 
         val uiState = memoViewModel.uiState
 
-        val intentResultLauncher =
-            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-                if (uri != null) memoViewModel.handleImport(uri)
-            }
+//        val intentResultLauncher =
+//            rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+//                if (uri != null) memoViewModel.handleImport(uri)
+//            }
 
         var openDialog by remember { mutableStateOf(false) }
         var dialogMode by remember { mutableStateOf(NotebooksPickerMode.SWITCH_NOTE_MODE) }
@@ -146,7 +144,6 @@ fun NavGraphBuilder.memoListComposable(
                     state = state
                 )
             },
-            onImportClick = { intentResultLauncher.launch("text/plain") },
             onFabClicked = {
                 memoViewModel.updateIndex(Constants.NEW_ITEM_INDEX)
                 memoViewModel.setTaskScreenToEditorMode()
@@ -165,7 +162,6 @@ fun NavGraphBuilder.memoListComposable(
                     endDate = end
                 )
             },
-            onExportClick = { memoViewModel.exportData() },
             onSearchRangeAllClicked = { state, orderUpdate ->
                 memoViewModel.handleActions(
                     MemoAction.SEARCH_RANGE_CHANGE,

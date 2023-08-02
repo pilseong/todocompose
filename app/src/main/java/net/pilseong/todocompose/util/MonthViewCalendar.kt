@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.util
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -70,7 +71,7 @@ internal fun MonthViewCalendar(
         loadNextDates = { onSwipeNext(currentMonth) },
         loadPrevDates = { onSwipePrev(currentMonth.minusMonths(2)) },
     ) { currentPage ->
-//        Log.d("TTEST", "currentPage is $currentPage")
+        Log.d("TTEST", "currentPage is $currentPage")
         Column {
             Surface(
                 color = MaterialTheme.colorScheme.primary
@@ -244,10 +245,11 @@ fun DayView(
                 else if (isSelected)
                     MaterialTheme.colorScheme.tertiary
                 else {
-                    if (date.dayOfWeek == DayOfWeek.SUNDAY || date.dayOfWeek == DayOfWeek.SATURDAY)
-                        Color.Red.copy(alpha = 0.5f)
-                    else
-                        MaterialTheme.colorScheme.onSurface
+                    when (date.dayOfWeek) {
+                        DayOfWeek.SATURDAY -> Color.Blue.copy(alpha = 0.5f)
+                        DayOfWeek.SATURDAY -> Color.Red.copy(alpha = 0.5f)
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
                 }
 
             )

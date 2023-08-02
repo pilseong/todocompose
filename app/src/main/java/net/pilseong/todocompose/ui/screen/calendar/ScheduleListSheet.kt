@@ -2,7 +2,6 @@ package net.pilseong.todocompose.ui.screen.calendar
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.AlarmOff
+import androidx.compose.material.icons.filled.AlarmOn
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -58,8 +59,9 @@ import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
+import net.pilseong.todocompose.ui.components.ReminderDropDown
 import net.pilseong.todocompose.ui.components.TaskHeader
 import net.pilseong.todocompose.ui.components.TaskHeaderType
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -68,13 +70,16 @@ import net.pilseong.todocompose.ui.theme.SMALL_PADDING
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.theme.taskItemContentColor
+import net.pilseong.todocompose.ui.viewmodel.TaskDetails
+import net.pilseong.todocompose.ui.viewmodel.toTaskDetails
+import net.pilseong.todocompose.util.Constants
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleListSheet(
     selectedDate: LocalDate,
@@ -82,7 +87,10 @@ fun ScheduleListSheet(
     expanded: Boolean = false,
     onDismissRequest: () -> Unit,
     onAddClicked: () -> Unit,
+    onTimerChange: (MemoWithNotebook) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
+    Log.d("PHILIP", "[ScheduleListSheet] called")
     if (expanded) {
         val state = rememberModalBottomSheetState(
             skipPartiallyExpanded = true
@@ -100,6 +108,8 @@ fun ScheduleListSheet(
                 notes = notes,
                 onDismissRequest = onDismissRequest,
                 onAddClicked = onAddClicked,
+                onTimerChange = onTimerChange,
+                onValueChange = onValueChange,
             )
         }
     }
@@ -112,6 +122,8 @@ private fun CalendarNoteList(
     notes: List<MemoWithNotebook>,
     onDismissRequest: () -> Unit,
     onAddClicked: () -> Unit,
+    onTimerChange: (MemoWithNotebook) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
     Column {
         CenterAlignedTopAppBar(
@@ -127,9 +139,14 @@ private fun CalendarNoteList(
 
             },
             title = {
-                Text(text = selectedDate.format(DateTimeFormatter.ofPattern(
-                    stringResource(id = R.string.note_content_dateformat), Locale.getDefault())
-                ))
+                Text(
+                    text = selectedDate.format(
+                        DateTimeFormatter.ofPattern(
+                            stringResource(id = R.string.note_content_dateformat),
+                            Locale.getDefault()
+                        )
+                    )
+                )
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -163,7 +180,10 @@ private fun CalendarNoteList(
                     key = { item -> item.memo.id },
                 ) { item ->
                     ScheduleItem(
-                        modifier = Modifier.padding(bottom = SMALL_PADDING), item = item
+                        modifier = Modifier.padding(bottom = SMALL_PADDING),
+                        item = item,
+                        onTimerChange = onTimerChange,
+                        onValueChange = onValueChange,
                     )
                 }
             }
@@ -174,7 +194,9 @@ private fun CalendarNoteList(
 @Composable
 private fun ScheduleItem(
     modifier: Modifier = Modifier,
-    item: MemoWithNotebook
+    item: MemoWithNotebook,
+    onTimerChange: (MemoWithNotebook) -> Unit,
+    onValueChange: (TaskDetails) -> Unit,
 ) {
     val cornerRadius = 8.dp
     val cutCornerSize = 20.dp
@@ -263,26 +285,38 @@ private fun ScheduleItem(
                             )
                         }
 //                    Spacer(modifier = Modifier.height(4.dp))
-                        Surface(color = Color.Transparent) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(top = 4.dp, start = 4.dp)
-                                    .size(16.dp),
-                                imageVector = Icons.Default.Alarm,
-                                contentDescription = "alarm icon",
-                                tint = if (item.memo.reminderType != ReminderTime.NOT_USED && Calendar.getInstance().timeInMillis < (item.memo.dueDate!!.toInstant()
-                                        .toEpochMilli() - item.memo.reminderType.timeInMillis)
-                                ) Color.Red
-                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                            )
-                            if (item.memo.reminderType != ReminderTime.NOT_USED) {
+
+                        var expanded by remember { mutableStateOf(false) }
+                        ReminderDropDown(
+                            isNew = item.memo.id == Constants.NEW_ITEM_ID,
+                            expanded = expanded,
+                            enabled = item.memo.dueDate != null,
+                            targetTime = item.memo.dueDate?.toInstant()
+                                ?.toEpochMilli(),
+                            onTimeSelected = { reminderType ->
+                                expanded = false
+                                onValueChange(item.toTaskDetails().copy(reminderType = reminderType))
+                                onTimerChange(item)
+                            },
+                            onButtonClicked = {
+                                if (item.memo.dueDate != null) expanded = true
+                            },
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            Surface(color = Color.Transparent) {
                                 Icon(
                                     modifier = Modifier
                                         .padding(top = 4.dp, start = 4.dp)
                                         .size(16.dp),
-                                    imageVector = Icons.Default.Alarm,
+                                    imageVector =
+                                    if (item.memo.reminderType == ReminderType.NOT_USED) Icons.Default.AlarmOff
+                                    else if (Calendar.getInstance().timeInMillis < item.memo.dueDate!!.toInstant()
+                                            .toEpochMilli() - item.memo.reminderType.timeInMillis
+                                    ) Icons.Default.AlarmOn
+                                    else Icons.Default.Alarm,
                                     contentDescription = "alarm icon",
-                                    tint = if (Calendar.getInstance().timeInMillis < (item.memo.dueDate!!.toInstant()
+                                    tint = if (item.memo.reminderType != ReminderType.NOT_USED &&
+                                        Calendar.getInstance().timeInMillis < (item.memo.dueDate!!.toInstant()
                                             .toEpochMilli() - item.memo.reminderType.timeInMillis)
                                     ) Color.Red
                                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -290,6 +324,7 @@ private fun ScheduleItem(
                             }
                         }
                     }
+
 
                     //  제목 내용
                     Column(
@@ -359,7 +394,9 @@ fun PreviewScheduleItem() {
                     notebookId = -1,
                     dueDate = ZonedDateTime.now()
                 ), notebook = Notebook.instance(), total = 1, photos = emptyList()
-            )
+            ),
+            onTimerChange = {},
+            onValueChange = {}
         )
     }
 
@@ -384,7 +421,9 @@ fun PreviewCalendarNoteList() {
                 )
             ),
             onDismissRequest = {},
-            onAddClicked = {}
+            onAddClicked = {},
+            onTimerChange = {},
+            onValueChange = {}
         )
     }
 

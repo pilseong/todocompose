@@ -1,25 +1,17 @@
 package net.pilseong.todocompose.ui.viewmodel
 
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.content.FileProvider.getUriForFile
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonParseException
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -42,21 +34,19 @@ import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
-import net.pilseong.todocompose.data.repository.ZonedDateTypeAdapter
 import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
-import java.io.File
 import java.time.ZonedDateTime
 import java.util.Calendar
 import javax.inject.Inject
@@ -633,7 +623,8 @@ class MemoViewModel @Inject constructor(
         )
 
         if (taskUiState.taskDetails.progression == State.COMPLETED ||
-            taskUiState.taskDetails.progression == State.CANCELLED) {
+            taskUiState.taskDetails.progression == State.CANCELLED
+        ) {
             updateUiState(
                 taskUiState.taskDetails.copy(
                     finishedAt = ZonedDateTime.now()
@@ -654,7 +645,7 @@ class MemoViewModel @Inject constructor(
                 Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
                     .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
             ) {
-                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
                     registerNotification(taskUiState.taskDetails.copy(id = id))
             }
 
@@ -663,15 +654,17 @@ class MemoViewModel @Inject constructor(
         this.memoAction = MemoAction.ADD
     }
 
+    // 파라 메터를 받아온 이유는 이전 상태를 알기 위함 이다.
     private fun updateTask(memoWithNotebook: MemoWithNotebook) {
         Log.d(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
         // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
-        if ((memoWithNotebook.memo.progression != State.COMPLETED && memoWithNotebook.memo.progression != State.CANCELLED) &&
+        if ((memoWithNotebook.memo.progression != State.COMPLETED &&
+                    memoWithNotebook.memo.progression != State.CANCELLED) &&
             (taskUiState.taskDetails.progression == State.COMPLETED ||
-            taskUiState.taskDetails.progression == State.CANCELLED)
+                    taskUiState.taskDetails.progression == State.CANCELLED)
         ) {
             updateUiState(
                 taskUiState.taskDetails.copy(
@@ -702,11 +695,11 @@ class MemoViewModel @Inject constructor(
                 Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
                     .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
             ) {
-                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
                     registerNotification(taskUiState.taskDetails)
                 else if (
-                    memoWithNotebook.memo.reminderType != ReminderTime.NOT_USED &&
-                    taskUiState.taskDetails.reminderType == ReminderTime.NOT_USED
+                    memoWithNotebook.memo.reminderType != ReminderType.NOT_USED &&
+                    taskUiState.taskDetails.reminderType == ReminderType.NOT_USED
                 )
                     cancelNotification(taskUiState.taskDetails.id)
             }
@@ -729,7 +722,7 @@ class MemoViewModel @Inject constructor(
                     .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
             ) {
                 // 알람이 설정된 경우는 삭제 한다.
-                if (taskUiState.taskDetails.reminderType != ReminderTime.NOT_USED)
+                if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
                     cancelNotification(taskUiState.taskDetails.id)
             }
 
@@ -895,120 +888,120 @@ class MemoViewModel @Inject constructor(
         refreshAllTasks()
     }
 
-    private var gson = GsonBuilder()
-        .registerTypeAdapter(
-            ZonedDateTime::class.java,
-            ZonedDateTypeAdapter()
-        )
-        .serializeNulls().setPrettyPrinting().create()
+//    private var gson = GsonBuilder()
+//        .registerTypeAdapter(
+//            ZonedDateTime::class.java,
+//            ZonedDateTypeAdapter()
+//        )
+//        .serializeNulls().setPrettyPrinting().create()
 
-    fun handleImport(uri: Uri?) {
-        val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
-        val bytes = item?.readBytes()
+//    fun handleImport(uri: Uri?) {
+//        val item = if (uri != null) context.contentResolver.openInputStream(uri) else null
+//        val bytes = item?.readBytes()
+//
+//        if (bytes != null) {
+//            progressVisible = true
+//            val memoString = String(bytes, Charsets.UTF_8)
+//            val dbTables = memoString.split("pilseong")
+//
+//            if (dbTables.size != 2) {
+//                progressVisible = false
+//
+//                // 실패 대화박스 표출
+//                infoDialogTitle = R.string.info_import_fail_title
+//                infoDialogContent = R.string.info_import_fail_content
+//                openDialog = true
+//                Log.d("PHILIP", "error while parsing tables")
+//                item.close()
+//                return
+//            }
+//
+//            try {
+//                val memoListType = object : TypeToken<List<MemoTask>>() {}.type
+//                val noteListType = object : TypeToken<List<Notebook>>() {}.type
+//
+//                val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
+//                val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
+//
+//                Log.d(
+//                    "PHILIP",
+//                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size} ${memos[0]}"
+//
+//                )
+//
+//                viewModelScope.launch {
+//                    try {
+//                        todoRepository.insertMultipleMemos(memos)
+//                        notebookRepository.insertMultipleNotebooks(notes)
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//                    delay(1000)
+//                    refreshAllTasks()
+//
+//                }
+//            } catch (e: JsonParseException) {
+//                progressVisible = false
+//
+//                infoDialogTitle = R.string.info_import_fail_title
+//                infoDialogContent = R.string.info_import_fail_content
+//                openDialog = true
+//
+//                Log.d("PHILIP", "error while importing ${e.message}")
+//                item.close()
+//                return
+//            }
+//        }
+//        item?.close()
+//    }
 
-        if (bytes != null) {
-            progressVisible = true
-            val memoString = String(bytes, Charsets.UTF_8)
-            val dbTables = memoString.split("pilseong")
-
-            if (dbTables.size != 2) {
-                progressVisible = false
-
-                // 실패 대화박스 표출
-                infoDialogTitle = R.string.info_import_fail_title
-                infoDialogContent = R.string.info_import_fail_content
-                openDialog = true
-                Log.d("PHILIP", "error while parsing tables")
-                item.close()
-                return
-            }
-
-            try {
-                val memoListType = object : TypeToken<List<MemoTask>>() {}.type
-                val noteListType = object : TypeToken<List<Notebook>>() {}.type
-
-                val memos = gson.fromJson<List<MemoTask>>(dbTables[0], memoListType)
-                val notes = gson.fromJson<List<Notebook>>(dbTables[1], noteListType)
-
-                Log.d(
-                    "PHILIP",
-                    "[MemoViewModel] handleImport uri: $uri, size of data: ${memos.size} ${memos[0]}"
-
-                )
-
-                viewModelScope.launch {
-                    try {
-                        todoRepository.insertMultipleMemos(memos)
-                        notebookRepository.insertMultipleNotebooks(notes)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    delay(1000)
-                    refreshAllTasks()
-
-                }
-            } catch (e: JsonParseException) {
-                progressVisible = false
-
-                infoDialogTitle = R.string.info_import_fail_title
-                infoDialogContent = R.string.info_import_fail_content
-                openDialog = true
-
-                Log.d("PHILIP", "error while importing ${e.message}")
-                item.close()
-                return
-            }
-        }
-        item?.close()
-    }
-
-    fun exportData() {
-        viewModelScope.launch {
-            val allMemoData = todoRepository.getAllTasks()
-            var memoJson = gson?.toJson(allMemoData)
-            val filename = "idea_note.txt"
-
-            val allNotes = notebookRepository.getAllNotebooks()
-            val noteJson = gson?.toJson(allNotes)
-
-            memoJson += "pilseong$noteJson"
-
-            context.openFileOutput(filename, Context.MODE_PRIVATE).use {
-                it.write(memoJson?.toByteArray())
-            }
-
-            sendEmail(
-                getUriForFile(
-                    context,
-                    "net.pilseong.fileprovider",
-                    File(context.filesDir, filename)
-                )
-            )
-        }
-    }
-
-    private fun sendEmail(file: Uri) {
-        Log.d("PHILIP", "Sending Log ...###### ")
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "message/rfc822"
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Export Memos")
-        intent.putExtra(Intent.EXTRA_STREAM, file)
-        intent.putExtra(
-            Intent.EXTRA_TEXT,
-            "This is an autogenerated message \n The attachment file includes all the memos in JSON format"
-        )
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  //  외부 에서 열려고 할 때
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // provider 를 통한 파일 제공
-        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-
-        intent.resolveActivity(context.packageManager)?.let {
-            try {
-                context.startActivity(intent)
-            } catch (ex: ActivityNotFoundException) {
-                Log.d("PHILIP", "No Intent matcher found")
-            }
-        }
-    }
+//    fun exportData() {
+//        viewModelScope.launch {
+//            val allMemoData = todoRepository.getAllTasks()
+//            var memoJson = gson?.toJson(allMemoData)
+//            val filename = "idea_note.txt"
+//
+//            val allNotes = notebookRepository.getAllNotebooks()
+//            val noteJson = gson?.toJson(allNotes)
+//
+//            memoJson += "pilseong$noteJson"
+//
+//            context.openFileOutput(filename, Context.MODE_PRIVATE).use {
+//                it.write(memoJson?.toByteArray())
+//            }
+//
+//            sendEmail(
+//                getUriForFile(
+//                    context,
+//                    "net.pilseong.fileprovider",
+//                    File(context.filesDir, filename)
+//                )
+//            )
+//        }
+//    }
+//
+//    private fun sendEmail(file: Uri) {
+//        Log.d("PHILIP", "Sending Log ...###### ")
+//        val intent = Intent(Intent.ACTION_SEND)
+//        intent.type = "message/rfc822"
+//        intent.putExtra(Intent.EXTRA_SUBJECT, "Export Memos")
+//        intent.putExtra(Intent.EXTRA_STREAM, file)
+//        intent.putExtra(
+//            Intent.EXTRA_TEXT,
+//            "This is an autogenerated message \n The attachment file includes all the memos in JSON format"
+//        )
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  //  외부 에서 열려고 할 때
+//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)  // provider 를 통한 파일 제공
+//        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+//
+//        intent.resolveActivity(context.packageManager)?.let {
+//            try {
+//                context.startActivity(intent)
+//            } catch (ex: ActivityNotFoundException) {
+//                Log.d("PHILIP", "No Intent matcher found")
+//            }
+//        }
+//    }
 
     var taskUiState by mutableStateOf(TaskUiState())
         private set
@@ -1076,7 +1069,7 @@ data class TaskDetails(
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
     val finishedAt: ZonedDateTime? = null,
     val dueDate: ZonedDateTime? = null,
-    val reminderType: ReminderTime = ReminderTime.NOT_USED,
+    val reminderType: ReminderType = ReminderType.NOT_USED,
     val reminderOffset: Long? = null,
     val notebookId: Long = -1,
     var photos: MutableList<Photo> = mutableListOf(),

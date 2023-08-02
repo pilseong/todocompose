@@ -5,4 +5,5 @@ enum class CalendarAction {
     NOTE_SWITCH,
     SEARCH_RANGE_CHANGE,
     ADD,
+    Edit,
 }

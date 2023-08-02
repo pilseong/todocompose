@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.theme.ALPHA_MEDIUM
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -385,64 +385,39 @@ fun PriorityDropDownPreview() {
 
 @Composable
 fun ReminderDropDown(
+    modifier: Modifier = Modifier,
     isNew: Boolean = false,
+    expanded: Boolean = false,
     enabled: Boolean = false,
     targetTime: Long? = null,
-    reminderTime: ReminderTime,
-    onTimeSelected: (ReminderTime) -> Unit
+    onTimeSelected: (ReminderType) -> Unit,
+    onButtonClicked: () -> Unit,
+    onDismissRequest: () -> Unit,
+    content: @Composable (Boolean) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val angle by animateFloatAsState(
-        targetValue = if (expanded) 180F else 0F
-    )
     val focusManager = LocalFocusManager.current
     var showInitialValue by remember { mutableStateOf(isNew) }
 
     Row(
-        modifier = Modifier
-            .height(PRIORITY_DROPDOWN_HEIGHT)
+        modifier = modifier
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = if (!enabled) null else LocalIndication.current
             ) {
-
-                if (enabled) expanded = true
+                onButtonClicked()
                 focusManager.clearFocus()
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            modifier = Modifier
-                .padding(start = XLARGE_PADDING)
-                .weight(1F),
-            text = if (!showInitialValue) stringResource(id = reminderTime.label)
-            else stringResource(id = R.string.edit_content_reminderlabel),
-            style = MaterialTheme.typography.titleSmall,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        content(
+            showInitialValue,
         )
-
-        IconButton(
-            enabled = enabled,
-            modifier = Modifier
-                .alpha(ALPHA_MEDIUM)
-                .rotate(angle),
-            onClick = {
-                if (enabled) expanded = true
-                focusManager.clearFocus()
-            }
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ArrowDropDown,
-                contentDescription = stringResource(R.string.drop_down_menu_icon),
-            )
-        }
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { onDismissRequest() }
         ) {
-            ReminderTime.values()
+            ReminderType.values()
                 .filter {
                     (Calendar.getInstance().timeInMillis) < (targetTime ?: Calendar.getInstance().timeInMillis) - it.timeInMillis
                 }
@@ -450,7 +425,6 @@ fun ReminderDropDown(
                     DropdownMenuItem(
                         text = { DropDownItem(option = time) },
                         onClick = {
-                            expanded = false
                             onTimeSelected(time)
                             if (showInitialValue) showInitialValue = false
                         })
@@ -465,11 +439,15 @@ fun ReminderDropDown(
 fun ReminderDropDownPreview() {
     TodoComposeTheme {
         ReminderDropDown(
+            expanded = false,
             isNew = true,
             targetTime = 0L,
-            reminderTime = ReminderTime.NOT_USED,
-            onTimeSelected = {}
-        )
+            onTimeSelected = {},
+            onButtonClicked = {},
+            onDismissRequest = {},
+        ) {
+
+        }
     }
 
 }

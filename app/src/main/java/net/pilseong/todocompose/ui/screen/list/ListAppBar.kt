@@ -73,7 +73,6 @@ fun ListAppBar(
     searchAppBarState: SearchAppBarState,
     searchText: String,
     searchNoFilterState: Boolean = false,
-    onImportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     selectedItemsCount: Int,
     onDeleteSelectedClicked: () -> Unit,
@@ -85,7 +84,6 @@ fun ListAppBar(
     onMoveMemoClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
-    onExportClick: () -> Unit,
     onSearchNoFilterClicked: (Boolean) -> Unit,
     onStateSelectedForMultipleItems: (State) -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
@@ -161,8 +159,6 @@ fun ListAppBar(
                     onSearchIconClicked = onSearchIconClicked,
                     onDeleteAllClicked = onDeleteAllClicked,
                     onDateRangePickerConfirmed = onDateRangePickerConfirmed,
-                    onImportClick = onImportClick,
-                    onExportClick = onExportClick,
                     onAppBarTitleClick = onAppBarTitleClick,
                     onSearchRangeAllClicked = onSearchRangeAllClicked
                 )
@@ -193,8 +189,6 @@ fun DefaultListAppBar(
     onSearchIconClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
-    onImportClick: () -> Unit,
-    onExportClick: () -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
@@ -204,7 +198,8 @@ fun DefaultListAppBar(
             Text(
                 modifier = Modifier
                     .clickable {
-                        onAppBarTitleClick()
+                        if (!searchRangeAll)
+                            onAppBarTitleClick()
                     },
                 text = if (searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else appbarTitle,
                 overflow = TextOverflow.Ellipsis,
@@ -221,8 +216,6 @@ fun DefaultListAppBar(
                 onSearchClicked = onSearchIconClicked,
                 onDeleteAllClicked = onDeleteAllClicked,
                 onDatePickConfirmed = onDateRangePickerConfirmed,
-                onImportClick = onImportClick,
-                onExportClick = onExportClick,
                 onSearchRangeAllClicked = onSearchRangeAllClicked,
             )
         }
@@ -239,9 +232,7 @@ fun PreviewDefaultListAppBar() {
         onSearchIconClicked = { /*TODO*/ },
         onDeleteAllClicked = { /*TODO*/ },
         onDateRangePickerConfirmed = { _, _ -> },
-        onImportClick = { /*TODO*/ },
-        onSearchRangeAllClicked = {_, _ -> },
-        onExportClick = { /*TODO*/ },
+        onSearchRangeAllClicked = { _, _ -> },
         onAppBarTitleClick = {}
     )
 }
@@ -253,8 +244,6 @@ fun ListAppBarActions(
     onSearchClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onDatePickConfirmed: (Long?, Long?) -> Unit,
-    onImportClick: () -> Unit,
-    onExportClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
 ) {
     // 다이얼 로그 박스 에 대한 상태
@@ -268,31 +257,6 @@ fun ListAppBarActions(
         onYesClicked = onDeleteAllClicked,
         onCloseDialog = { deleteAlertExpanded = false }
     )
-
-    // Import 다이얼 로그 박스 에 대한 상태
-    var importAlertExpanded by remember { mutableStateOf(false) }
-
-    // import 의 confirm 용도의 alert dialog 생성
-    DisplayAlertDialog(
-        title = stringResource(id = R.string.import_dialog_title),
-        message = stringResource(id = R.string.import_dialog_confirmation),
-        openDialog = importAlertExpanded,
-        onYesClicked = onImportClick,
-        onCloseDialog = { importAlertExpanded = false }
-    )
-
-    // Export 다이얼 로그 박스 에 대한 상태
-    var exportAlertExpanded by remember { mutableStateOf(false) }
-
-    // 모두 삭제 하기의 confirm 용도의 alert dialog 생성
-    DisplayAlertDialog(
-        title = stringResource(id = R.string.export_memos_dialog_title),
-        message = stringResource(id = R.string.export_all_memos_dialog_confirmation),
-        openDialog = exportAlertExpanded,
-        onYesClicked = onExportClick,
-        onCloseDialog = { exportAlertExpanded = false }
-    )
-
 
     var datePickerExpanded by remember { mutableStateOf(false) }
     SimpleDateRangePickerSheet(

@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material3.Divider
@@ -39,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -57,9 +61,10 @@ import net.pilseong.todocompose.data.model.Photo
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.NotebookWithCount
 import net.pilseong.todocompose.data.model.ui.Priority
-import net.pilseong.todocompose.data.model.ui.ReminderTime
+import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.screen.task.CameraView
+import net.pilseong.todocompose.ui.theme.ALPHA_MEDIUM
 import net.pilseong.todocompose.ui.theme.PRIORITY_DROPDOWN_HEIGHT
 import net.pilseong.todocompose.ui.theme.XLARGE_PADDING
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
@@ -70,7 +75,6 @@ import net.pilseong.todocompose.util.getOutputDirectory
 import net.pilseong.todocompose.util.savePhotoToInternalStorage
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -158,14 +162,14 @@ fun NoteEditor(
         )
 
 
-        // task switch 를 해제할 때만 실행되는 부분
+        // task switch 를 해제할 때만 실행 되는 부분
         LaunchedEffect(key1 = taskUiState.taskDetails.isTask) {
             if (!taskUiState.taskDetails.isTask && mode != NoteEditorMode.CALENDAR_ADD) {
                 onValueChange(
                     taskUiState.taskDetails.copy(
                         progression = State.NONE,
                         dueDate = null,
-                        reminderType = ReminderTime.NOT_USED
+                        reminderType = ReminderType.NOT_USED
                     )
                 )
             }
@@ -189,20 +193,59 @@ fun NoteEditor(
                         )
                     }
                     Row(modifier = Modifier.weight(1f)) {
+                        var expanded by remember { mutableStateOf(false) }
+                        val focusManager = LocalFocusManager.current
+                        val angle by animateFloatAsState(
+                            targetValue = if (expanded) 180F else 0F, label = "expand icon"
+                        )
                         ReminderDropDown(
+                            modifier = Modifier.height(PRIORITY_DROPDOWN_HEIGHT),
                             isNew = taskUiState.taskDetails.id == Constants.NEW_ITEM_ID,
+                            expanded = expanded,
                             enabled = taskUiState.taskDetails.dueDate != null,
                             targetTime = taskUiState.taskDetails.dueDate?.toInstant()
                                 ?.toEpochMilli(),
-                            reminderTime = taskUiState.taskDetails.reminderType,
                             onTimeSelected = {
+                                expanded = false
                                 onValueChange(
                                     taskUiState.taskDetails.copy(
                                         reminderType = it
                                     )
                                 )
+                            },
+                            onButtonClicked = {
+                                if (taskUiState.taskDetails.dueDate != null) expanded = true
+                            },
+                            onDismissRequest = { expanded = false }
+                        ) { showInitialValue ->
+                            Text(
+                                modifier = Modifier
+                                    .padding(start = XLARGE_PADDING)
+                                    .weight(1F),
+                                text = if (!showInitialValue) stringResource(id = taskUiState.taskDetails.reminderType.label)
+                                else stringResource(id = R.string.edit_content_reminderlabel),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = if (taskUiState.taskDetails.dueDate != null)
+                                    MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+
+                            IconButton(
+                                enabled = taskUiState.taskDetails.dueDate != null,
+                                modifier = Modifier
+                                    .alpha(ALPHA_MEDIUM)
+                                    .rotate(angle),
+                                onClick = {
+                                    if (taskUiState.taskDetails.dueDate != null) expanded = true
+                                    focusManager.clearFocus()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDropDown,
+                                    contentDescription = stringResource(R.string.drop_down_menu_icon),
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
