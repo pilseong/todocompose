@@ -214,15 +214,13 @@ fun DayView(
     Column(
         modifier = modifier
             .border(
-                width = if (isCurrentDay) 0.4.dp else 0.dp,
+                width = if (isSelected) 0.4.dp else 0.dp,
                 color = MaterialTheme.colorScheme.primary
             )
             .background(
                 color =
-//                    if (isCurrentDay)
-//                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                if (isSelected)
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                if (isCurrentDay)
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
                 else MaterialTheme.colorScheme.background
             )
             .verticalScroll(rememberScrollState())
@@ -263,12 +261,6 @@ fun DayView(
                 else it.memo.priority.color.copy(alpha = 0.3f)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
-//                Icon(
-//                    modifier = Modifier.size(5.dp),
-//                    imageVector = Icons.Default.Circle,
-//                    contentDescription = "circle image",
-//                    tint = it.memo.priority.color
-//                )
                     Text(
                         text = it.memo.title,
                         fontSize = 10.sp,
@@ -276,9 +268,7 @@ fun DayView(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color =
-//                        if (it.memo.priority == Priority.NONE)
                         MaterialTheme.colorScheme.onSurface
-//                        else MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }

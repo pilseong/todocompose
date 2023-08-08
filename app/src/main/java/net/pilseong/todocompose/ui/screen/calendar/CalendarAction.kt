@@ -6,4 +6,5 @@ enum class CalendarAction {
     SEARCH_RANGE_CHANGE,
     ADD,
     Edit,
+    DELETE
 }

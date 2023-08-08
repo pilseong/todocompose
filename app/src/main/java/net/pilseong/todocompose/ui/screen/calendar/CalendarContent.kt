@@ -18,11 +18,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -53,13 +55,16 @@ import java.time.format.DateTimeFormatter
 fun CalendarContent(
     tasks: List<MemoWithNotebook>,
     taskUiState: TaskUiState,
+    taskUiStateList: SnapshotStateList<TaskUiState> = SnapshotStateList(),
     selectedMonth: YearMonth,
     selectedNotebook: Notebook,
     editorExpanded: Boolean = false,
     onMonthChange: (YearMonth) -> Unit,
     onValueChange: (TaskDetails) -> Unit,
+    onTaskUiStateListClean: () -> Unit,
     onEditorExpanded: (Boolean) -> Unit,
-    onTimerChange: (MemoWithNotebook) -> Unit,
+    onEditClicked: (MemoWithNotebook) -> Unit,
+    onDeleteClicked: (MemoWithNotebook) -> Unit,
 ) {
 
     var noteListSheetExpended by remember {
@@ -72,6 +77,12 @@ fun CalendarContent(
             it.memo.dueDate!!.month == selectedDate.month &&
                     it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
         })
+    }
+
+    LaunchedEffect(key1 = noteListSheetExpended) {
+        if (!noteListSheetExpended) {
+            onTaskUiStateListClean()
+        }
     }
 
     Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
@@ -144,13 +155,6 @@ fun CalendarContent(
                     loadDatesForMonth = { yearMonth ->
                         Log.d("PHILIP", "get yearMonth $yearMonth")
                         loadedDates = calculateExpandedCalendarDays(yearMonth.atDay(1))
-//                    onCalendarIntent(
-//                        CalendarIntent.LoadNextDates(
-//                            yearMonth.atDay(
-//                                1
-//                            )
-//                        )
-//                    )
                     },
                     onDayClick = { it, notes ->
                         Log.d("PHILIP", "onDayClick $it")
@@ -187,6 +191,7 @@ fun CalendarContent(
     }
     ScheduleListSheet(
         selectedDate = selectedDate,
+        taskUiStateList = taskUiStateList,
         notes = dateNotesList,
         expanded = noteListSheetExpended,
         onDismissRequest = { noteListSheetExpended = false },
@@ -194,8 +199,9 @@ fun CalendarContent(
             noteListSheetExpended = false
             onEditorExpanded(true)
         },
-        onTimerChange = onTimerChange,
-        onValueChange = onValueChange
+        onEditClicked = onEditClicked,
+        onValueChange = onValueChange,
+        onDeleteClicked = onDeleteClicked,
     )
 }
 
@@ -225,7 +231,9 @@ fun CalendarContentPreview() {
             onMonthChange = {},
             onValueChange = {},
             onEditorExpanded = {},
-            onTimerChange = {}
+            onEditClicked = {},
+            onTaskUiStateListClean = {},
+            onDeleteClicked = {},
         )
     }
 }

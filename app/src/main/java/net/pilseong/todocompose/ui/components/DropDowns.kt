@@ -407,7 +407,7 @@ fun ReminderDropDown(
                 onButtonClicked()
                 focusManager.clearFocus()
             },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         content(
             showInitialValue,

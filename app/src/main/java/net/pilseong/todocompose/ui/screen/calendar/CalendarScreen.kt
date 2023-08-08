@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -47,6 +48,7 @@ import java.time.ZoneId
 fun CalendarScreen(
     userData: UserData,
     taskUiState: TaskUiState,
+    taskUiStateList: SnapshotStateList<TaskUiState> = SnapshotStateList(),
     selectedMonth: YearMonth,
     tasks: List<MemoWithNotebook>,
     selectedNotebook: Notebook,
@@ -56,7 +58,9 @@ fun CalendarScreen(
     onAppBarTitleClick: () -> Unit,
     onSearchRangeAllClicked: (Boolean, Boolean) -> Unit,
     onNewConfirm: (CalendarAction) -> Unit,
-    onTimerChange: (MemoWithNotebook) -> Unit,
+    onEditClicked: (MemoWithNotebook) -> Unit,
+    onDeleteClicked: (MemoWithNotebook) -> Unit,
+    onTaskUiStateListClean: () -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
@@ -178,15 +182,16 @@ fun CalendarScreen(
                 CalendarContent(
                     tasks = tasks,
                     taskUiState = taskUiState,
+                    taskUiStateList = taskUiStateList,
                     editorExpanded = editorExpanded,
                     selectedNotebook = selectedNotebook,
                     selectedMonth = selectedMonth,
                     onMonthChange = onMonthChange,
                     onValueChange = onValueChange,
-                    onEditorExpanded = {
-                        editorExpanded = it
-                    },
-                    onTimerChange = onTimerChange,
+                    onEditorExpanded = { editorExpanded = it },
+                    onEditClicked = onEditClicked,
+                    onDeleteClicked = onDeleteClicked,
+                    onTaskUiStateListClean = onTaskUiStateListClean,
                 )
             }
 
@@ -208,38 +213,6 @@ fun BottomActionBarNavPreview() {
 }
 
 
-// Floating Action Button
-//@Composable
-//fun AddMemoFab(
-//    paddingEnd: Dp = 0.dp,
-//    size: Dp = 56.dp,
-//    onFabClicked: () -> Unit,
-//    icon: ImageVector
-//) {
-//    FloatingActionButton(
-//        modifier = Modifier.size(size),
-//        onClick = {
-//            onFabClicked()
-//        },
-//        shape = RoundedCornerShape(paddingEnd),
-//        containerColor = MaterialTheme.colorScheme.fabContainerColor,
-//        contentColor = MaterialTheme.colorScheme.fabContent
-//    ) {
-//        Icon(
-//            imageVector = icon,
-//            contentDescription = stringResource(id = R.string.add_button_icon),
-//        )
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun PreviewAddMenuFab() {
-//    MaterialTheme {
-//        AddMemoFab(onFabClicked = { /*TODO*/ }, icon = Icons.Default.Create)
-//    }
-//}
-
 @Composable
 @Preview
 private fun CalendarScreenPreview() {
@@ -256,7 +229,9 @@ private fun CalendarScreenPreview() {
             onSearchRangeAllClicked = { _, _ -> Unit },
             onValueChange = {},
             onNewConfirm = {},
-            onTimerChange = {}
+            onEditClicked = {},
+            onTaskUiStateListClean = {},
+            onDeleteClicked = {},
         )
     }
 }

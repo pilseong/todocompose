@@ -3,8 +3,10 @@ package net.pilseong.todocompose.ui.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,7 +24,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.alarm.ReminderScheduler
-import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
@@ -71,6 +72,45 @@ class MemoCalendarViewModel @Inject constructor(
         )
     )
         private set
+
+
+    var taskUiStateList = mutableStateListOf<TaskUiState>()
+
+    fun updateUiStateInList(taskDetails: TaskDetails) {
+        taskUiStateList.removeIf { task -> task.taskDetails.id == taskDetails.id }
+        taskUiStateList.add(
+            TaskUiState(
+                taskDetails = taskDetails,
+                isEntryValid = validateInput(taskDetails)
+            )
+        )
+    }
+
+    fun cleanUiStateInList() {
+        Log.d("PHILIP", "[MemoCalendarViewModel] cleanUiStateInList() list is cleaned")
+        taskUiStateList = SnapshotStateList()
+    }
+
+    private fun getTaskUiStateFromList(id: Long): TaskDetails {
+        val resultTaskUiState = taskUiStateList.filter { task ->
+            task.taskDetails.id == id
+        }
+
+        return if (resultTaskUiState.isEmpty())
+            taskUiState.taskDetails
+        else resultTaskUiState[0].taskDetails
+    }
+
+    // 저장한 경우에는 데이터를 비워야 한다. 현재 선택된 노트북과 due 설정은 필수가 된다.
+    fun cleanUiState() {
+        taskUiState = TaskUiState().copy(
+            TaskDetails(
+                dueDate = taskUiState.taskDetails.dueDate?.toLocalDate()
+                    ?.atStartOfDay(ZoneId.systemDefault()),
+                notebookId = selectedNotebook.id
+            )
+        )
+    }
 
     fun updateUiState(taskDetails: TaskDetails) {
         Log.d("PHILIP", "[MemoCalendarViewModel] updateUIState $taskDetails")
@@ -246,14 +286,16 @@ class MemoCalendarViewModel @Inject constructor(
                     "PHILIP",
                     "[MemoCalendarViewModel] updateTask performed with $taskUiState"
                 )
+                val target = getTaskUiStateFromList(currentMemoTask.memo.id)
+
                 // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
                 if ((currentMemoTask.memo.progression != State.COMPLETED &&
                             currentMemoTask.memo.progression != State.CANCELLED) &&
-                    (taskUiState.taskDetails.progression == State.COMPLETED ||
-                            taskUiState.taskDetails.progression == State.CANCELLED)
+                    (target.progression == State.COMPLETED ||
+                            target.progression == State.CANCELLED)
                 ) {
                     updateUiState(
-                        taskUiState.taskDetails.copy(
+                        target.copy(
                             finishedAt = ZonedDateTime.now()
                         )
                     )
@@ -262,7 +304,7 @@ class MemoCalendarViewModel @Inject constructor(
                 viewModelScope.launch {
 
                     // 데이터 베이스 에 저장 하고 삭제된 사진 id만 리스트 로 가져 온다.
-                    val deletedPhotosIds = todoRepository.updateMemo(taskUiState.taskDetails)
+                    val deletedPhotosIds = todoRepository.updateMemo(target)
                     Log.d("PHILIP", "delete ids $deletedPhotosIds")
 
                     // 데이터 베이스 를 정리 후 실제 파일을 삭제 한다.
@@ -275,18 +317,37 @@ class MemoCalendarViewModel @Inject constructor(
 
                     // 알람 설정 부분
                     // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
-                    if (taskUiState.taskDetails.dueDate != null &&
-                        Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
-                            .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
+                    if (target.dueDate != null &&
+                        Calendar.getInstance().timeInMillis < (target.dueDate!!.toInstant()
+                            .toEpochMilli() - target.reminderType.timeInMillis)
                     ) {
-                        if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
-                            registerNotification(taskUiState.taskDetails)
+                        if (target.reminderType != ReminderType.NOT_USED)
+                            registerNotification(target)
                         else if (
                             currentMemoTask.memo.reminderType != ReminderType.NOT_USED &&
-                            taskUiState.taskDetails.reminderType == ReminderType.NOT_USED
+                            target.reminderType == ReminderType.NOT_USED
                         )
-                            cancelNotification(taskUiState.taskDetails.id)
+                            cancelNotification(target.id)
                     }
+                    refreshAllTasks()
+                }
+            }
+
+            CalendarAction.DELETE -> {
+                viewModelScope.launch {
+                    todoRepository.deleteMemo(currentMemoTask.memo.id)
+
+                    // 알람 설정 부분
+                    // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
+                    if (currentMemoTask.memo.dueDate != null &&
+                        Calendar.getInstance().timeInMillis < (currentMemoTask.memo.dueDate.toInstant()
+                            .toEpochMilli() - currentMemoTask.memo.reminderType.timeInMillis)
+                    ) {
+                        // 알람이 설정된 경우는 삭제 한다.
+                        if (currentMemoTask.memo.reminderType != ReminderType.NOT_USED)
+                            cancelNotification(currentMemoTask.memo.id)
+                    }
+
                     refreshAllTasks()
                 }
             }

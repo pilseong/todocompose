@@ -1,7 +1,6 @@
 package net.pilseong.todocompose.ui.screen.calendar
 
 import android.util.Log
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +17,7 @@ import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.Edit
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.MONTH_CHANGE
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction.SEARCH_RANGE_CHANGE
 import net.pilseong.todocompose.ui.viewmodel.MemoCalendarViewModel
+import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
 
 fun NavGraphBuilder.memoCalendarViewComposable(
     navHostController: NavHostController,
@@ -37,13 +37,15 @@ fun NavGraphBuilder.memoCalendarViewComposable(
 
         var openDialog by remember { mutableStateOf(false) }
         var dialogMode by remember { mutableStateOf(NotebooksPickerMode.SWITCH_NOTE_MODE) }
-        var taskUiState = memoCalendarViewModel.taskUiState
+        val taskUiState = memoCalendarViewModel.taskUiState
+        val taskUiStateList = memoCalendarViewModel.taskUiStateList
 
-        var selectedMonth = memoCalendarViewModel.selectedMonth
+        val selectedMonth = memoCalendarViewModel.selectedMonth
 
         CalendarScreen(
             userData = userData,
             taskUiState = taskUiState,
+            taskUiStateList = taskUiStateList,
             tasks = tasks,
             selectedMonth = selectedMonth,
             selectedNotebook = selectedNotebook,
@@ -66,15 +68,29 @@ fun NavGraphBuilder.memoCalendarViewComposable(
                 )
             },
             onValueChange = {
-                memoCalendarViewModel.updateUiState(it)
+                if (it.id != NEW_ITEM_ID) {
+                    memoCalendarViewModel.updateUiStateInList(it)
+                } else memoCalendarViewModel.updateUiState(it)
             },
             onNewConfirm = {
                 memoCalendarViewModel.handleActions(it)
+                // 저장 후 초기화 를 해 주어야 한다.
+                memoCalendarViewModel.cleanUiState()
             },
-            onTimerChange = {
+            onEditClicked = {
                 memoCalendarViewModel.handleActions(
                     calendarAction = Edit,
-                    currentMemoTask = it)
+                    currentMemoTask = it
+                )
+            },
+            onTaskUiStateListClean = {
+                memoCalendarViewModel.cleanUiStateInList()
+            },
+            onDeleteClicked = {
+                memoCalendarViewModel.handleActions(
+                    calendarAction = CalendarAction.DELETE,
+                    currentMemoTask = it
+                )
             }
         )
 
