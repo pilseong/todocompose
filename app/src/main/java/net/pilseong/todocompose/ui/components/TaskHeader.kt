@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -55,12 +59,12 @@ enum class TaskHeaderType {
     CALENDAR
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun TaskHeader(
     task: MemoWithNotebook,
     type: TaskHeaderType = TaskHeaderType.VIEWER
 ) {
-    var expanded by remember { mutableStateOf(false) }
     var photoOpen by remember {
         mutableStateOf(false)
     }
@@ -326,41 +330,18 @@ fun TaskHeader(
         }
     }
 
-    if (photoOpen && selectedGalleryImage != null) {
-        Log.d("PHILIP", "photoOpen $photoOpen, selectedImage $selectedGalleryImage")
-        Dialog(
-            onDismissRequest = {
-                photoOpen = false
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = false,
-                usePlatformDefaultWidth = false
-            )
-        ) {
-            Surface(
-                color = Color.Black
-            ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    ZoomableImage(
-                        selectedGalleryImage = selectedGalleryImage,
-                        onCloseClicked = {
-                            photoOpen = false
-                            selectedGalleryImage = null
-                            Log.d(
-                                "PHILIP",
-                                "INSIDE close clicked - photoOpen $photoOpen, selectedImage $selectedGalleryImage"
-                            )
-                        },
-                        onDeleteClicked = { },
-                        onCameraClick = {},
-                        onUseClicked = {}
-                    )
-                }
-            }
+    PhotoViewer(
+        photoOpen = photoOpen,
+        selectedGalleryImage = selectedGalleryImage,
+        task = task,
+        onDismiss = {
+            photoOpen = false
+            selectedGalleryImage = null
         }
-    }
+    )
 }
+
+
 
 @Preview
 @Composable

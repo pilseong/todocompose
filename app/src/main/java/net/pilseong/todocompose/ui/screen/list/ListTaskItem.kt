@@ -63,6 +63,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.ColorUtils
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -72,6 +75,7 @@ import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.ReminderType
 import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.ui.components.ComposeGallery
+import net.pilseong.todocompose.ui.components.PhotoViewer
 import net.pilseong.todocompose.ui.components.ZoomableImage
 import net.pilseong.todocompose.ui.theme.FavoriteYellow
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
@@ -85,7 +89,9 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalPagerApi::class, ExperimentalPagerApi::class
+)
 @Composable
 fun TaskItem(
     modifier: Modifier = Modifier,
@@ -445,35 +451,15 @@ fun TaskItem(
                                 },
                             )
                         }
-                        if (photoOpen && selectedGalleryImage != null) {
-                            Dialog(
-                                onDismissRequest = {
-                                    photoOpen = false
-                                },
-                                properties = DialogProperties(
-                                    dismissOnBackPress = true,
-                                    dismissOnClickOutside = false,
-                                    usePlatformDefaultWidth = false
-                                )
-                            ) {
-                                Surface(
-                                    color = Color.Black
-                                ) {
-                                    Column(modifier = Modifier.fillMaxSize()) {
-                                        ZoomableImage(
-                                            selectedGalleryImage = selectedGalleryImage,
-                                            onCloseClicked = {
-                                                photoOpen = false
-                                                selectedGalleryImage = null
-                                            },
-                                            onDeleteClicked = { },
-                                            onCameraClick = {},
-                                            onUseClicked = {}
-                                        )
-                                    }
-                                }
+                        PhotoViewer(
+                            photoOpen = photoOpen,
+                            selectedGalleryImage = selectedGalleryImage,
+                            task = todoTask,
+                            onDismiss = {
+                                photoOpen = false
+                                selectedGalleryImage = null
                             }
-                        }
+                        )
                     }
                 }
             }

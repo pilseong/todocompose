@@ -47,7 +47,6 @@ import net.pilseong.todocompose.util.calculateSwipePrev
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -55,6 +54,7 @@ import java.time.format.DateTimeFormatter
 fun CalendarContent(
     tasks: List<MemoWithNotebook>,
     taskUiState: TaskUiState,
+    selectedDate: LocalDate,
     taskUiStateList: SnapshotStateList<TaskUiState> = SnapshotStateList(),
     selectedMonth: YearMonth,
     selectedNotebook: Notebook,
@@ -62,28 +62,28 @@ fun CalendarContent(
     onMonthChange: (YearMonth) -> Unit,
     onValueChange: (TaskDetails) -> Unit,
     onTaskUiStateListClean: () -> Unit,
+    onDayClick: (LocalDate, List<MemoWithNotebook>) -> Unit,
+    onDayLongClick: (LocalDate, List<MemoWithNotebook>) -> Unit,
     onEditorExpanded: (Boolean) -> Unit,
     onEditClicked: (MemoWithNotebook) -> Unit,
     onDeleteClicked: (MemoWithNotebook) -> Unit,
 ) {
 
-    var noteListSheetExpended by remember {
-        mutableStateOf(false)
-    }
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+//    var noteListSheetExpended by remember { mutableStateOf(false) }
+//    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    var dateNotesList by remember(tasks) {
-        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
-            it.memo.dueDate!!.month == selectedDate.month &&
-                    it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
-        })
-    }
+//    var dateNotesList by remember(tasks) {
+//        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
+//            it.memo.dueDate!!.month == selectedDate.month &&
+//                    it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
+//        })
+//    }
 
-    LaunchedEffect(key1 = noteListSheetExpended) {
-        if (!noteListSheetExpended) {
-            onTaskUiStateListClean()
-        }
-    }
+//    LaunchedEffect(key1 = noteListSheetExpended) {
+//        if (!noteListSheetExpended) {
+//            onTaskUiStateListClean()
+//        }
+//    }
 
     Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
 
@@ -156,53 +156,40 @@ fun CalendarContent(
                         Log.d("PHILIP", "get yearMonth $yearMonth")
                         loadedDates = calculateExpandedCalendarDays(yearMonth.atDay(1))
                     },
-                    onDayClick = { it, notes ->
-                        Log.d("PHILIP", "onDayClick $it")
-                        onValueChange(
-                            TaskDetails().copy(
-                                notebookId = selectedNotebook.id,
-                                dueDate = it.atStartOfDay(ZoneId.systemDefault())
-                            )
-                        )
-                        dateNotesList = notes
-                        selectedDate = it
-                    },
-                    onDayLongClick = { date, notes ->
-                        onValueChange(
-                            TaskDetails().copy(
-                                notebookId = selectedNotebook.id,
-                                dueDate = date.atStartOfDay(ZoneId.systemDefault())
-                            )
-                        )
-                        selectedDate = date
-                        dateNotesList = notes
-                        noteListSheetExpended = true
-                    }
+                    onDayClick = onDayClick,
+                    onDayLongClick = onDayLongClick,
                 )
             }
         } else {
-            NoteEditor(
-                mode = NoteEditorMode.CALENDAR_ADD,
-                taskUiState = taskUiState,
-                notebook = selectedNotebook,
-                onValueChange = onValueChange,
-            )
+            Column(
+                modifier = Modifier.padding(
+                    start = LARGE_PADDING,
+                    end = LARGE_PADDING,
+                )
+            ) {
+                NoteEditor(
+                    mode = NoteEditorMode.CALENDAR_ADD,
+                    taskUiState = taskUiState,
+                    notebook = selectedNotebook,
+                    onValueChange = onValueChange,
+                )
+            }
         }
     }
-    ScheduleListSheet(
-        selectedDate = selectedDate,
-        taskUiStateList = taskUiStateList,
-        notes = dateNotesList,
-        expanded = noteListSheetExpended,
-        onDismissRequest = { noteListSheetExpended = false },
-        onAddClicked = {
-            noteListSheetExpended = false
-            onEditorExpanded(true)
-        },
-        onEditClicked = onEditClicked,
-        onValueChange = onValueChange,
-        onDeleteClicked = onDeleteClicked,
-    )
+//    ScheduleListSheet(
+//        selectedDate = selectedDate,
+//        taskUiStateList = taskUiStateList,
+//        notes = dateNotesList,
+//        expanded = noteListSheetExpended,
+//        onDismissRequest = { noteListSheetExpended = false },
+//        onAddClicked = {
+////            noteListSheetExpended = false
+//            onEditorExpanded(true)
+//        },
+//        onEditClicked = onEditClicked,
+//        onValueChange = onValueChange,
+//        onDeleteClicked = onDeleteClicked,
+//    )
 }
 
 @Preview
@@ -228,12 +215,15 @@ fun CalendarContentPreview() {
             taskUiState = TaskUiState(),
             selectedNotebook = Notebook.instance(),
             selectedMonth = LocalDate.now().yearMonth(),
+            selectedDate = LocalDate.now(),
             onMonthChange = {},
             onValueChange = {},
             onEditorExpanded = {},
             onEditClicked = {},
             onTaskUiStateListClean = {},
             onDeleteClicked = {},
+            onDayClick = { _, _ -> },
+            onDayLongClick = { _, _ -> },
         )
     }
 }

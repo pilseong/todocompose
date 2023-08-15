@@ -94,7 +94,7 @@ fun TaskScreen(
             Column(
                 modifier = Modifier
                     .padding(
-                        top = paddingValues.calculateTopPadding() + SMALL_PADDING,
+                        top = paddingValues.calculateTopPadding(),
                         start = LARGE_PADDING,
                         end = LARGE_PADDING,
                         bottom = SMALL_PADDING

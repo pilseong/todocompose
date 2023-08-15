@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -28,21 +27,18 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -80,7 +76,8 @@ fun ComposeGallery(
             derivedStateOf {
                 max(
                     a = 0,
-                    b = this.maxWidth.div(spaceBetween + imageSize).toInt().minus(if (isEditMode) 3 else 0)
+                    b = this.maxWidth.div(spaceBetween + imageSize).toInt()
+                        .minus(if (isEditMode) 3 else 0)
                 )
             }
         }
@@ -200,32 +197,11 @@ fun ZoomableImage(
     onCameraClick: () -> Unit,
     onUseClicked: () -> Unit,
 ) {
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
-    var scale by remember { mutableStateOf(1f) }
-    Box(
-        modifier = Modifier
-            .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale = maxOf(1f, minOf(scale * zoom, 5f))
-                    val maxX = (size.width * (scale - 1)) / 2
-                    val minX = -maxX
-                    offsetX = maxOf(minX, minOf(maxX, offsetX + pan.x))
-                    val maxY = (size.height * (scale - 1)) / 2
-                    val minY = -maxY
-                    offsetY = maxOf(minY, minOf(maxY, offsetY + pan.y))
-                }
-            }
-    ) {
+
+    Box {
         AsyncImage(
             modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer(
-                    scaleX = maxOf(.5f, minOf(3f, scale)),
-                    scaleY = maxOf(.5f, minOf(3f, scale)),
-                    translationX = offsetX,
-                    translationY = offsetY
-                ),
+                .fillMaxSize(),
             model = ImageRequest.Builder(LocalContext.current)
                 .data(selectedGalleryImage?.uri)
                 .crossfade(true)
@@ -256,7 +232,10 @@ fun ZoomableImage(
                     Text(text = "Use")
                 }
             } else {
-                Button(onClick = onCloseClicked) {
+                Button(
+                    onClick = onCloseClicked,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
                     Icon(imageVector = Icons.Default.Close, contentDescription = "Close Icon")
                     Spacer(modifier = Modifier.width(SMALL_PADDING))
                     Text(text = "Close")

@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Title
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -82,6 +83,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -161,7 +163,8 @@ fun ScheduleListSheet(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun CalendarNoteList(
+fun CalendarNoteList(
+    modifier: Modifier = Modifier,
     selectedDate: LocalDate,
     taskUiStateList: SnapshotStateList<TaskUiState> = SnapshotStateList(),
     notes: List<MemoWithNotebook>,
@@ -171,7 +174,7 @@ private fun CalendarNoteList(
     onDeleteClicked: (MemoWithNotebook) -> Unit,
     onValueChange: (TaskDetails) -> Unit,
 ) {
-    Column {
+    Column(modifier = modifier) {
         CenterAlignedTopAppBar(
             navigationIcon = {
                 Icon(

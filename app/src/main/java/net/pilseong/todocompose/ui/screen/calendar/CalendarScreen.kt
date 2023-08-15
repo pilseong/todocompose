@@ -4,20 +4,28 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -25,6 +33,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
@@ -72,17 +82,67 @@ fun CalendarScreen(
     )
 
     var editorExpanded by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var dateNotesList by remember(tasks) {
+        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
+            it.memo.dueDate!!.month == selectedDate.month &&
+                    it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
+        })
+    }
 
     Log.d("PHILIP", "[CalendarScreen] selectedMonth $selectedMonth")
 
 
-    /**
-     * view model 을 통제 코드 종료
-     */
+    val sheetState = rememberStandardBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        skipHiddenState = false
+    )
+    val bottomSheetState = rememberBottomSheetScaffoldState(
+        bottomSheetState = sheetState
+//            skipPartiallyExpanded = true
+//        )
+    )
+
+    Log.d(
+        "PHILIP",
+        "[CalendarScreen] bottomSheetState ${bottomSheetState.bottomSheetState.currentValue}"
+    )
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = bottomSheetState.bottomSheetState.currentValue) {
+        if (!bottomSheetState.bottomSheetState.isVisible) {
+            onTaskUiStateListClean()
+        }
+    }
+
 
     // UI 처리 부분
-    Scaffold(
+    BottomSheetScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        sheetPeekHeight = 0.dp,
+        sheetContent = {
+            CalendarNoteList(
+                modifier = Modifier.height(700.dp),
+                selectedDate = selectedDate,
+                taskUiStateList = taskUiStateList,
+                notes = dateNotesList,
+                onDismissRequest = {
+                    scope.launch {
+                        bottomSheetState.bottomSheetState.hide()
+                    }
+                },
+                onAddClicked = {
+                    editorExpanded = true
+                    scope.launch {
+                        bottomSheetState.bottomSheetState.hide()
+                    }
+                },
+                onEditClicked = onEditClicked,
+                onValueChange = onValueChange,
+                onDeleteClicked = onDeleteClicked,
+            )
+        },
+        scaffoldState = bottomSheetState,
         topBar = {
             if (!editorExpanded) {
                 TopAppBar(
@@ -94,7 +154,8 @@ fun CalendarScreen(
                                     if (!userData.searchRangeAll)
                                         onAppBarTitleClick()
                                 },
-                            text = if (userData.searchRangeAll) stringResource(id = R.string.badge_search_range_all_label) else selectedNotebook.title,
+                            text = if (userData.searchRangeAll) stringResource(id = R.string.badge_search_range_all_label)
+                            else selectedNotebook.title,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1
                         )
@@ -138,17 +199,75 @@ fun CalendarScreen(
                             )
                         )
                         editorExpanded = false
+                        scope.launch { bottomSheetState.bottomSheetState.expand() }
                     },
                     clearAddedPhotos = {},
                     onValueChange = onValueChange,
                 )
             }
         },
-        bottomBar = {
-            if (!editorExpanded) {
+    ) { paddingValues ->
+        Button(onClick = {
+            scope.launch {
+                bottomSheetState.bottomSheetState.expand()
+            }
+        }) {
+            Text("Start")
+        }
+        Column(
+            modifier = Modifier
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+//                    bottom = paddingValues.calculateBottomPadding(),
+                )
+                .fillMaxSize(),
+        ) {
+            Column {
+                CalendarContent(
+                    tasks = tasks,
+                    taskUiState = taskUiState,
+                    taskUiStateList = taskUiStateList,
+                    editorExpanded = editorExpanded,
+                    selectedNotebook = selectedNotebook,
+                    selectedMonth = selectedMonth,
+                    selectedDate = selectedDate,
+                    onMonthChange = onMonthChange,
+                    onValueChange = onValueChange,
+                    onEditorExpanded = { editorExpanded = it },
+                    onEditClicked = onEditClicked,
+                    onDeleteClicked = onDeleteClicked,
+                    onTaskUiStateListClean = onTaskUiStateListClean,
+                    onDayClick = { it, notes ->
+                        Log.d("PHILIP", "[CalendarScreen] onDayClick $it")
+                        onValueChange(
+                            TaskDetails().copy(
+                                notebookId = selectedNotebook.id,
+                                dueDate = it.atStartOfDay(ZoneId.systemDefault())
+                            )
+                        )
+                        dateNotesList = notes
+                        selectedDate = it
+                    },
+                    onDayLongClick = { date, notes ->
+                        Log.d("PHILIP", "[CalendarScreen] onDayLongClick ${notes.size}")
+                        onValueChange(
+                            TaskDetails().copy(
+                                notebookId = selectedNotebook.id,
+                                dueDate = date.atStartOfDay(ZoneId.systemDefault())
+                            )
+                        )
+                        selectedDate = date
+                        dateNotesList = notes
+                        scope.launch { bottomSheetState.bottomSheetState.expand() }
+                    }
+                )
+
+            }
+            Row {
                 BottomActionBarNavigation(
                     currentScreen = Screen.MemoCalendar,
                     onNavigateClick = toScreen,
+                    expanded = editorExpanded,
                     onFabClicked = {
                         if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
                             val selectedDate =
@@ -169,34 +288,8 @@ fun CalendarScreen(
                 )
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(
-                    top = paddingValues.calculateTopPadding(),
-                    bottom = paddingValues.calculateBottomPadding()
-                )
-                .fillMaxSize(),
-        ) {
-            Column {
-                CalendarContent(
-                    tasks = tasks,
-                    taskUiState = taskUiState,
-                    taskUiStateList = taskUiStateList,
-                    editorExpanded = editorExpanded,
-                    selectedNotebook = selectedNotebook,
-                    selectedMonth = selectedMonth,
-                    onMonthChange = onMonthChange,
-                    onValueChange = onValueChange,
-                    onEditorExpanded = { editorExpanded = it },
-                    onEditClicked = onEditClicked,
-                    onDeleteClicked = onDeleteClicked,
-                    onTaskUiStateListClean = onTaskUiStateListClean,
-                )
-            }
-
-        }
     }
+
 }
 
 

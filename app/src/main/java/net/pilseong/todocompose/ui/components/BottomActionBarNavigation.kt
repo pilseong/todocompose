@@ -33,6 +33,7 @@ import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 fun BottomActionBarNavigation(
     currentScreen: Screen,
     onNavigateClick: (Screen) -> Unit,
+    expanded: Boolean = true,
     onFabClicked: () -> Unit = {},
 ) {
 
@@ -44,68 +45,69 @@ fun BottomActionBarNavigation(
         Screen.Settings
     )
 
-
-    BottomAppBar(
-        modifier = Modifier.height(65.dp),
-        actions = {
-            Row(
-                modifier = Modifier.fillMaxWidth(0.85F),
-            ) {
+    if (expanded) {
+        BottomAppBar(
+            modifier = Modifier.height(65.dp),
+            actions = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.85F),
+                ) {
 //                Spacer(modifier = Modifier.width(20.dp))
 
-                screens.forEach { screen ->
-                    Column(
-                        modifier = Modifier
-                            .weight(1F)
-                            .width(IntrinsicSize.Min)
-                            .fillMaxWidth()
-                            .padding(start = LARGE_PADDING),
-                        horizontalAlignment = CenterHorizontally
-                    ) {
+                    screens.forEach { screen ->
+                        Column(
+                            modifier = Modifier
+                                .weight(1F)
+                                .width(IntrinsicSize.Min)
+                                .fillMaxWidth()
+                                .padding(start = LARGE_PADDING),
+                            horizontalAlignment = CenterHorizontally
+                        ) {
 //                        IconButton(
 //                            enabled = screen != currentScreen,
 //                            onClick = {
 //                                onNavigateClick(screen)
 //                            }) {
 
-                        Icon(
-                            modifier = Modifier.clickable {
-                                if (screen != currentScreen)
-                                    onNavigateClick(screen)
-                            },
-                            imageVector = screen.icon,
-                            contentDescription = stringResource(id =screen.label),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = if (screen == currentScreen) 1f else 0.5f)
-                        )
+                            Icon(
+                                modifier = Modifier.clickable {
+                                    if (screen != currentScreen)
+                                        onNavigateClick(screen)
+                                },
+                                imageVector = screen.icon,
+                                contentDescription = stringResource(id = screen.label),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = if (screen == currentScreen) 1f else 0.5f)
+                            )
 //                        }
-                        Text(
-                            text = stringResource(id =screen.label),
-                            fontSize = 10.sp
-                        )
+                            Text(
+                                text = stringResource(id = screen.label),
+                                fontSize = 10.sp
+                            )
+                        }
                     }
                 }
-            }
-        },
-        floatingActionButton = {
-            if (currentScreen != Screen.Settings) {
-                AddMemoFab(
-                    icon = Icons.Default.Create,
-                    size = 50.dp,
-                    paddingEnd = 4.dp,
-                    onFabClicked = {
-                        onFabClicked()
-                    }
-                )
-            } else {
-                Icon(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "idea note logo"
-                )
-            }
+            },
+            floatingActionButton = {
+                if (currentScreen != Screen.Settings) {
+                    AddMemoFab(
+                        icon = Icons.Default.Create,
+                        size = 50.dp,
+                        paddingEnd = 4.dp,
+                        onFabClicked = {
+                            onFabClicked()
+                        }
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.logo),
+                        contentDescription = "idea note logo"
+                    )
+                }
 
-        },
-        contentPadding = PaddingValues(0.dp)
-    )
+            },
+            contentPadding = PaddingValues(0.dp)
+        )
+    }
 }
 
 

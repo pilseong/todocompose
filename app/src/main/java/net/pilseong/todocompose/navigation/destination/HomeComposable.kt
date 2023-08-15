@@ -1,13 +1,5 @@
 package net.pilseong.todocompose.navigation.destination
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -36,11 +28,11 @@ fun NavGraphBuilder.homeComposable(
 //                }
 //            }
 //        ) {
-            HomeScreen(
-                onClickBottomNavBar = { route ->
-                    navHostController.navigate(route)
-                },
-            )
+        HomeScreen(
+            onClickBottomNavBar = { route ->
+                navHostController.navigate(route)
+            },
+        )
 //        }
 
     }

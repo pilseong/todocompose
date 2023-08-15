@@ -54,6 +54,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import net.pilseong.todocompose.MainActivity
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
@@ -89,7 +92,9 @@ enum class NoteEditorMode {
     CALENDAR_ADD
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+    ExperimentalPagerApi::class
+)
 @Composable
 fun NoteEditor(
     mode: NoteEditorMode = NoteEditorMode.ADD,
@@ -612,46 +617,105 @@ fun NoteEditor(
                     Surface(
                         color = Color.Black
                     ) {
+
+                        val initialValue = taskUiState.taskDetails.photos.indexOf(
+                            selectedGalleryImage
+                        )
+
                         Column(modifier = Modifier.fillMaxSize()) {
-                            ZoomableImage(
-                                isEditMode = true,
-                                fromCamera = fromCamera,
-                                selectedGalleryImage = selectedGalleryImage,
-                                onCloseClicked = {
-                                    selectedGalleryImage = null
-                                    photoOpen = false
-                                    cameraDialog = false
-                                },
-                                onDeleteClicked = {
-                                    // delete inside the gallery
-                                    val photos = taskUiState.taskDetails.photos.toMutableList()
-                                    photos.remove(selectedGalleryImage)
-                                    onValueChange(taskUiState.taskDetails.copy(photos = photos))
-                                    // delete captured image
-                                    selectedGalleryImage = null
-                                    photoOpen = false
-                                    cameraDialog = false
-                                },
-                                onCameraClick = {
-                                    Log.d("PHILIP", "camera clicked")
-                                    photoOpen = false
-                                    cameraOpen = true
+                            if (initialValue != -1) {
+                                HorizontalPager(
+                                    count = taskUiState.taskDetails.photos.size,
+                                    state = rememberPagerState(
+                                        initialPage = taskUiState.taskDetails.photos.indexOf(
+                                            selectedGalleryImage
+                                        )
+                                    ),
+                                    key = { taskUiState.taskDetails.photos[it].uri }
+                                ) { index ->
+                                    ZoomableImage(
+                                        isEditMode = true,
+                                        fromCamera = fromCamera,
+                                        selectedGalleryImage = taskUiState.taskDetails.photos[index],
+                                        onCloseClicked = {
+                                            selectedGalleryImage = null
+                                            photoOpen = false
+                                            cameraDialog = false
+                                        },
+                                        onDeleteClicked = {
+                                            // delete inside the gallery
+                                            val photos =
+                                                taskUiState.taskDetails.photos.toMutableList()
+                                            photos.remove(selectedGalleryImage)
+                                            onValueChange(taskUiState.taskDetails.copy(photos = photos))
+                                            // delete captured image
+                                            selectedGalleryImage = null
+                                            photoOpen = false
+                                            cameraDialog = false
+                                        },
+                                        onCameraClick = {
+                                            Log.d("PHILIP", "camera clicked")
+                                            photoOpen = false
+                                            cameraOpen = true
 
-                                    // delete captured image
-                                    deleteFileFromUri(selectedGalleryImage!!.uri.toUri())
-                                    selectedGalleryImage = null
-                                },
-                                onUseClicked = {
-                                    val newList = taskUiState.taskDetails.photos.toMutableList()
-                                    newList.add(selectedGalleryImage!!)
+                                            // delete captured image
+                                            deleteFileFromUri(selectedGalleryImage!!.uri.toUri())
+                                            selectedGalleryImage = null
+                                        },
+                                        onUseClicked = {
+                                            val newList =
+                                                taskUiState.taskDetails.photos.toMutableList()
+                                            newList.add(selectedGalleryImage!!)
 
-                                    onValueChange(taskUiState.taskDetails.copy(photos = newList))
+                                            onValueChange(taskUiState.taskDetails.copy(photos = newList))
 
-                                    photoOpen = false
-                                    cameraDialog = false
-                                    selectedGalleryImage = null
+                                            photoOpen = false
+                                            cameraDialog = false
+                                            selectedGalleryImage = null
+                                        }
+                                    )
                                 }
-                            )
+                            } else {
+                                ZoomableImage(
+                                    isEditMode = true,
+                                    fromCamera = fromCamera,
+                                    selectedGalleryImage = selectedGalleryImage,
+                                    onCloseClicked = {
+                                        selectedGalleryImage = null
+                                        photoOpen = false
+                                        cameraDialog = false
+                                    },
+                                    onDeleteClicked = {
+                                        // delete inside the gallery
+                                        val photos = taskUiState.taskDetails.photos.toMutableList()
+                                        photos.remove(selectedGalleryImage)
+                                        onValueChange(taskUiState.taskDetails.copy(photos = photos))
+                                        // delete captured image
+                                        selectedGalleryImage = null
+                                        photoOpen = false
+                                        cameraDialog = false
+                                    },
+                                    onCameraClick = {
+                                        Log.d("PHILIP", "camera clicked")
+                                        photoOpen = false
+                                        cameraOpen = true
+
+                                        // delete captured image
+                                        deleteFileFromUri(selectedGalleryImage!!.uri.toUri())
+                                        selectedGalleryImage = null
+                                    },
+                                    onUseClicked = {
+                                        val newList = taskUiState.taskDetails.photos.toMutableList()
+                                        newList.add(selectedGalleryImage!!)
+
+                                        onValueChange(taskUiState.taskDetails.copy(photos = newList))
+
+                                        photoOpen = false
+                                        cameraDialog = false
+                                        selectedGalleryImage = null
+                                    }
+                                )
+                            }
                         }
                     }
                 }
