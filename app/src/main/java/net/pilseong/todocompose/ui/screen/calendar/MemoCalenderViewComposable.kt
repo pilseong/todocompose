@@ -75,7 +75,6 @@ fun NavGraphBuilder.memoCalendarViewComposable(
             onNewConfirm = {
                 memoCalendarViewModel.handleActions(it)
                 // 저장 후 초기화 를 해 주어야 한다.
-                memoCalendarViewModel.cleanUiState()
             },
             onEditClicked = {
                 memoCalendarViewModel.handleActions(

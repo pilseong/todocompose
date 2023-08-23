@@ -69,22 +69,6 @@ fun CalendarContent(
     onDeleteClicked: (MemoWithNotebook) -> Unit,
 ) {
 
-//    var noteListSheetExpended by remember { mutableStateOf(false) }
-//    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
-//    var dateNotesList by remember(tasks) {
-//        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
-//            it.memo.dueDate!!.month == selectedDate.month &&
-//                    it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
-//        })
-//    }
-
-//    LaunchedEffect(key1 = noteListSheetExpended) {
-//        if (!noteListSheetExpended) {
-//            onTaskUiStateListClean()
-//        }
-//    }
-
     Log.d("PHILIP", "[CalendarContent] size of tasks ${tasks.size}")
 
     var loadedDates by rememberSaveable {
@@ -165,6 +149,7 @@ fun CalendarContent(
                 modifier = Modifier.padding(
                     start = LARGE_PADDING,
                     end = LARGE_PADDING,
+                    bottom = LARGE_PADDING
                 )
             ) {
                 NoteEditor(
@@ -176,20 +161,6 @@ fun CalendarContent(
             }
         }
     }
-//    ScheduleListSheet(
-//        selectedDate = selectedDate,
-//        taskUiStateList = taskUiStateList,
-//        notes = dateNotesList,
-//        expanded = noteListSheetExpended,
-//        onDismissRequest = { noteListSheetExpended = false },
-//        onAddClicked = {
-////            noteListSheetExpended = false
-//            onEditorExpanded(true)
-//        },
-//        onEditClicked = onEditClicked,
-//        onValueChange = onValueChange,
-//        onDeleteClicked = onDeleteClicked,
-//    )
 }
 
 @Preview

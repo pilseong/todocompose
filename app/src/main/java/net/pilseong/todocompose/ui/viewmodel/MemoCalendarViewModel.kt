@@ -35,7 +35,6 @@ import net.pilseong.todocompose.data.repository.DataStoreRepository
 import net.pilseong.todocompose.data.repository.NotebookRepository
 import net.pilseong.todocompose.data.repository.TodoRepository
 import net.pilseong.todocompose.ui.screen.calendar.CalendarAction
-import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.util.deleteFileFromUri
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
@@ -67,6 +66,7 @@ class MemoCalendarViewModel @Inject constructor(
     var taskUiState by mutableStateOf(
         TaskUiState(
             taskDetails = TaskDetails(
+                notebookId = userData.notebookIdState,
                 dueDate = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
             )
         )
@@ -102,7 +102,7 @@ class MemoCalendarViewModel @Inject constructor(
     }
 
     // 저장한 경우에는 데이터를 비워야 한다. 현재 선택된 노트북과 due 설정은 필수가 된다.
-    fun cleanUiState() {
+    private fun cleanUiState() {
         taskUiState = TaskUiState().copy(
             TaskDetails(
                 dueDate = taskUiState.taskDetails.dueDate?.toLocalDate()
@@ -151,16 +151,20 @@ class MemoCalendarViewModel @Inject constructor(
 
     private suspend fun getNotebook(id: Long) {
         // -1 이면 기본 노트 선택 title 이 설정 되어야 하기 때문에 title 를 지정해 준다.
+        // id 역시 기본값 -1 롤 저징 해야 기본 노트북 선택 시 정확한 id가 들어간다.
         selectedNotebook = if (id == -1L) Notebook.instance(
+            id = -1,
             title = context.resources.getString(R.string.default_note_title)
         )
         else notebookRepository.getNotebook(id)
+        // 노트북이 바뀌면 변경된 노트북의 ID가 editor에도 반영이 되어야 한다.
+        updateUiState(taskUiState.taskDetails.copy(notebookId = selectedNotebook.id))
     }
 
     private fun refreshAllTasks() {
         Log.d(
             "PHILIP",
-            "[MemoCalendarViewModel] refreshAllTasks condition with ${userData.dateOrderState}, notebook_id: $userData.notebookIdState"
+            "[MemoCalendarViewModel] refreshAllTasks condition with ${userData.dateOrderState}, notebook_id: ${userData.notebookIdState}"
         )
         Log.d(
             "PHILIP",
@@ -265,19 +269,27 @@ class MemoCalendarViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     // 알림 설정
+
+                    Log.d("PHILIP", "[MemoCalendarViewModel] before save ${taskUiState.taskDetails}")
                     val id = todoRepository.addMemo(taskUiState.taskDetails)
+                    Log.d("PHILIP", "[MemoCalendarViewModel] after save ${taskUiState.taskDetails}")
 
                     // 알람 설정 부분
                     // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
+                    Log.d("PHILIP", "[MemoCalendarViewModel] Action ADD reminder set 0")
                     if (taskUiState.taskDetails.dueDate != null &&
                         Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
                             .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
                     ) {
-                        if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
+                        Log.d("PHILIP", "[MemoCalendarViewModel] Action ADD reminder set 1 ${taskUiState.taskDetails}")
+                        if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED) {
+                            Log.d("PHILIP", "[MemoCalendarViewModel] Action ADD reminder set 2 ${taskUiState.taskDetails}")
                             registerNotification(taskUiState.taskDetails.copy(id = id))
+                        }
                     }
 
                     refreshAllTasks()
+                    cleanUiState()
                 }
             }
 

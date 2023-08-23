@@ -1,11 +1,13 @@
 package net.pilseong.todocompose
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.text.htmlEncode
 import androidx.lifecycle.lifecycleScope
@@ -44,10 +47,27 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ),
                 0
             )
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager: AlarmManager = getSystemService()!!
+            when {
+                // If permission is granted, proceed with scheduling exact alarms.
+                alarmManager.canScheduleExactAlarms() -> {
+                }
+
+                else -> {
+                    // Ask users to go to exact alarm page in system settings.
+                    startActivity(Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+                }
+            }
+        }
+
 
         Log.d("PHILIP", "[MainActivity] onCreate called")
         lifecycleScope.launch {

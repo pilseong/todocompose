@@ -160,10 +160,10 @@ class NoteViewModel @Inject constructor(
     }
 
     private fun getCurrentNoteAsFlow(noteId: Long) {
-//        Log.d(
-//            "PHILIP",
-//            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
-//        )
+        Log.d(
+            "PHILIP",
+            "[NoteViewModel] getCurrentNoteAsFlow() start observing with $noteId and currentNote: $currentNotebook"
+        )
 
         if (currentNoteJob != null) currentNoteJob!!.cancel()
 
@@ -178,12 +178,12 @@ class NoteViewModel @Inject constructor(
                         started = SharingStarted.WhileSubscribed(5000),
                         initialValue = NotebookWithCount.instance()
                     ).collectLatest {
-//                        Log.d(
-//                            "PHILIP",
-//                            "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
-//                        )
+                        Log.d(
+                            "PHILIP",
+                            "[NoteViewModel] getCurrentNoteAsFlow() getNotebookWithCountAsFlow execute with $it and currentNote: $currentNotebook"
+                        )
                         // 현재 노트북을 삭제할 경우, flow를 통해 순간적으로 null을 수신하게 된다.
-                        if (it.id == noteId)
+                        if (it != null && it.id == noteId)
                             currentNotebook.value = it
                     }
             } else {

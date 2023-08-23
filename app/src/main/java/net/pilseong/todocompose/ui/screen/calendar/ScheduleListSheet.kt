@@ -43,7 +43,6 @@ import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Title
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -83,7 +82,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -99,7 +97,6 @@ import net.pilseong.todocompose.ui.components.ReminderDropDown
 import net.pilseong.todocompose.ui.components.TaskHeader
 import net.pilseong.todocompose.ui.components.TaskHeaderType
 import net.pilseong.todocompose.ui.components.convertToLocalEndTime
-import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.ui.theme.ALPHA_MEDIUM
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -351,24 +348,24 @@ private fun ScheduleItem(
                         }
 //                    Spacer(modifier = Modifier.height(4.dp))
 
-                        var expanded by remember { mutableStateOf(false) }
+                        var reminderExpanded by remember { mutableStateOf(false) }
                         ReminderDropDown(
                             isNew = item.memo.id == Constants.NEW_ITEM_ID,
-                            expanded = expanded,
+                            expanded = reminderExpanded,
                             enabled = item.memo.dueDate != null,
                             targetTime = item.memo.dueDate?.toInstant()
                                 ?.toEpochMilli(),
                             onTimeSelected = { reminderType ->
-                                expanded = false
+                                reminderExpanded = false
                                 onValueChange(
                                     item.toTaskDetails().copy(reminderType = reminderType)
                                 )
                                 onEditClicked(item)
                             },
                             onButtonClicked = {
-                                if (item.memo.dueDate != null) expanded = true
+                                if (item.memo.dueDate != null) reminderExpanded = true
                             },
-                            onDismissRequest = { expanded = false }
+                            onDismissRequest = { reminderExpanded = false }
                         ) {
                             Surface(color = Color.Transparent) {
                                 Icon(
@@ -396,9 +393,14 @@ private fun ScheduleItem(
                     //  제목 내용
                     Column(
                         modifier = Modifier
-                            .padding(vertical = MEDIUM_PADDING)
+                            .padding(
+                                top = MEDIUM_PADDING,
+                                bottom = MEDIUM_PADDING,
+                                end = LARGE_PADDING
+                            )
                             .fillMaxHeight()
-                            .weight(if (item.memo.progression != State.NONE) 7 / 12f else 9 / 12f),
+                            .weight(10 / 12f),
+//                            .weight(if (item.memo.progression != State.NONE) 7 / 12f else 9 / 12f),
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
@@ -406,7 +408,8 @@ private fun ScheduleItem(
                             color = MaterialTheme.colorScheme.taskItemContentColor,
                             style = if (item.memo.description.isNotBlank()) MaterialTheme.typography.bodyLarge
                             else MaterialTheme.typography.bodySmall,
-                            maxLines = if (item.memo.description.isNotBlank()) 1 else 4
+                            maxLines = if (item.memo.description.isNotBlank()) 1 else 4,
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         if (item.memo.description.isNotBlank()) {
@@ -1038,6 +1041,16 @@ fun PreviewCalendarNoteList() {
                         "필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!",
                         "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                         Priority.NONE,
+                        notebookId = -1,
+                        dueDate = ZonedDateTime.now()
+                    ), notebook = Notebook.instance(), total = 1, photos = emptyList()
+                ),
+                MemoWithNotebook(
+                    memo = MemoTask(
+                        id =2,
+                        title = "필성 힘내!!!필성 힘내!힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!!필성 힘내!!",
+                        description = "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
+                        priority = Priority.NONE,
                         notebookId = -1,
                         dueDate = ZonedDateTime.now()
                     ), notebook = Notebook.instance(), total = 1, photos = emptyList()

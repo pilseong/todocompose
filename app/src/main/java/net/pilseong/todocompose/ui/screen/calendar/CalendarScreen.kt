@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -97,11 +97,16 @@ fun CalendarScreen(
         initialValue = SheetValue.Hidden,
         skipHiddenState = false
     )
+
     val bottomSheetState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
 //            skipPartiallyExpanded = true
 //        )
     )
+
+    var sheetStateBeforeEditorPopup by remember {
+        mutableStateOf(false)
+    }
 
     Log.d(
         "PHILIP",
@@ -132,6 +137,7 @@ fun CalendarScreen(
                     }
                 },
                 onAddClicked = {
+                    sheetStateBeforeEditorPopup = true
                     editorExpanded = true
                     scope.launch {
                         bottomSheetState.bottomSheetState.hide()
@@ -143,86 +149,113 @@ fun CalendarScreen(
             )
         },
         scaffoldState = bottomSheetState,
-        topBar = {
-            if (!editorExpanded) {
-                TopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    title = {
-                        Text(
-                            modifier = Modifier
-                                .clickable {
-                                    if (!userData.searchRangeAll)
-                                        onAppBarTitleClick()
+    ) {
+        Scaffold(
+            topBar = {
+                if (!editorExpanded) {
+                    TopAppBar(
+                        scrollBehavior = scrollBehavior,
+                        title = {
+                            Text(
+                                modifier = Modifier
+                                    .clickable {
+                                        if (!userData.searchRangeAll)
+                                            onAppBarTitleClick()
+                                    },
+                                text = if (userData.searchRangeAll)
+                                    stringResource(id = R.string.badge_search_range_all_label)
+                                else selectedNotebook.title,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1
+                            )
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = selectedNotebook.priority.color.copy(alpha = 0.5F)
+                        ),
+                        actions = {
+                            Switch(
+                                checked = userData.searchRangeAll,
+                                thumbContent = {
+                                    if (!userData.searchRangeAll) {
+                                        Text(text = "All")
+                                    }
                                 },
-                            text = if (userData.searchRangeAll) stringResource(id = R.string.badge_search_range_all_label)
-                            else selectedNotebook.title,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = selectedNotebook.priority.color.copy(alpha = 0.5F)
-                    ),
-                    actions = {
-                        Switch(
-                            checked = userData.searchRangeAll,
-                            thumbContent = {
-                                if (!userData.searchRangeAll) {
-                                    Text(text = "All")
+                                onCheckedChange = {
+                                    onSearchRangeAllClicked(!userData.searchRangeAll, false)
                                 }
-                            },
-                            onCheckedChange = {
-                                onSearchRangeAllClicked(!userData.searchRangeAll, false)
-                            }
-                        )
-                    }
-                )
-            } else {
-                EditTaskBar(
-                    uiState = taskUiState,
-                    mode = EditTaskBarMode.CALENDAR_ADD,
-                    onConfirm = {
-                        onNewConfirm(CalendarAction.ADD)
-                        editorExpanded = false
-                    },
-                    onBackClick = {
-                        val selectedDate =
-                            taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
-                                ZoneId.systemDefault()
                             )
+                        }
+                    )
+                } else {
+                    EditTaskBar(
+                        uiState = taskUiState,
+                        mode = EditTaskBarMode.CALENDAR_ADD,
+                        onConfirm = {
+                            onNewConfirm(CalendarAction.ADD)
+                            editorExpanded = false
+                        },
+                        onBackClick = {
+                            val selectedDate =
+                                taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
+                                    ZoneId.systemDefault()
+                                )
 
-                        onValueChange(
-                            TaskDetails(
-                                id = NEW_ITEM_ID,
-                                notebookId = selectedNotebook.id,
-                                dueDate = selectedDate
+                            onValueChange(
+                                TaskDetails(
+                                    id = NEW_ITEM_ID,
+                                    notebookId = selectedNotebook.id,
+                                    dueDate = selectedDate
+                                )
                             )
-                        )
-                        editorExpanded = false
-                        scope.launch { bottomSheetState.bottomSheetState.expand() }
-                    },
-                    clearAddedPhotos = {},
-                    onValueChange = onValueChange,
-                )
+                            editorExpanded = false
+                            if (sheetStateBeforeEditorPopup) {
+                                scope.launch { bottomSheetState.bottomSheetState.expand() }
+                                sheetStateBeforeEditorPopup = false
+                            }
+                            Log.d("PHILIP", "sheet status ${bottomSheetState.bottomSheetState.currentValue}")
+//                            scope.launch { bottomSheetState.bottomSheetState.expand() }
+                        },
+                        clearAddedPhotos = {},
+                        onValueChange = onValueChange,
+                    )
+                }
+            },
+            bottomBar = {
+                Row {
+                    BottomActionBarNavigation(
+                        currentScreen = Screen.MemoCalendar,
+                        onNavigateClick = toScreen,
+                        expanded = !editorExpanded,
+                        onFabClicked = {
+                            // 추가 할 메모의 오염 되었을 경우에는 신규 내용으로 초기화 한다.
+                            if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
+                                val selectedDate =
+                                    taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
+                                        ZoneId.systemDefault()
+                                    )
+
+                                onValueChange(
+                                    TaskDetails(
+                                        id = NEW_ITEM_ID,
+                                        notebookId = selectedNotebook.id,
+                                        dueDate = selectedDate
+                                    )
+                                )
+                            }
+                            editorExpanded = true
+                        },
+                    )
+                }
             }
-        },
-    ) { paddingValues ->
-        Button(onClick = {
-            scope.launch {
-                bottomSheetState.bottomSheetState.expand()
-            }
-        }) {
-            Text("Start")
-        }
-        Column(
-            modifier = Modifier
-                .padding(
-                    top = paddingValues.calculateTopPadding(),
-//                    bottom = paddingValues.calculateBottomPadding(),
-                )
-                .fillMaxSize(),
-        ) {
-            Column {
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .padding(
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding(),
+                    )
+                    .fillMaxSize(),
+            ) {
                 CalendarContent(
                     tasks = tasks,
                     taskUiState = taskUiState,
@@ -261,35 +294,9 @@ fun CalendarScreen(
                         scope.launch { bottomSheetState.bottomSheetState.expand() }
                     }
                 )
-
-            }
-            Row {
-                BottomActionBarNavigation(
-                    currentScreen = Screen.MemoCalendar,
-                    onNavigateClick = toScreen,
-                    expanded = editorExpanded,
-                    onFabClicked = {
-                        if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
-                            val selectedDate =
-                                taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
-                                    ZoneId.systemDefault()
-                                )
-
-                            onValueChange(
-                                TaskDetails(
-                                    id = NEW_ITEM_ID,
-                                    notebookId = selectedNotebook.id,
-                                    dueDate = selectedDate
-                                )
-                            )
-                        }
-                        editorExpanded = true
-                    },
-                )
             }
         }
     }
-
 }
 
 

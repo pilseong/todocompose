@@ -159,13 +159,13 @@ fun TaskHeader(
                                     lineHeight = 20.sp
                                 )
                             }
-                            if (task.memo.progression != State.NONE) {
-                                Text(
-                                    stringResource(id = R.string.badge_state_label),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    lineHeight = 20.sp
-                                )
-                            }
+                        }
+                        if (task.memo.progression != State.NONE) {
+                            Text(
+                                stringResource(id = R.string.badge_state_label),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
+                            )
                         }
                     }
                 }
@@ -240,13 +240,13 @@ fun TaskHeader(
                                         )
                                 )
                             }
-                            if (task.memo.progression != State.NONE) {
-                                Text(
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    text = stringResource(id = task.memo.progression.label),
-                                    lineHeight = 20.sp
-                                )
-                            }
+                        }
+                        if (task.memo.progression != State.NONE) {
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = stringResource(id = task.memo.progression.label),
+                                lineHeight = 20.sp
+                            )
                         }
                     }
                 }

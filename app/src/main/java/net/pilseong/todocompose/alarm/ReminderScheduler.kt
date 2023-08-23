@@ -5,22 +5,22 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.ALARM_SERVICE
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
-import dagger.hilt.android.qualifiers.ActivityContext
-import dagger.hilt.android.scopes.ActivityRetainedScoped
-import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.startActivity
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ReminderScheduler @Inject constructor(
     private val context: Context
-): AlarmScheduler {
+) : AlarmScheduler {
 
     private val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
 
@@ -33,21 +33,45 @@ class ReminderScheduler @Inject constructor(
             putExtra("DUE_DATE", taskDetails.dueDate!!.toEpochSecond() * 1000)
         }
 
-        val target = (taskDetails.dueDate!!.toEpochSecond() * 1000) - taskDetails.reminderType.timeInMillis
+        val target =
+            (taskDetails.dueDate!!.toEpochSecond() * 1000) - taskDetails.reminderType.timeInMillis
 
 
-        Log.d("PHILIP", "[ReminderScheduler] calendar is ${ZonedDateTime.ofInstant(Instant.ofEpochMilli(target), ZoneId.systemDefault())}")
-
-        alarmManager.setExact(
-            AlarmManager.RTC,
-            target,
-            PendingIntent.getBroadcast(
-                context,
-                taskDetails.id.toInt(),
-                intent,
-                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+        Log.d(
+            "PHILIP",
+            "[ReminderScheduler] calendar is ${
+                ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli(target),
+                    ZoneId.systemDefault()
+                )
+            }"
         )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            Log.d("PHILIP", "[ReminderScheduler] inside checking permission")
+            when {
+                // If permission is granted, proceed with scheduling exact alarms.
+                alarmManager.canScheduleExactAlarms() -> {
+                    alarmManager.setExact(
+                        AlarmManager.RTC,
+                        target,
+                        PendingIntent.getBroadcast(
+                            context,
+                            taskDetails.id.toInt(),
+                            intent,
+                            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                    )
+                }
+
+                else -> {
+                    // Ask users to go to exact alarm page in system settings.
+                    var intent = Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
+            }
+        }
     }
 
     override fun cancel(id: Long) {
