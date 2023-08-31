@@ -160,7 +160,7 @@ fun TaskHeader(
                                 )
                             }
                         }
-                        if (task.memo.progression != State.NONE) {
+                        if (task.memo.progression != State.NONE || type == TaskHeaderType.CALENDAR) {
                             Text(
                                 stringResource(id = R.string.badge_state_label),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -241,7 +241,7 @@ fun TaskHeader(
                                 )
                             }
                         }
-                        if (task.memo.progression != State.NONE) {
+                        if (task.memo.progression != State.NONE || type == TaskHeaderType.CALENDAR) {
                             Text(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 text = stringResource(id = task.memo.progression.label),
@@ -361,7 +361,8 @@ fun PreviewTaskHeader() {
                 notebook = Notebook.instance(),
                 total = 1,
                 photos = emptyList()
-            )
+            ),
+            type = TaskHeaderType.CALENDAR
         )
 
     }

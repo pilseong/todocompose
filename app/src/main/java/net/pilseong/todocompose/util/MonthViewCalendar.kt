@@ -229,7 +229,6 @@ fun DayView(
                 onClick = { onDayClick(date, notes) },
                 onLongClick = { onDayLongClick(date, notes) }),
     ) {
-
         Badge(
             containerColor = if (isSelected) MaterialTheme.colorScheme.tertiaryContainer
             else if (isCurrentDay) MaterialTheme.colorScheme.primaryContainer

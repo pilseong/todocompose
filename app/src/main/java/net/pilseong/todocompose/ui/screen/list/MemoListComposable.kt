@@ -346,6 +346,5 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.onCloseSearchBar()
             }
         }
-
     }
 }

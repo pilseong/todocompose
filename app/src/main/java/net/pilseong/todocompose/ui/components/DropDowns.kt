@@ -66,7 +66,7 @@ fun PriorityDropDown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val angle by animateFloatAsState(
-        targetValue = if (expanded) 180F else 0F
+        targetValue = if (expanded) 180F else 0F, label = "priorityDropDown"
     )
     val focusManager = LocalFocusManager.current
     var showInitialValue by remember { mutableStateOf(isNew) }
@@ -150,7 +150,7 @@ fun NotebooksDropDown(
 
     var notebookTitleInside by remember { mutableStateOf(notebookTitle) }
     val angle by animateFloatAsState(
-        targetValue = if (expanded) 180F else 0F
+        targetValue = if (expanded) 180F else 0F, label = "notebookTitleInside"
     )
     val focusManager = LocalFocusManager.current
 
@@ -272,6 +272,67 @@ fun NotebooksDropDownPreview() {
 
 }
 
+@Composable
+fun StatusDropDown(
+    modifier: Modifier = Modifier,
+    isNew: Boolean = false,
+    expanded: Boolean = false,
+    enabled: Boolean = false,
+    onStateSelected: (State) -> Unit,
+    onButtonClicked: () -> Unit,
+    onDismissRequest: () -> Unit,
+    content: @Composable (Boolean) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    var showInitialValue by remember { mutableStateOf(isNew) }
+
+    Row(
+        modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = if (!enabled) null else LocalIndication.current
+            ) {
+                onButtonClicked()
+                focusManager.clearFocus()
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        content(
+            showInitialValue,
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onDismissRequest() },
+        ) {
+            State.values().reversed().forEach { state ->
+                DropdownMenuItem(
+                    leadingIcon = {
+                        Canvas(
+                            modifier = Modifier
+                                .offset(0.dp, 0.8.dp)
+                                .size(PRIORITY_INDICATOR_SIZE)
+                        ) {
+                            drawCircle(color = state.color)
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(id = state.label),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    onClick = {
+                        onStateSelected(state)
+                        if (showInitialValue) showInitialValue = false
+                    })
+            }
+        }
+    }
+}
+
 
 @Composable
 fun StatusDropDown(
@@ -281,7 +342,7 @@ fun StatusDropDown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val angle by animateFloatAsState(
-        targetValue = if (expanded) 180F else 0F
+        targetValue = if (expanded) 180F else 0F, label = "statusDropDown"
     )
     val focusManager = LocalFocusManager.current
     var showInitialValue by remember { mutableStateOf(isNew) }

@@ -2,6 +2,7 @@ package net.pilseong.todocompose.ui.screen.calendar
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,12 +42,14 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
+import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.ui.screen.task.EditTaskBar
 import net.pilseong.todocompose.ui.screen.task.EditTaskBarMode
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
+import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
@@ -93,6 +96,7 @@ fun CalendarScreen(
     Log.d("PHILIP", "[CalendarScreen] selectedMonth $selectedMonth")
 
 
+    // 아래 처럼 상태를 분리 해서 처리 해야 정상 적으로 동작 한다.
     val sheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.Hidden,
         skipHiddenState = false
@@ -295,6 +299,15 @@ fun CalendarScreen(
                     }
                 )
             }
+        }
+    }
+
+    // 상태 바의 상태가 검색이 열려 있는 경우 뒤로 가기를 하면 기본 상태로 돌아 가게 된다.
+    BackHandler(
+        enabled = bottomSheetState.bottomSheetState.currentValue == SheetValue.Expanded
+    ) {
+        scope.launch {
+            bottomSheetState.bottomSheetState.hide()
         }
     }
 }
