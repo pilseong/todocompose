@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -132,7 +133,7 @@ fun CreateEditNotebookDialog(
                             }
                         )
                     }
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier
                             .height(0.7.dp),
                         color = MaterialTheme.colorScheme.onSurface,

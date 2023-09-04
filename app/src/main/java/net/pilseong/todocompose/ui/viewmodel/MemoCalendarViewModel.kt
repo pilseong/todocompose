@@ -270,7 +270,10 @@ class MemoCalendarViewModel @Inject constructor(
                 viewModelScope.launch {
                     // 알림 설정
 
-                    Log.d("PHILIP", "[MemoCalendarViewModel] before save ${taskUiState.taskDetails}")
+                    Log.d(
+                        "PHILIP",
+                        "[MemoCalendarViewModel] before save ${taskUiState.taskDetails}"
+                    )
                     val id = todoRepository.addMemo(taskUiState.taskDetails)
                     Log.d("PHILIP", "[MemoCalendarViewModel] after save ${taskUiState.taskDetails}")
 
@@ -281,9 +284,15 @@ class MemoCalendarViewModel @Inject constructor(
                         Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
                             .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
                     ) {
-                        Log.d("PHILIP", "[MemoCalendarViewModel] Action ADD reminder set 1 ${taskUiState.taskDetails}")
+                        Log.d(
+                            "PHILIP",
+                            "[MemoCalendarViewModel] Action ADD reminder set 1 ${taskUiState.taskDetails}"
+                        )
                         if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED) {
-                            Log.d("PHILIP", "[MemoCalendarViewModel] Action ADD reminder set 2 ${taskUiState.taskDetails}")
+                            Log.d(
+                                "PHILIP",
+                                "[MemoCalendarViewModel] Action ADD reminder set 2 ${taskUiState.taskDetails}"
+                            )
                             registerNotification(taskUiState.taskDetails.copy(id = id))
                         }
                     }
@@ -329,16 +338,13 @@ class MemoCalendarViewModel @Inject constructor(
 
                     // 알람 설정 부분
                     // 알람 설정일 지난 이후에 수정된 것들은 신경 쓸 필요가 없다
-                    if (target.dueDate != null &&
-                        Calendar.getInstance().timeInMillis < (target.dueDate!!.toInstant()
-                            .toEpochMilli() - target.reminderType.timeInMillis)
+                    if ((target.dueDate != null) &&
+                        (Calendar.getInstance().timeInMillis < (target.dueDate.toInstant()
+                            .toEpochMilli() - target.reminderType.timeInMillis))
                     ) {
                         if (target.reminderType != ReminderType.NOT_USED)
                             registerNotification(target)
-                        else if (
-                            currentMemoTask.memo.reminderType != ReminderType.NOT_USED &&
-                            target.reminderType == ReminderType.NOT_USED
-                        )
+                        else if (currentMemoTask.memo.reminderType != ReminderType.NOT_USED)
                             cancelNotification(target.id)
                     }
                     refreshAllTasks()

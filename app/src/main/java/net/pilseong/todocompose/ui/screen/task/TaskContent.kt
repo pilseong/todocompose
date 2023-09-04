@@ -15,6 +15,7 @@ import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
@@ -59,7 +60,7 @@ fun TaskContent(
     if (taskAppBarState == TaskAppBarState.VIEWER) {
 
         // 화면 전환의 기준 점 계산 화면의 3분의 1이상 swipe 할 경우 전환
-        val threshold = LocalConfiguration.current.screenWidthDp / 3
+        val threshold = LocalConfiguration.current.screenWidthDp / 3.0
 
         val dismissState = rememberDismissState(
             confirmValueChange = {
@@ -77,7 +78,7 @@ fun TaskContent(
                     }
                 }
             },
-            positionalThreshold = { threshold.dp.toPx() }
+            positionalThreshold = { threshold.toFloat() }
         )
 
         // index 의 이동이 일어난 경우 실행 된다. 동일한 인덱스 로 이동 하는 경우는 없기 때문에
@@ -142,7 +143,7 @@ private fun ViewerContent(
     ) {
         TaskHeader(task = task, type = TaskHeaderType.VIEWER)
 
-        Divider(modifier = Modifier.height(0.2.dp))
+        HorizontalDivider(modifier = Modifier.height(0.2.dp))
 
 //        if (task.memo.description.isNotEmpty()) {
         Spacer(

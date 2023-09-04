@@ -29,7 +29,7 @@ fun NavGraphBuilder.noteComposable(
 ) {
     composable(
         route = Screen.Notes.route
-    ) { navBackStackEntry ->
+    ) { //navBackStackEntry ->
 //        val noteViewModel = navBackStackEntry.sharedViewModel<NoteViewModel>(navHostController)
         val noteViewModel = hiltViewModel<NoteViewModel>(viewModelStoreOwner)
 

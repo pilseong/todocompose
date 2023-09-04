@@ -19,8 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DateRangePickerState
@@ -50,7 +50,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.google.android.material.datepicker.DateValidatorPointForward
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.ui.theme.LARGE_PADDING
 import net.pilseong.todocompose.ui.theme.MEDIUM_PADDING
@@ -191,7 +190,7 @@ fun CustomDateRangePicker(
     DateRangePicker(
         state,
         modifier = Modifier,
-        dateFormatter = DatePickerFormatter(
+        dateFormatter = DatePickerDefaults.dateFormatter(
             selectedDateSkeleton = "MM/dd"
         ),
         title = {
@@ -298,7 +297,7 @@ fun CustomDatePicker(
     DatePicker(
         state = state,
         modifier = Modifier,
-        dateFormatter = DatePickerFormatter(
+        dateFormatter = DatePickerDefaults.dateFormatter(
             selectedDateSkeleton = "MM/dd"
         ),
         title = {
@@ -456,14 +455,19 @@ fun PreviewDateRangePickerSample() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultDatePickerDialog(
+    date: ZonedDateTime? = null,
     openDialog: Boolean = false,
     onConfirm: (Long?) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
 
-    // 화면에 표시할 때는 +offset, 지정해서 계산할 때는 -offset이 필요
+    // 화면에 표시할 때는 +offset, 지정 해서 계산할 때는 -offset 이 필요
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = convertLocalTime(Calendar.getInstance().timeInMillis),
+        initialSelectedDateMillis =
+        if (date != null)
+            convertLocalTime(date.toEpochSecond() * 1000)
+        else
+            convertLocalTime(Calendar.getInstance().timeInMillis),
         yearRange = IntRange(2000, 2100),
         initialDisplayMode = DisplayMode.Picker
     )
@@ -502,18 +506,18 @@ fun DefaultDatePickerDialog(
                         fontSize = MaterialTheme.typography.titleMedium.fontSize
                     )
                 },
-                // 하루 전까지 선택가능해야 한다. -> 시작은 화면에 표출하기 때문에 9시간을 더한 시간을 보여줘야 한다.
-                // 화면과 비교하기 때문에 시간 +offset이 필요하다.
-                dateValidator = { time ->
-                    DateValidatorPointForward.from(
-                        convertLocalTime(
-                            OffsetDateTime.ofInstant(
-                                Instant.ofEpochMilli(Calendar.getInstance().timeInMillis),
-                                ZoneId.systemDefault()
-                            ).minusDays(1).toEpochSecond() * 1000
-                        )!!
-                    ).isValid(time)
-                },
+                // 하루 전까지 선택 가능 해야 한다. -> 시작은 화면에 표출 하기 때문에 9시간을 더한 시간을 보여 줘야 한다.
+                // 화면과 비교 하기 때문에 시간 +offset 이 필요 하다.
+//                dateValidator = { time ->
+//                    DateValidatorPointForward.from(
+//                        convertLocalTime(
+//                            OffsetDateTime.ofInstant(
+//                                Instant.ofEpochMilli(Calendar.getInstance().timeInMillis),
+//                                ZoneId.systemDefault()
+//                            ).minusDays(1).toEpochSecond() * 1000
+//                        )!!
+//                    ).isValid(time)
+//                },
                 state = datePickerState
             )
         }
@@ -563,6 +567,7 @@ fun DefaultTimePickerDialog(
 
             },
         ) {
+            Log.d("PHILIP", "inside picker time setting ${state.hour} ${state.minute}")
             TimePicker(state = state)
         }
     }

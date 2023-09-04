@@ -21,8 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.LockClock
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -92,7 +92,8 @@ enum class NoteEditorMode {
     CALENDAR_ADD
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class,
     ExperimentalPagerApi::class
 )
 @Composable
@@ -160,7 +161,7 @@ fun NoteEditor(
                 }
             }
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .height(0.7.dp),
             color = MaterialTheme.colorScheme.onSurface,
@@ -255,27 +256,29 @@ fun NoteEditor(
                 }
             }
 
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(0.7.dp),
                 color = MaterialTheme.colorScheme.onSurface,
             )
-
 
             val focusManager = LocalFocusManager.current
 
             var showDatePicker by remember { mutableStateOf(false) }
             var showTimePicker by remember { mutableStateOf(false) }
             val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
-            var timeHours by remember { mutableStateOf<Int?>(null) }
-            var timeMinutes by remember { mutableStateOf<Int?>(null) }
+            var timeHours by remember { mutableStateOf<Int?>(taskUiState.taskDetails.dueDate?.hour) }
+            var timeMinutes by remember { mutableStateOf<Int?>(taskUiState.taskDetails.dueDate?.minute) }
 
-            val timePickerState = rememberTimePickerState()
+            val timePickerState = rememberTimePickerState(
+                initialHour = taskUiState.taskDetails.dueDate?.hour ?: 0,
+                initialMinute = taskUiState.taskDetails.dueDate?.minute ?: 0,
+            )
             DefaultDatePickerDialog(
                 openDialog = showDatePicker,
-                onConfirm = { it ->
+                onConfirm = {
                     if (it != null) {
-                        var instant = convertToLocalEndTime(it, true)
+                        val instant = convertToLocalEndTime(it, true)
                         var offset = OffsetDateTime.ofInstant(
                             Instant.ofEpochMilli(instant!!),
                             ZoneId.systemDefault()
@@ -424,7 +427,7 @@ fun NoteEditor(
                     }
                 }
             }
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(0.7.dp),
                 color = MaterialTheme.colorScheme.onSurface,

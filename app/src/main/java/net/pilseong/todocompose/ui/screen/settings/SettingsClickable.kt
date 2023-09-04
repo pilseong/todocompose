@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -86,7 +87,7 @@ fun SettingsClickableItem(
                     contentDescription = "back arrow"
                 )
             }
-            Divider()
+            HorizontalDivider()
         }
 
     }
@@ -145,7 +146,7 @@ fun SettingsSwitchItem(
                     onCheckedChange = { onClick() }
                 )
             }
-            Divider()
+            HorizontalDivider()
         }
     }
 }
@@ -230,7 +231,7 @@ fun SettingsTextItem(
                     )
                 }
             }
-            Divider()
+            HorizontalDivider()
         }
     }
 }

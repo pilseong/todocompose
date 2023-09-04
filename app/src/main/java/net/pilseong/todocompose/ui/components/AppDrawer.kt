@@ -18,11 +18,9 @@ import androidx.compose.material.icons.filled.CallReceived
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ImportContacts
-import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.StickyNote2
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -51,7 +49,7 @@ fun AppDrawer(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         AppDrawerHeader()
-        Divider(
+        HorizontalDivider(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = .2f)
         )
         ScreenNavigationButton(
@@ -88,8 +86,8 @@ fun AppDrawer(
             }
         )
 
-        Divider()
-        
+        HorizontalDivider()
+
         ScreenNavigationButton(
             icon = Icons.Default.CallReceived,
             label = "Import",
@@ -106,7 +104,7 @@ fun AppDrawer(
                 onExportClicked()
             }
         )
-        Divider()
+        HorizontalDivider()
         ScreenNavigationButton(
             icon = Icons.Filled.Delete,
             label = "Trash",

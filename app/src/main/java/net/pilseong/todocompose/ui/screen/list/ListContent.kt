@@ -36,7 +36,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -243,7 +242,7 @@ fun LazyItemList(
                     }
                     true
                 },
-                positionalThreshold = { threshold.dp.toPx() }
+                positionalThreshold = { threshold }
             )
 
             if (dismissState.currentValue != DismissValue.Default) {
@@ -418,7 +417,7 @@ fun ColorBackGround(
             DismissValue.Default -> MaterialTheme.colorScheme.surface
             DismissValue.DismissedToEnd -> leftToRightColor
             DismissValue.DismissedToStart -> rightToLeftColor
-        }
+        }, label = "slide animation"
     )
     val alignment = when (dismissDirection) {
         DismissDirection.StartToEnd -> Alignment.CenterStart
@@ -435,7 +434,7 @@ fun ColorBackGround(
 
     val degrees by animateFloatAsState(
         targetValue = if (dismissState.targetValue == DismissValue.Default) 0F
-        else -45F
+        else -45F, label = "slide status"
     )
 
     Box(
@@ -478,22 +477,25 @@ fun EmptyContent() {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            modifier = Modifier.size(120.dp),
-            painter = painterResource(R.drawable.ic_baseline_sentiment_satisfied_alt_24),
-            contentDescription = "Sad face Icon",
-            tint = MaterialTheme.colorScheme.mediumGray
-        )
-        Text(
-            text = stringResource(id = R.string.empty_list_content_label),
-            color = MaterialTheme.colorScheme.mediumGray,
-            fontWeight = FontWeight.Bold,
-            fontSize = MaterialTheme.typography.displaySmall.fontSize
-        )
-
+        Column(modifier = Modifier
+            .padding(top = ((LocalConfiguration.current.screenHeightDp / 2) - 250).dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier.size(120.dp),
+                painter = painterResource(R.drawable.ic_baseline_sentiment_satisfied_alt_24),
+                contentDescription = "Sad face Icon",
+                tint = MaterialTheme.colorScheme.mediumGray
+            )
+            Text(
+                text = stringResource(id = R.string.empty_list_content_label),
+                color = MaterialTheme.colorScheme.mediumGray,
+                fontWeight = FontWeight.Bold,
+                fontSize = MaterialTheme.typography.displaySmall.fontSize
+            )
+        }
     }
 }
 

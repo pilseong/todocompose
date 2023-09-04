@@ -66,9 +66,9 @@ class ReminderScheduler @Inject constructor(
 
                 else -> {
                     // Ask users to go to exact alarm page in system settings.
-                    var intent = Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
+                    val intentAlarm = Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    intentAlarm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intentAlarm)
                 }
             }
         }

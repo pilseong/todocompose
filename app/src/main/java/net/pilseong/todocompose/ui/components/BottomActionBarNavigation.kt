@@ -50,7 +50,7 @@ fun BottomActionBarNavigation(
             modifier = Modifier.height(65.dp),
             actions = {
                 Row(
-                    modifier = Modifier.fillMaxWidth(0.85F),
+//                    modifier = Modifier.fillMaxWidth(0.85F),
                 ) {
 //                Spacer(modifier = Modifier.width(20.dp))
 
@@ -59,7 +59,7 @@ fun BottomActionBarNavigation(
                             modifier = Modifier
                                 .weight(1F)
                                 .width(IntrinsicSize.Min)
-                                .fillMaxWidth()
+//                                .fillMaxWidth()
                                 .padding(start = LARGE_PADDING),
                             horizontalAlignment = CenterHorizontally
                         ) {
