@@ -42,14 +42,12 @@ import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
-import net.pilseong.todocompose.ui.screen.list.MemoAction
 import net.pilseong.todocompose.ui.screen.task.EditTaskBar
 import net.pilseong.todocompose.ui.screen.task.EditTaskBarMode
 import net.pilseong.todocompose.ui.theme.TodoComposeTheme
 import net.pilseong.todocompose.ui.viewmodel.TaskDetails
 import net.pilseong.todocompose.ui.viewmodel.TaskUiState
 import net.pilseong.todocompose.util.Constants.NEW_ITEM_ID
-import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.yearMonth
 import java.time.LocalDate
 import java.time.YearMonth
@@ -200,9 +198,10 @@ fun CalendarScreen(
                         },
                         onBackClick = {
                             val selectedDate =
-                                taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
-                                    ZoneId.systemDefault()
-                                )
+                                taskUiState.taskDetails.dueDate!!.toLocalDate()
+                                    .plusDays(1)
+                                    .atStartOfDay(ZoneId.systemDefault())
+                                    .minusMinutes(1)
 
                             onValueChange(
                                 TaskDetails(
@@ -216,7 +215,10 @@ fun CalendarScreen(
                                 scope.launch { bottomSheetState.bottomSheetState.expand() }
                                 sheetStateBeforeEditorPopup = false
                             }
-                            Log.d("PHILIP", "sheet status ${bottomSheetState.bottomSheetState.currentValue}")
+                            Log.d(
+                                "PHILIP",
+                                "sheet status ${bottomSheetState.bottomSheetState.currentValue}"
+                            )
 //                            scope.launch { bottomSheetState.bottomSheetState.expand() }
                         },
                         clearAddedPhotos = {},
@@ -231,12 +233,13 @@ fun CalendarScreen(
                         onNavigateClick = toScreen,
                         expanded = !editorExpanded,
                         onFabClicked = {
-                            // 추가 할 메모의 오염 되었을 경우에는 신규 내용으로 초기화 한다.
+                            // 추가 할 메모의 오염 되었을 경우 에는 신규 내용 으로 초기화 한다.
                             if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
                                 val selectedDate =
-                                    taskUiState.taskDetails.dueDate!!.toLocalDate().atStartOfDay(
-                                        ZoneId.systemDefault()
-                                    )
+                                    taskUiState.taskDetails.dueDate!!.toLocalDate()
+                                        .plusDays(1)
+                                        .atStartOfDay(ZoneId.systemDefault())
+                                        .minusMinutes(1)
 
                                 onValueChange(
                                     TaskDetails(
@@ -279,7 +282,10 @@ fun CalendarScreen(
                         onValueChange(
                             TaskDetails().copy(
                                 notebookId = selectedNotebook.id,
-                                dueDate = it.atStartOfDay(ZoneId.systemDefault())
+                                dueDate = it
+                                    .plusDays(1)
+                                    .atStartOfDay(ZoneId.systemDefault())
+                                    .minusMinutes(1)
                             )
                         )
                         dateNotesList = notes
@@ -290,7 +296,10 @@ fun CalendarScreen(
                         onValueChange(
                             TaskDetails().copy(
                                 notebookId = selectedNotebook.id,
-                                dueDate = date.atStartOfDay(ZoneId.systemDefault())
+                                dueDate = date
+                                    .plusDays(1)
+                                    .atStartOfDay(ZoneId.systemDefault())
+                                    .minusMinutes(1)
                             )
                         )
                         selectedDate = date

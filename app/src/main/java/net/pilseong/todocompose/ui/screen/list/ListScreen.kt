@@ -37,6 +37,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.flowOf
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.Notebook
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
@@ -91,6 +92,7 @@ fun ListScreen(
     onSetAllOrNothingClicked: (Boolean) -> Unit,
     onSearchNoFilterClicked: (Boolean) -> Unit,
     onStatusLineUpdate: (StateEntity) -> Unit,
+    onDateRangeFilterSelected: (DateRangeFilterOption, Boolean) -> Unit,
 ) {
     // multi select 가 된 경우는 헤더를 고정 한다.
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
@@ -166,25 +168,27 @@ fun ListScreen(
                 .fillMaxSize(),
         ) {
             ListView(
-                uiState,
-                memoViewModel,
-                onDateRangeCloseClick,
-                onFavoriteSortClick,
-                onOrderEnabledClick,
-                onDateSortingChangeClick,
-                onPrioritySelected,
-                onStateSelected,
-                onSearchRangeAllClicked,
-                onToggleClicked,
-                onSetAllOrNothingClicked,
-                onStatusLineUpdate,
-                tasks,
-                toTaskScreen,
-                onSwipeToEdit,
-                onFavoriteClick,
-                onLongClickApplied,
-                selectedItems,
-                onStateChange
+                uiState = uiState,
+                memoViewModel = memoViewModel,
+                onDateRangeCloseClick = onDateRangeCloseClick,
+                onFavoriteSortClick = onFavoriteSortClick,
+                onOrderEnabledClick = onOrderEnabledClick,
+                onDateSortingChangeClick = onDateSortingChangeClick,
+                onPrioritySelected = onPrioritySelected,
+                onStateSelected = onStateSelected,
+                onSearchRangeAllClicked = onSearchRangeAllClicked,
+                onToggleClicked = onToggleClicked,
+                onSetAllOrNothingClicked = onSetAllOrNothingClicked,
+                onStatusLineUpdate = onStatusLineUpdate,
+                tasks = tasks,
+                toTaskScreen = toTaskScreen,
+                onSwipeToEdit = onSwipeToEdit,
+                onFavoriteClick = onFavoriteClick,
+                onLongClickApplied = onLongClickApplied,
+                selectedItems = selectedItems,
+                onStateChange = onStateChange,
+                onDateRangeFilterSelected = onDateRangeFilterSelected,
+                onDateRangePickerConfirmed = onDateRangePickerConfirmed
             )
         }
     }
@@ -277,6 +281,7 @@ private fun ListScreenPreview() {
         onSearchNoFilterClicked = {},
         onStatusLineUpdate = {},
 //        toTaskManagementScreen = {},
-        onNavigateClick = {}
+        onNavigateClick = {},
+        onDateRangeFilterSelected = { _, _ -> }
     )
 }

@@ -163,6 +163,15 @@
     <string name="memo_sorting_option_updated_at">수정일</string>
     <string name="memo_sorting_option_finished_at">종료일</string>
     <string name="memo_sorting_option_due_date">마감일</string>
+    <string name="date_range_filter_all">검색 범위</string>
+    <string name="date_range_filter_today">오늘</string>
+    <string name="date_range_filter_three_days">3일</string>
+    <string name="date_range_filter_week">일주일</string>
+    <string name="date_range_filter_two_weeks">2주일</string>
+    <string name="date_range_filter_month">1개월</string>
+    <string name="date_range_filter_this_month">이번달</string>
+    <string name="date_range_filter_three_months">3개월</string>
+    <string name="date_range_filter_custom">사용자 설정</string>
     <string name="reminder_no_reminder">알림 없음</string>
     <string name="reminder_on_time">정시</string>
     <string name="reminder_10minutes">10분전</string>

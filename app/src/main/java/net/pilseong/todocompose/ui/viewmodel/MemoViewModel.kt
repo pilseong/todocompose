@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,6 +30,7 @@ import net.pilseong.todocompose.alarm.ReminderScheduler
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
 import net.pilseong.todocompose.data.model.Photo
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.DefaultNoteMemoCount
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
@@ -47,6 +49,9 @@ import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
+import net.pilseong.todocompose.util.getMonthStartDate
+import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Calendar
 import javax.inject.Inject
@@ -72,9 +77,9 @@ class MemoViewModel @Inject constructor(
     }
 
     var openDialog by mutableStateOf(false)
-    var infoDialogTitle by mutableStateOf(R.string.info_import_fail_title)
-    var infoDialogContent by mutableStateOf(R.string.info_import_fail_content)
-    var infoDialogCDismissLabel by mutableStateOf(R.string.info_dialog_dismiss_label)
+    var infoDialogTitle by mutableIntStateOf(R.string.info_import_fail_title)
+    var infoDialogContent by mutableIntStateOf(R.string.info_import_fail_content)
+    var infoDialogCDismissLabel by mutableIntStateOf(R.string.info_dialog_dismiss_label)
 
     @Stable
     var tasks = MutableStateFlow<PagingData<MemoWithNotebook>>(PagingData.empty())
@@ -89,7 +94,7 @@ class MemoViewModel @Inject constructor(
      */
 
     // 현재 보여 지거나 수정 중인 인덱스 가지고 있는 변수
-    var index by mutableStateOf(0)
+    var index by mutableIntStateOf(0)
 
     // list screen 에 있는 search bar 의 표시 상태를 저장 하는 변수
     var searchAppBarState by mutableStateOf(SearchAppBarState.CLOSE)
@@ -228,6 +233,7 @@ class MemoViewModel @Inject constructor(
     }
 
 
+    // 현재 실행된 필터를 가장 앞으로 이동 시킨다.
     private suspend fun applyStatusLineOrder(statusEntity: StateEntity) {
         val state = uiState.statusLineOrderState.toMutableList()
 
@@ -246,6 +252,15 @@ class MemoViewModel @Inject constructor(
 
             if (statusLineOrderUpdate)
                 applyStatusLineOrder(StateEntity.PRIORITY_ORDER)
+        }
+    }
+
+    private fun persistDateRangeFilterState(dateRangeFilterOption: DateRangeFilterOption, statusLineOrderUpdate: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepository.persistDateRangeFilterState(dateRangeFilterOption)
+
+            if (statusLineOrderUpdate)
+                applyStatusLineOrder(StateEntity.DATE_RANGE_FILTER)
         }
     }
 
@@ -346,6 +361,7 @@ class MemoViewModel @Inject constructor(
         memo: MemoTask = MemoTask.instance(),
         memoWithNotebook: MemoWithNotebook = MemoWithNotebook.instance(),
         priority: Priority = Priority.NONE,
+        dateRangeFilterOption: DateRangeFilterOption = DateRangeFilterOption.ALL,
         sortOrderState: SortOption = SortOption.DESC,
         statusLineOrderUpdate: Boolean = false,
         startDate: Long? = null,
@@ -413,12 +429,22 @@ class MemoViewModel @Inject constructor(
             }
 
             MemoAction.SEARCH_WITH_DATE_RANGE -> {
-                this.startDate = startDate
-                this.endDate = endDate
                 updateAction(memoAction)
 
-                refreshAllTasks()
-                updateActionPerformed()
+                if (dateRangeFilterOption != uiState.dateRangeFilterOption) {
+
+                    // custom 이 아닌 경우는 유저가 직접 입력한 내용을 저장해야 한다.
+                    if (dateRangeFilterOption != DateRangeFilterOption.CUSTOM)
+                        setDateRangeFilter(dateRangeFilterOption)
+                    else {
+                        this.startDate = startDate
+                        this.endDate = endDate
+                    }
+
+                    persistDateRangeFilterState(dateRangeFilterOption, statusLineOrderUpdate)
+
+                    updateActionPerformed()
+                }
             }
 
             // 우선 순위 변화는 좀 신경을 써야 한다.
@@ -521,6 +547,69 @@ class MemoViewModel @Inject constructor(
             MemoAction.NO_ACTION -> {
                 this.memoAction = MemoAction.NO_ACTION
             }
+        }
+    }
+
+    // 날짜 검색 필터 를 설정 하는 함수
+    private fun setDateRangeFilter(dateRangeFilterOption: DateRangeFilterOption) {
+        val now = ZonedDateTime.now()
+        when (dateRangeFilterOption) {
+            DateRangeFilterOption.ALL -> {
+                this.startDate = null
+                this.endDate = null
+            }
+
+            DateRangeFilterOption.TODAY -> {
+                this.startDate = now.toLocalDate().atStartOfDay().toInstant(
+                    ZonedDateTime.now(ZoneId.systemDefault()).offset
+                ).toEpochMilli()
+
+                this.endDate = now.toLocalDate().plusDays(1).atStartOfDay().toInstant(
+                    ZonedDateTime.now(ZoneId.systemDefault()).offset
+                ).toEpochMilli() - 1
+            }
+
+            DateRangeFilterOption.THREE_DAY -> {
+                this.startDate = now.minusDays(3).toInstant().toEpochMilli()
+                this.endDate = now.toInstant().toEpochMilli()
+            }
+
+            DateRangeFilterOption.WEEK -> {
+                this.startDate = now.minusDays(7).toInstant().toEpochMilli()
+                this.endDate = now.toInstant().toEpochMilli()
+            }
+
+            DateRangeFilterOption.TWO_WEEK -> {
+                this.startDate = now.minusDays(14).toInstant().toEpochMilli()
+                this.endDate = now.toInstant().toEpochMilli()
+            }
+
+            DateRangeFilterOption.MONTH -> {
+                this.startDate = now.minusMonths(1).toInstant().toEpochMilli()
+                this.endDate = now.toInstant().toEpochMilli()
+            }
+
+            DateRangeFilterOption.THIS_MONTH -> {
+                this.startDate =
+                    now.toLocalDate().getMonthStartDate().atStartOfDay().toInstant(
+                        ZonedDateTime.now(ZoneId.systemDefault()).offset
+                    ).toEpochMilli()
+                this.endDate =
+                    now.plusMonths(1).toLocalDate().getMonthStartDate().atStartOfDay()
+                        .toInstant(
+                            ZonedDateTime.now(ZoneId.systemDefault()).offset
+                        ).toEpochMilli() - 1
+            }
+
+            DateRangeFilterOption.THREE_MONTH -> {
+                this.startDate =
+                    now.minusMonths(3).toLocalDate().atStartOfDay().toInstant(
+                        ZonedDateTime.now(ZoneId.systemDefault()).offset
+                    ).toEpochMilli()
+                this.endDate = now.toInstant().toEpochMilli()
+            }
+
+            DateRangeFilterOption.CUSTOM -> {}
         }
     }
 
@@ -809,7 +898,7 @@ class MemoViewModel @Inject constructor(
                     )
                 }
             )
-            // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업데이트 가 완료된  후에 최신 정보를 가져와야 한다.
+            // 화면을 리 프레시 하는 타이밍 도 중요 하다. 업 데이트 가 완료된  후에 최신 정보를 가져 와야 한다.
             when (state) {
                 State.NONE -> {
                     if (!uiState.stateNone) refreshAllTasks()
@@ -838,6 +927,7 @@ class MemoViewModel @Inject constructor(
         }
     }
 
+    // 모든 테스크 삭제 시에는 설정 된 알람도 삭제 해야 한다.
     private fun deleteAllTasks() {
         viewModelScope.launch {
 
@@ -1041,6 +1131,7 @@ class MemoViewModel @Inject constructor(
                             uiState = it.userData
                             refreshAllTasks()
                             getNotebook(uiState.notebookIdState)
+                            setDateRangeFilter(uiState.dateRangeFilterOption)
                         }
 
                         else -> {}
@@ -1143,7 +1234,7 @@ fun MemoWithNotebook.toMemoTask(): MemoTask = MemoTask(
 
 @Stable
 sealed interface UiState {
-    object Loading : UiState
+    data object Loading : UiState
     data class Success(val userData: UserData) : UiState
 }
 

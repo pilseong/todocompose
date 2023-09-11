@@ -163,6 +163,15 @@
     <string name="memo_sorting_option_updated_at">Updated At</string>
     <string name="memo_sorting_option_finished_at">Finished At</string>
     <string name="memo_sorting_option_due_date">Due Date</string>
+    <string name="date_range_filter_all">DATE RANGE</string>
+    <string name="date_range_filter_today">Today</string>
+    <string name="date_range_filter_three_days">3 days</string>
+    <string name="date_range_filter_week">A week</string>
+    <string name="date_range_filter_two_weeks">2 weeks</string>
+    <string name="date_range_filter_month">A month</string>
+    <string name="date_range_filter_this_month">This month</string>
+    <string name="date_range_filter_three_months">3 months</string>
+    <string name="date_range_filter_custom">USER SELECTION</string>
     <string name="reminder_no_reminder">No Reminder</string>
     <string name="reminder_on_time">On time</string>
     <string name="reminder_10minutes">10 minutes ago</string>

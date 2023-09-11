@@ -14,7 +14,8 @@ data class UserData(
         StateEntity.FAVORITE_FILTER,
         StateEntity.PRIORITY_ORDER,
         StateEntity.SORTING_ORDER,
-        StateEntity.DATE_BASE_ORDER
+        StateEntity.DATE_BASE_ORDER,
+        StateEntity.DATE_RANGE_FILTER,
     ),
     val firstRecentNotebookId: Long? = null,
     val secondRecentNotebookId: Long? = null,
@@ -33,4 +34,5 @@ data class UserData(
     val priorityLow: Boolean = true,
     val priorityNone: Boolean = true,
     val noteSortingOptionState: NoteSortingOption = NoteSortingOption.ACCESS_AT,
+    val dateRangeFilterOption: DateRangeFilterOption = DateRangeFilterOption.ALL,
 )

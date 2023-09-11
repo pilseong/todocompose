@@ -51,6 +51,7 @@ class ReminderScheduler @Inject constructor(
             Log.d("PHILIP", "[ReminderScheduler] inside checking permission")
             when {
                 // If permission is granted, proceed with scheduling exact alarms.
+                // 설정 할 때 과거 에 알람이 등록 된 경우는 취소 하고 등록 한다.
                 alarmManager.canScheduleExactAlarms() -> {
                     alarmManager.setExact(
                         AlarmManager.RTC,

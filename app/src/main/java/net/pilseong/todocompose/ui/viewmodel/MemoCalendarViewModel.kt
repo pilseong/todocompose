@@ -67,7 +67,10 @@ class MemoCalendarViewModel @Inject constructor(
         TaskUiState(
             taskDetails = TaskDetails(
                 notebookId = userData.notebookIdState,
-                dueDate = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+                dueDate = LocalDate.now()
+                    .plusDays(1)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    ?.minusMinutes(1),
             )
         )
     )
@@ -101,12 +104,14 @@ class MemoCalendarViewModel @Inject constructor(
         else resultTaskUiState[0].taskDetails
     }
 
-    // 저장한 경우에는 데이터를 비워야 한다. 현재 선택된 노트북과 due 설정은 필수가 된다.
+    // 저장한 경우 에는 데이터 를 비워야 한다. 현재 선택된 노트북과 due 설정은 필수가 된다.
     private fun cleanUiState() {
         taskUiState = TaskUiState().copy(
-            TaskDetails(
+            taskDetails = TaskDetails(
                 dueDate = taskUiState.taskDetails.dueDate?.toLocalDate()
-                    ?.atStartOfDay(ZoneId.systemDefault()),
+                    ?.plusDays(1)
+                    ?.atStartOfDay(ZoneId.systemDefault())
+                    ?.minusMinutes(1),
                 notebookId = selectedNotebook.id
             )
         )
@@ -157,7 +162,7 @@ class MemoCalendarViewModel @Inject constructor(
             title = context.resources.getString(R.string.default_note_title)
         )
         else notebookRepository.getNotebook(id)
-        // 노트북이 바뀌면 변경된 노트북의 ID가 editor에도 반영이 되어야 한다.
+        // 노트북 이 바뀌면 변경된 노트북 의 ID가 editor 에도 반영이 되어야 한다.
         updateUiState(taskUiState.taskDetails.copy(notebookId = selectedNotebook.id))
     }
 

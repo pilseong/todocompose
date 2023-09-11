@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.UserData
@@ -33,6 +34,7 @@ import net.pilseong.todocompose.util.Constants.STATE_LINE_ORDER_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.STATE_PREFERENCE_KEY
 import net.pilseong.todocompose.data.model.ui.NoteSortingOption
 import net.pilseong.todocompose.data.model.ui.SortOption
+import net.pilseong.todocompose.util.Constants.DATE_RANGE_FILTER_ID_PREFERENCE_KEY
 import net.pilseong.todocompose.util.Constants.MEMO_DATE_SORTING_PREFERENCE_KEY
 import net.pilseong.todocompose.util.StateEntity
 import java.io.IOException
@@ -58,6 +60,7 @@ class DataStoreRepository @Inject constructor(
         val priorityFilterState = intPreferencesKey(name = PRIORITY_FILTER_PREFERENCE_KEY)
         val stateState = intPreferencesKey(name = STATE_PREFERENCE_KEY)
         val noteSortingOrderState = intPreferencesKey(name = NOTE_SORTING_ORDER_ID_PREFERENCE_KEY)
+        val dateRangeFilterOptionState = intPreferencesKey(name = DATE_RANGE_FILTER_ID_PREFERENCE_KEY)
     }
 
     suspend fun persistMemoDateSortingState(memoDateSortingOption: MemoDateSortingOption) {
@@ -76,6 +79,16 @@ class DataStoreRepository @Inject constructor(
             context.dataStore.edit { preferences ->
                 Log.d("PHILIP", "[DataStoreRepository]persistPrioritySortState $priority")
                 preferences[PreferenceKeys.prioritySortState] = priority.name
+            }
+        }
+    }
+
+    suspend fun persistDateRangeFilterState(dateRangeFilterOption: DateRangeFilterOption) {
+        withContext(ioDispatcher) {
+            // preferences 는 data store 안에 있는 모든 데이터 를 가지고 있다.
+            context.dataStore.edit { preferences ->
+                Log.d("PHILIP", "[DataStoreRepository]persistDateRangeFilterState $dateRangeFilterOption")
+                preferences[PreferenceKeys.dateRangeFilterOptionState] = dateRangeFilterOption.ordinal
             }
         }
     }
@@ -124,7 +137,8 @@ class DataStoreRepository @Inject constructor(
                 StateEntity.FAVORITE_FILTER,
                 StateEntity.PRIORITY_ORDER,
                 StateEntity.SORTING_ORDER,
-                StateEntity.DATE_BASE_ORDER
+                StateEntity.DATE_BASE_ORDER,
+                StateEntity.DATE_RANGE_FILTER,
             )
 
             UserData(
@@ -161,6 +175,8 @@ class DataStoreRepository @Inject constructor(
 
                 noteSortingOptionState = NoteSortingOption.values()[preferences[PreferenceKeys.noteSortingOrderState]
                     ?: NoteSortingOption.ACCESS_AT.ordinal],
+                dateRangeFilterOption = DateRangeFilterOption.values()[preferences[PreferenceKeys.dateRangeFilterOptionState]
+                    ?: DateRangeFilterOption.ALL.ordinal],
                 statusLineOrderState = statusLineString
             )
         }

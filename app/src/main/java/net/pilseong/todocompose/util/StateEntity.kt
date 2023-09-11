@@ -7,5 +7,6 @@ enum class StateEntity {
     FAVORITE_FILTER,
     PRIORITY_ORDER,
     SORTING_ORDER,
-    DATE_BASE_ORDER
+    DATE_BASE_ORDER,
+    DATE_RANGE_FILTER,
 }

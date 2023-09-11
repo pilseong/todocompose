@@ -17,6 +17,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.SortOption
 import net.pilseong.todocompose.navigation.Screen
 import net.pilseong.todocompose.navigation.sharedViewModel
@@ -158,6 +159,7 @@ fun NavGraphBuilder.memoListComposable(
             onDateRangePickerConfirmed = { start, end ->
                 memoViewModel.handleActions(
                     memoAction = MemoAction.SEARCH_WITH_DATE_RANGE,
+                    dateRangeFilterOption = DateRangeFilterOption.CUSTOM,
                     startDate = start,
                     endDate = end
                 )
@@ -205,6 +207,13 @@ fun NavGraphBuilder.memoListComposable(
                     priorityAction,
                     priority = priority,
                     statusLineOrderUpdate = orderUpdate
+                )
+            },
+            onDateRangeFilterSelected = { dateRangeFilterOption, shouldUpdate ->
+                memoViewModel.handleActions(
+                    memoAction = MemoAction.SEARCH_WITH_DATE_RANGE,
+                    dateRangeFilterOption = dateRangeFilterOption,
+                    statusLineOrderUpdate = shouldUpdate
                 )
             },
             onFavoriteClick = { todo ->
@@ -258,7 +267,7 @@ fun NavGraphBuilder.memoListComposable(
                     stateEntity = it
                 )
             },
-            onNavigateClick = { toScreen(it) }
+            onNavigateClick = { toScreen(it) },
         )
 
         // 로딩바 보이기

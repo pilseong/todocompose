@@ -267,12 +267,12 @@ fun NoteEditor(
             var showDatePicker by remember { mutableStateOf(false) }
             var showTimePicker by remember { mutableStateOf(false) }
             val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
-            var timeHours by remember { mutableStateOf<Int?>(taskUiState.taskDetails.dueDate?.hour) }
-            var timeMinutes by remember { mutableStateOf<Int?>(taskUiState.taskDetails.dueDate?.minute) }
+            var timeHours by remember { mutableStateOf(taskUiState.taskDetails.dueDate?.hour) }
+            var timeMinutes by remember { mutableStateOf(taskUiState.taskDetails.dueDate?.minute) }
 
             val timePickerState = rememberTimePickerState(
-                initialHour = taskUiState.taskDetails.dueDate?.hour ?: 0,
-                initialMinute = taskUiState.taskDetails.dueDate?.minute ?: 0,
+                initialHour = taskUiState.taskDetails.dueDate?.hour ?: 23,
+                initialMinute = taskUiState.taskDetails.dueDate?.minute ?: 59,
             )
             DefaultDatePickerDialog(
                 openDialog = showDatePicker,
@@ -289,6 +289,9 @@ fun NoteEditor(
                         if (timeHours != null && timeMinutes != null) {
                             offset = offset.plusHours(timeHours!!.toLong())
                                 .plusMinutes(timeMinutes!!.toLong())
+                        } else {
+                            offset = offset.plusHours(timePickerState.hour.toLong())
+                                .plusMinutes(timePickerState.minute.toLong())
                         }
 
                         onValueChange(

@@ -1,5 +1,6 @@
 package net.pilseong.todocompose.ui.screen.list
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChecklistRtl
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Sort
@@ -39,6 +41,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import net.pilseong.todocompose.R
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.Priority
 import net.pilseong.todocompose.data.model.ui.SortOption
@@ -58,6 +62,7 @@ import net.pilseong.todocompose.data.model.ui.State
 import net.pilseong.todocompose.data.model.ui.UserData
 import net.pilseong.todocompose.ui.components.PriorityItem
 import net.pilseong.todocompose.ui.components.PriorityMenuItems
+import net.pilseong.todocompose.ui.components.SimpleDateRangePickerSheet
 import net.pilseong.todocompose.ui.components.StateMenuItems
 import net.pilseong.todocompose.ui.theme.FavoriteYellowColor
 import net.pilseong.todocompose.ui.theme.HighPriorityColor
@@ -81,11 +86,13 @@ fun StatusLine(
     onOrderEnabledClick: (Boolean) -> Unit,
     onDateSortingChangeClick: (MemoAction, MemoDateSortingOption, Boolean) -> Unit,
     onPrioritySelected: (MemoAction, Priority, Boolean) -> Unit,
+    onDateRangeFilterSelected: (DateRangeFilterOption, Boolean) -> Unit,
     onStateSelected: (State) -> Unit,
     onRangeAllEnabledClick: (Boolean, Boolean) -> Unit,
     onToggleClicked: () -> Unit,
     onSetAllOrNothingClicked: (Boolean) -> Unit,
     onStatusLineUpdate: (StateEntity) -> Unit,
+    onDatePickConfirmed: (Long?, Long?) -> Unit,
 ) {
 
     val scope = rememberCoroutineScope()
@@ -100,7 +107,7 @@ fun StatusLine(
             val lazyState = rememberLazyListState()
 
             // 처음 기본 화면에 들어 가는 status 갯수를 저장 한다.
-            var initialSize by remember { mutableStateOf(0) }
+            var initialSize by remember { mutableIntStateOf(0) }
             val stateSize by remember {
                 derivedStateOf {
                     if (initialSize == 0 || (lazyState.firstVisibleItemIndex == 0 && !lazyState.canScrollBackward))
@@ -112,6 +119,17 @@ fun StatusLine(
             initialSize = stateSize
 
 //            Log.d("PHILIP", "[StatusLine] initialSize $initialSize")
+
+
+            var datePickerExpanded by remember { mutableStateOf(false) }
+            SimpleDateRangePickerSheet(
+                titleResource = R.string.date_search_range_picker_title,
+                datePickerExpanded = datePickerExpanded,
+                onDismissRequest = {
+                    datePickerExpanded = false
+                },
+                onConfirmClick = onDatePickConfirmed
+            )
 
             LazyRow(
                 modifier = Modifier
@@ -230,6 +248,25 @@ fun StatusLine(
                                     }
                                 }
                             },
+                        )
+
+                        StateEntity.DATE_RANGE_FILTER -> DateRangeFilter(
+                            dateRangeFilterOption = uiState.dateRangeFilterOption,
+                            onDateRangeFilterSelected = { dateRangeFilterOption ->
+                                Log.d(
+                                    "PHILIP",
+                                    "[StatusLine] performed DateRangeFilter $index $shouldUpdate"
+                                )
+                                onDateRangeFilterSelected(dateRangeFilterOption, shouldUpdate)
+                                if (shouldUpdate) {
+                                    scope.launch {
+                                        lazyState.animateScrollToItem(0, 0)
+                                    }
+                                }
+                            },
+                            onUserSelectionClicked = {
+                                datePickerExpanded = true
+                            }
                         )
                     }
                 }
@@ -793,6 +830,80 @@ private fun NoteFilterState(
     }
 }
 
+@Composable
+private fun DateRangeFilter(
+    dateRangeFilterOption: DateRangeFilterOption,
+    onDateRangeFilterSelected: (DateRangeFilterOption) -> Unit,
+    onUserSelectionClicked: () -> Unit,
+) {
+    var dateRangeFilterMenuExpanded by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .clickable {
+                dateRangeFilterMenuExpanded = true
+            },
+        border = if (dateRangeFilterOption != DateRangeFilterOption.ALL)
+            BorderStroke(color = Color.Transparent, width = 0.dp)
+        else
+            BorderStroke(
+                0.5F.dp,
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2F)
+            ),
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (dateRangeFilterOption != DateRangeFilterOption.ALL)
+                MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+            else Color.Transparent,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SMALL_PADDING),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                modifier = Modifier.width(12.dp),
+                imageVector = Icons.Default.DateRange,
+                contentDescription = "date range icon"
+            )
+            Spacer(modifier = Modifier.width(SMALL_PADDING))
+            Text(
+                text = stringResource(id = dateRangeFilterOption.label),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            )
+        }
+        DropdownMenu(
+            expanded = dateRangeFilterMenuExpanded,
+            onDismissRequest = { dateRangeFilterMenuExpanded = false },
+        ) {
+            DateRangeFilterOption.values().forEach { dateRangeFilterOption ->
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = dateRangeFilterOption.label),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = {
+                        dateRangeFilterMenuExpanded = false
+
+                        if (dateRangeFilterOption != DateRangeFilterOption.CUSTOM)
+                            onDateRangeFilterSelected(dateRangeFilterOption)
+                        else
+                            onUserSelectionClicked()
+                    })
+            }
+        }
+    }
+}
+
 
 @Preview
 @Composable
@@ -812,6 +923,8 @@ fun PreviewStatusLine() {
             onToggleClicked = {},
             onSetAllOrNothingClicked = {},
             onStatusLineUpdate = {},
+            onDateRangeFilterSelected = { _, _ -> },
+            onDatePickConfirmed = { _, _ -> Unit }
         )
     }
 }

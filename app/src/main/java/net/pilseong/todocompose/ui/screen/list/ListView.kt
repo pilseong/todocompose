@@ -3,6 +3,7 @@ package net.pilseong.todocompose.ui.screen.list
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.paging.compose.LazyPagingItems
+import net.pilseong.todocompose.data.model.ui.DateRangeFilterOption
 import net.pilseong.todocompose.data.model.ui.MemoDateSortingOption
 import net.pilseong.todocompose.data.model.ui.MemoWithNotebook
 import net.pilseong.todocompose.data.model.ui.Priority
@@ -32,7 +33,9 @@ fun ListView(
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickApplied: (Long) -> Unit,
     selectedItems: SnapshotStateList<Long>,
-    onStateChange: (MemoWithNotebook, State) -> Unit
+    onStateChange: (MemoWithNotebook, State) -> Unit,
+    onDateRangeFilterSelected: (DateRangeFilterOption, Boolean) -> Unit,
+    onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
 ) {
     StatusLine(
         uiState = uiState,
@@ -48,6 +51,8 @@ fun ListView(
         onToggleClicked = onToggleClicked,
         onSetAllOrNothingClicked = onSetAllOrNothingClicked,
         onStatusLineUpdate = onStatusLineUpdate,
+        onDateRangeFilterSelected = onDateRangeFilterSelected,
+        onDatePickConfirmed = onDateRangePickerConfirmed,
     )
 
     ListContent(
