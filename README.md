@@ -1,4 +1,4 @@
-# JetPack compose, Material3를 사용한 아이이어 노트
+# [안드로이드 앱] JetPack compose, Material3를 사용한 아이이어 노트
 (과업 관리 + 일정 관리 + 메모)
 ## 설명
 * 쇼케이스로 만든 기반 업무관리 프로그램 + 메모
