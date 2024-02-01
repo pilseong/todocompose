@@ -1,4 +1,4 @@
-# 순수 JetPack compose, Material3를 사용한 아이이어 노트
+# JetPack compose, Material3를 사용한 아이이어 노트
 (과업 관리 + 일정 관리 + 메모)
 ## 설명
 * 쇼케이스로 만든 기반 업무관리 프로그램 + 메모
@@ -35,6 +35,6 @@
 * 마감일 알림 기능
 * 달력 뷰 제공, 일자별 메모(일정) 확인 및 알림 설정
 
-[유튜브 화면녹화](https://www.youtube.com/watch?v=b6Fc3ctLHdg)
+[유튜브 실행 데모 링크](https://www.youtube.com/watch?v=b6Fc3ctLHdg)
 
 ![Screenshot 2024-02-01 at 4 25 44 PM](https://github.com/pilseong/todocompose/assets/19240446/325e7a82-446e-41ac-9205-a85b2909bfc1)
