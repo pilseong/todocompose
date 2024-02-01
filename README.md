@@ -35,6 +35,6 @@
 * 마감일 알림 기능
 * 달력 뷰 제공, 일자별 메모(일정) 확인 및 알림 설정
 
-[유튜브 실행 데모 링크](https://www.youtube.com/watch?v=b6Fc3ctLHdg)
+[유튜브 실행 데모 링크 클릭](https://www.youtube.com/watch?v=b6Fc3ctLHdg)
 
 ![Screenshot 2024-02-01 at 4 25 44 PM](https://github.com/pilseong/todocompose/assets/19240446/325e7a82-446e-41ac-9205-a85b2909bfc1)
