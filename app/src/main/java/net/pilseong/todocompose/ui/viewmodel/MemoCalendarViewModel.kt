@@ -80,6 +80,7 @@ class MemoCalendarViewModel @Inject constructor(
     var taskUiStateList = mutableStateListOf<TaskUiState>()
 
     fun updateUiStateInList(taskDetails: TaskDetails) {
+        Log.d("PHILIP", "[MemoCalendarViewModel] updateUiStateInList() with $taskDetails")
         taskUiStateList.removeIf { task -> task.taskDetails.id == taskDetails.id }
         taskUiStateList.add(
             TaskUiState(
@@ -314,7 +315,7 @@ class MemoCalendarViewModel @Inject constructor(
                 )
                 val target = getTaskUiStateFromList(currentMemoTask.memo.id)
 
-                // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
+                // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업 데이트 한다.
                 if ((currentMemoTask.memo.progression != State.COMPLETED &&
                             currentMemoTask.memo.progression != State.CANCELLED) &&
                     (target.progression == State.COMPLETED ||
@@ -325,12 +326,14 @@ class MemoCalendarViewModel @Inject constructor(
                             finishedAt = ZonedDateTime.now()
                         )
                     )
+                } else {
+                    updateUiState(target.copy())
                 }
 
                 viewModelScope.launch {
 
                     // 데이터 베이스 에 저장 하고 삭제된 사진 id만 리스트 로 가져 온다.
-                    val deletedPhotosIds = todoRepository.updateMemo(target)
+                    val deletedPhotosIds = todoRepository.updateMemo(taskUiState.taskDetails)
                     Log.d("PHILIP", "delete ids $deletedPhotosIds")
 
                     // 데이터 베이스 를 정리 후 실제 파일을 삭제 한다.

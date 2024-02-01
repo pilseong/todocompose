@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
         val REQUIRED_PERMISSIONS =
             mutableListOf(
-                android.Manifest.permission.CAMERA
+                Manifest.permission.CAMERA
             ).toTypedArray()
 
         fun hasPermissions(context: Context) = REQUIRED_PERMISSIONS.all {

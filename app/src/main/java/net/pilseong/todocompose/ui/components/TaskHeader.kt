@@ -1,12 +1,10 @@
 package net.pilseong.todocompose.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import net.pilseong.todocompose.R
 import net.pilseong.todocompose.data.model.MemoTask
 import net.pilseong.todocompose.data.model.Notebook
@@ -152,13 +145,13 @@ fun TaskHeader(
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                 lineHeight = 20.sp
                             )
-                            if (task.memo.finishedAt != null) {
-                                Text(
-                                    stringResource(id = R.string.info_finished_at),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    lineHeight = 20.sp
-                                )
-                            }
+                        }
+                        if (task.memo.finishedAt != null) {
+                            Text(
+                                stringResource(id = R.string.info_finished_at),
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                lineHeight = 20.sp
+                            )
                         }
                         if (task.memo.progression != State.NONE || type == TaskHeaderType.CALENDAR) {
                             Text(
@@ -229,17 +222,17 @@ fun TaskHeader(
                                     ),
                                 lineHeight = 20.sp
                             )
-                            if (task.memo.finishedAt != null) {
-                                Text(
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                                    text = task.memo.finishedAt!!.toLocalDateTime()
-                                        .format(
-                                            DateTimeFormatter.ofPattern(
-                                                stringResource(id = R.string.task_content_dateformat)
-                                            )
+                        }
+                        if (task.memo.finishedAt != null) {
+                            Text(
+                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                text = task.memo.finishedAt!!.toLocalDateTime()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            stringResource(id = R.string.task_content_dateformat)
                                         )
-                                )
-                            }
+                                    )
+                            )
                         }
                         if (task.memo.progression != State.NONE || type == TaskHeaderType.CALENDAR) {
                             Text(
@@ -342,7 +335,6 @@ fun TaskHeader(
 }
 
 
-
 @Preview
 @Composable
 fun PreviewTaskHeader() {
@@ -356,7 +348,8 @@ fun PreviewTaskHeader() {
                     "할 수 있어. 다 와 간다. 힘내자 다 할 수 있어 잘 될 거야",
                     Priority.NONE,
                     notebookId = -1,
-                    dueDate = ZonedDateTime.now()
+                    dueDate = ZonedDateTime.now(),
+                    finishedAt = ZonedDateTime.now(),
                 ),
                 notebook = Notebook.instance(),
                 total = 1,

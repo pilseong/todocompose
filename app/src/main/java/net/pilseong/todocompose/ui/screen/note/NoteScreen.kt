@@ -3,6 +3,8 @@ package net.pilseong.todocompose.ui.screen.note
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FiberNew
@@ -146,9 +148,9 @@ private fun NoteAppBar(
 }
 
 
-@Preview(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
+@Preview//(device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
 @Composable
-fun PreviewHomeScreen() {
+fun PreviewNoteScreen() {
     MaterialTheme {
         NoteScreen(
             onClickBottomNavBar = {},

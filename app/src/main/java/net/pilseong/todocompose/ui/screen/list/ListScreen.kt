@@ -48,6 +48,7 @@ import net.pilseong.todocompose.ui.components.BottomActionBarNavigation
 import net.pilseong.todocompose.ui.theme.fabContainerColor
 import net.pilseong.todocompose.ui.theme.fabContent
 import net.pilseong.todocompose.ui.viewmodel.MemoViewModel
+import net.pilseong.todocompose.ui.viewmodel.toMemoTask
 import net.pilseong.todocompose.util.SearchAppBarState
 import net.pilseong.todocompose.util.StateEntity
 
@@ -65,7 +66,7 @@ fun ListScreen(
     searchText: String = "",
     selectedItems: SnapshotStateList<Long>,
     onNavigateClick: (Screen) -> Unit,
-    toTaskScreen: () -> Unit,
+    toTaskScreen: (Int) -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     onAppBarTitleClick: () -> Unit,
     onSearchIconClicked: () -> Unit,

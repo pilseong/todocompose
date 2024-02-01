@@ -28,7 +28,6 @@ fun ListView(
     onSetAllOrNothingClicked: (Boolean) -> Unit,
     onStatusLineUpdate: (StateEntity) -> Unit,
     tasks: LazyPagingItems<MemoWithNotebook>,
-    toTaskScreen: () -> Unit,
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     onFavoriteClick: (MemoWithNotebook) -> Unit,
     onLongClickApplied: (Long) -> Unit,
@@ -36,6 +35,7 @@ fun ListView(
     onStateChange: (MemoWithNotebook, State) -> Unit,
     onDateRangeFilterSelected: (DateRangeFilterOption, Boolean) -> Unit,
     onDateRangePickerConfirmed: (Long?, Long?) -> Unit,
+    toTaskScreen: (Int) -> Unit,
 ) {
     StatusLine(
         uiState = uiState,
@@ -57,11 +57,7 @@ fun ListView(
 
     ListContent(
         tasks = tasks,
-        toTaskScreen = { index ->
-            memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toMemoTask())
-            memoViewModel.updateIndex(index)
-            toTaskScreen()
-        },
+        toTaskScreen = toTaskScreen,
         onSwipeToEdit = onSwipeToEdit,
         header = true,
         memoDateBaseOption = uiState.memoDateSortingState,

@@ -446,6 +446,7 @@ fun CalendarInnerEditor(
                                     enabled = true,
                                     onStateSelected = {
                                         expanded = false
+                                        Log.d("PHILIP", "status changed to $it")
                                         onValueChange(
                                             taskUiState.taskDetails.copy(
                                                 progression = it

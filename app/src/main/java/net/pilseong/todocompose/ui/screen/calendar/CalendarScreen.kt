@@ -85,7 +85,7 @@ fun CalendarScreen(
     var editorExpanded by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var dateNotesList by remember(tasks) {
-        mutableStateOf<List<MemoWithNotebook>>(tasks.filter { it ->
+        mutableStateOf(tasks.filter {
             it.memo.dueDate!!.month == selectedDate.month &&
                     it.memo.dueDate.dayOfMonth == selectedDate.dayOfMonth
         })
@@ -197,17 +197,14 @@ fun CalendarScreen(
                             editorExpanded = false
                         },
                         onBackClick = {
-                            val selectedDate =
-                                taskUiState.taskDetails.dueDate!!.toLocalDate()
-                                    .plusDays(1)
-                                    .atStartOfDay(ZoneId.systemDefault())
-                                    .minusMinutes(1)
-
                             onValueChange(
                                 TaskDetails(
                                     id = NEW_ITEM_ID,
                                     notebookId = selectedNotebook.id,
-                                    dueDate = selectedDate
+                                    dueDate = taskUiState.taskDetails.dueDate!!.toLocalDate()
+                                        .plusDays(1)
+                                        .atStartOfDay(ZoneId.systemDefault())
+                                        .minusMinutes(1)
                                 )
                             )
                             editorExpanded = false
@@ -235,17 +232,14 @@ fun CalendarScreen(
                         onFabClicked = {
                             // 추가 할 메모의 오염 되었을 경우 에는 신규 내용 으로 초기화 한다.
                             if (taskUiState.taskDetails.id != NEW_ITEM_ID) {
-                                val selectedDate =
-                                    taskUiState.taskDetails.dueDate!!.toLocalDate()
-                                        .plusDays(1)
-                                        .atStartOfDay(ZoneId.systemDefault())
-                                        .minusMinutes(1)
-
                                 onValueChange(
                                     TaskDetails(
                                         id = NEW_ITEM_ID,
                                         notebookId = selectedNotebook.id,
-                                        dueDate = selectedDate
+                                        dueDate = taskUiState.taskDetails.dueDate!!.toLocalDate()
+                                            .plusDays(1)
+                                            .atStartOfDay(ZoneId.systemDefault())
+                                            .minusMinutes(1)
                                     )
                                 )
                             }
@@ -338,7 +332,7 @@ fun BottomActionBarNavPreview() {
 @Composable
 @Preview
 private fun CalendarScreenPreview() {
-    TodoComposeTheme() {
+    TodoComposeTheme {
         CalendarScreen(
             userData = UserData(),
             taskUiState = TaskUiState(),
@@ -348,7 +342,7 @@ private fun CalendarScreenPreview() {
             toScreen = {},
             onMonthChange = {},
             onAppBarTitleClick = {},
-            onSearchRangeAllClicked = { _, _ -> Unit },
+            onSearchRangeAllClicked = { _, _ -> },
             onValueChange = {},
             onNewConfirm = {},
             onEditClicked = {},

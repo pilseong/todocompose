@@ -74,10 +74,10 @@ class NoteViewModel @Inject constructor(
 
     var isLoading = true
 
-    var notebooksJob: Job? = null
-    var currentNoteJob: Job? = null
-    var firstNoteJob: Job? = null
-    var secondNoteJob: Job? = null
+    private var notebooksJob: Job? = null
+    private var currentNoteJob: Job? = null
+    private var firstNoteJob: Job? = null
+    private var secondNoteJob: Job? = null
 
     fun appendMultiSelectedNotebook(id: Long) {
         if (selectedNotebooks.contains(id)) {
@@ -360,7 +360,8 @@ class NoteViewModel @Inject constructor(
             }
 
             NoteAction.SELECT_NOTEBOOK -> {
-                if (userData.notebookIdState != notebookId) {
+                // 중복 확인 필요가 없다. 왜냐면 노트북 선택 이전에 노트북 의 정보를 수정할 수도 있기 때문 이다.
+//                if (userData.notebookIdState != notebookId) {
                     val noteIdsList = mutableListOf<String>()
                     noteIdsList.add(notebookId.toString())
                     noteIdsList.add(userData.notebookIdState.toString())
@@ -375,7 +376,7 @@ class NoteViewModel @Inject constructor(
                         // delay 를 삭제함 flow 에서 받는 값을 비교 하여 쓸지 않 쓸지를 판단 하도록 변경 수정 완료
                         persistNotebookIdState(noteIdsList)
                     }
-                }
+//                }
             }
 
             NoteAction.SORT_BY_TIME -> {

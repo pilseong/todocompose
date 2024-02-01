@@ -77,6 +77,8 @@ fun NavGraphBuilder.memoListComposable(
         var dialogMode by remember { mutableStateOf(NotebooksPickerMode.SWITCH_NOTE_MODE) }
         val snackBarHostState = remember { SnackbarHostState() }
 
+        val tasks =  memoViewModel.tasks.collectAsLazyPagingItems()
+
 //        Log.d(
 //            "PHILIP",
 //            "[memoNavGraph] ListScreen called with " +
@@ -88,12 +90,14 @@ fun NavGraphBuilder.memoListComposable(
             snackBarHostState = snackBarHostState,
             searchAppBarState = memoViewModel.searchAppBarState,
             searchText = memoViewModel.searchTextString,
-            tasks = memoViewModel.tasks.collectAsLazyPagingItems(),
+            tasks = tasks,
             selectedItems = memoViewModel.selectedItems,
             selectedNotebook = memoViewModel.selectedNotebook.value,
             searchNoFilterState = memoViewModel.searchNoFilterState,
             memoViewModel = memoViewModel,
-            toTaskScreen = {
+            toTaskScreen = { index ->
+                memoViewModel.setTaskScreenToViewerMode(tasks[index]!!.toMemoTask())
+                memoViewModel.updateIndex(index)
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(MemoAction.NO_ACTION)
                 toScreen(Screen.MemoDetail)
@@ -104,7 +108,6 @@ fun NavGraphBuilder.memoListComposable(
                 memoViewModel.setTaskScreenToEditorMode(memo)
                 // 화면 전환 시에는 action 을 초기화 해야 뒤로 가기 버튼을 눌렀을 때 오동작 을 예방할 수 있다.
                 memoViewModel.updateAction(MemoAction.NO_ACTION)
-
                 toScreen(Screen.MemoDetail)
             },
 //            toNoteScreen = toNoteScreen,

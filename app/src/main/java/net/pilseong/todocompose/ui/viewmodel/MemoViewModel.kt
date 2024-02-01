@@ -50,7 +50,6 @@ import net.pilseong.todocompose.util.StateEntity
 import net.pilseong.todocompose.util.TaskAppBarState
 import net.pilseong.todocompose.util.deleteFileFromUri
 import net.pilseong.todocompose.util.getMonthStartDate
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Calendar
@@ -112,7 +111,7 @@ class MemoViewModel @Inject constructor(
     var searchNoFilterState by mutableStateOf(false)    // 검색 시 모든 필터 제거
     var defaultNoteMemoCount by mutableStateOf(DefaultNoteMemoCount(0, 0, 0, 0, 0))
 
-    // snack 바에 결과를 보여주기 위해서 마지막 action의 상태를 저장한다.
+    // snack 바에 결과를 보여 주기 위해서 마지막 action 의 상태를 저장 한다.
     var savedLastMemoTask = MemoTask.instance()
 
     fun updateIndex(index: Int) {
@@ -749,7 +748,7 @@ class MemoViewModel @Inject constructor(
             "PHILIP",
             "[MemoViewModel] updateTask performed with $taskUiState"
         )
-        // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업데이트 한다.
+        // 상태를 완료 변경할 경우는 종결일 을 넣어 주어야 한다. 이전 상태가 종결이 아닐 때만 종결일 을 업 데이트 한다.
         if ((memoWithNotebook.memo.progression != State.COMPLETED &&
                     memoWithNotebook.memo.progression != State.CANCELLED) &&
             (taskUiState.taskDetails.progression == State.COMPLETED ||
@@ -784,15 +783,16 @@ class MemoViewModel @Inject constructor(
                 Calendar.getInstance().timeInMillis < (taskUiState.taskDetails.dueDate!!.toInstant()
                     .toEpochMilli() - taskUiState.taskDetails.reminderType.timeInMillis)
             ) {
-                if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED)
+                if (taskUiState.taskDetails.reminderType != ReminderType.NOT_USED) {
                     registerNotification(taskUiState.taskDetails)
+                }
                 else if (
                     memoWithNotebook.memo.reminderType != ReminderType.NOT_USED &&
                     taskUiState.taskDetails.reminderType == ReminderType.NOT_USED
-                )
+                ) {
                     cancelNotification(taskUiState.taskDetails.id)
+                }
             }
-
             refreshAllTasks()
         }
         this.memoAction = MemoAction.UPDATE
@@ -1122,7 +1122,7 @@ class MemoViewModel @Inject constructor(
 
 
     private fun observeUiState() {
-//        Log.d("PHILIP", "[MemoViewModel] observeUiState() called")
+        Log.d("PHILIP", "[MemoViewModel] observeUiState() called")
         viewModelScope.launch {
             uiStateFlow
                 .onEach {
@@ -1138,7 +1138,7 @@ class MemoViewModel @Inject constructor(
                     }
                 }
                 .collect {
-//                    Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
+                    Log.d("PHILIP", "[MemoViewModel] observeUiState() executed")
                 }
         }
     }

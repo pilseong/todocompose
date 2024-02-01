@@ -40,7 +40,7 @@ class TodoRepository @Inject constructor(
     }
 
     fun getTasks(
-        query: String,
+        query: String = "",
         searchNoFilterState: Boolean = false,
         searchRangeAll: Boolean = false,
         memoDateSortState: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,

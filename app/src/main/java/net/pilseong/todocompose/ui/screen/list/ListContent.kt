@@ -85,10 +85,10 @@ fun ListContent(
     onSwipeToEdit: (Int, MemoWithNotebook) -> Unit,
     header: Boolean = false,
     memoDateBaseOption: MemoDateSortingOption = MemoDateSortingOption.UPDATED_AT,
-    onFavoriteClick: (MemoWithNotebook) -> Unit,
-    onLongClickApplied: (Long) -> Unit,
-    selectedItemsIds: SnapshotStateList<Long>,
-    onStateSelected: (MemoWithNotebook, State) -> Unit,
+    onFavoriteClick: (MemoWithNotebook) -> Unit = {},
+    onLongClickApplied: (Long) -> Unit = {},
+    selectedItemsIds: SnapshotStateList<Long> = SnapshotStateList(),
+    onStateSelected: (MemoWithNotebook, State) -> Unit = { _, _ ->},
 ) {
     if (tasks.itemCount == 0) {
         EmptyContent()
